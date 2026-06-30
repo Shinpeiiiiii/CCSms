@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;600;700;800&display=swap');
+@import "tailwindcss";
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0A0F1E;
+  color: #F1F5F9;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0F1E;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366F1, #8B5CF6);
+  border-radius: 10px;
+}
+
+/* Form inputs dark mode */
+input, select, textarea {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #1E293B;
+  color: #F1F5F9;
+}
+
+/* Focus ring for form inputs */
+.form-input:focus,
+.form-select:focus {
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+}
+
+/* Toast animation */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toast-enter {
+  animation: slideInRight 0.3s ease forwards;
+}
+
+/* Glow pulse for badge indicator */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 6px #6EE7B7; }
+  50% { box-shadow: 0 0 14px #6EE7B7; }
+}
+
+.pulse-dot {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Responsive enrollment form grid */
+@media (max-width: 768px) {
+  .enrollment-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .name-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Button hover enhancement */
+.btn-primary:hover {
+  box-shadow: 0 0 40px rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Program card hover */
+.program-card:hover {
+  border-color: rgba(99, 102, 241, 0.45) !important;
+  box-shadow: 0 0 36px rgba(99, 102, 241, 0.1) !important;
+  transform: translateY(-4px);
+}
+
+/* Step card hover */
+.step-card:hover {
+  border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Navigation responsiveness helpers */
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .desktop-nav {
+    display: flex !important;
+  }
+  .mobile-menu-btn {
+    display: none !important;
+  }
+}
+
