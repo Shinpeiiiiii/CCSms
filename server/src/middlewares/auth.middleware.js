@@ -1,11 +1,12 @@
 const jwt = require('jsonwebtoken')
 
+
 const authMiddleware = async (req,res,next) => {
 
     console.log("Authorization Header:", req.headers.authorization);
 
     try{
-        const   authHeader = req.headers.authorization
+        const authHeader = req.headers.authorization
 
         if(!authHeader || !authHeader.startsWith('Bearer')){
             return res.status(401).json({
@@ -15,14 +16,17 @@ const authMiddleware = async (req,res,next) => {
 
         const token = authHeader.split(' ')[1]
 
-        const decoded = jwt.verify(
-            token,process.env.JWT_SECRET
-
-        )
+        const decoded = jwt.verify(token,process.env.JWT_SECRET)
 
         req.user = decoded
         console.log(decoded)
         next()
+
+        if(decoded.tokenVersion !== req.user.tokenVersion){
+            return res.status(401).json({
+                message: 'Token has been invalidated. Please log in again.',
+            })
+        }
 
     }catch(error){
         console.error(error)

@@ -35,11 +35,9 @@ api.interceptors.response.use(
     },
 
     (error) => {
-        if (error.response?.status === 401) {
-            console.warn("Unauthorized. Logging out...")
-            useAuthStore.getState().logout()
-
-            window.location.href = "/login"
+        if (error.response?.status === 401 && !error.config.url.includes('/auth/login')) {
+            useAuthStore.getState().logout();
+            window.location.replace ("/login");
         }
 
         return Promise.reject(error)

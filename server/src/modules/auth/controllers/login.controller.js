@@ -25,6 +25,9 @@ const login = async (req, res) => {
       user.password
     )
 
+    user.tokenVersion += 1;
+    await user.save();
+
     console.log('PASSWORD MATCH',isMatch)
 
     if (!isMatch) {
@@ -35,11 +38,11 @@ const login = async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: user._id,role: user.role
+        id: user._id,role: user.role, tokenVersion: user.tokenVersion,
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: '1d',
+        expiresIn: '15m',
       },
       console.log(user.role)
     )

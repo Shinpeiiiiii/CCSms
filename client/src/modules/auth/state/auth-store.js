@@ -32,6 +32,7 @@ const useAuthStore = create(
                     user: null,
                 });
 
+                useAuthStore.persist.clearStorage(); // Clear persisted state
                 // Notify other tabs about the logout via BroadcastChannel
                 try {
                     const bc = new BroadcastChannel(AUTH_BROADCAST_CHANNEL);
