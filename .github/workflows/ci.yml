@@ -34,7 +34,7 @@ jobs:
         run: npm test --if-present
         
       - name: Set up docker Buildx
-        uses: docker/build-push-action@v3
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
         uses: docker/build-push-action@v6
