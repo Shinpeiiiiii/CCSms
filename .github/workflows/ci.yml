@@ -32,6 +32,9 @@ jobs:
       - name: Run tests
         working-directory: server
         run: npm test --if-present
+        
+      - name: Set up docker Buildx
+        uses: docker/build-push-action@v3
 
       - name: Build Docker image
         uses: docker/build-push-action@v6
