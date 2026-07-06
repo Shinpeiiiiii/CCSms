@@ -25,8 +25,8 @@ const app = express()
 
 app.use(cors({
     origin: [
-        "https://localhost:5173",
-        "https:college-portal.seddy012345.workers.dev",
+        "http://localhost:5173",
+        "https://college-portal.seddy012345.workers.dev",
     ]
 }));
 app.use(express.json());
