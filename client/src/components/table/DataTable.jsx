@@ -13,61 +13,45 @@ const DataTable = ({
 }) => {
 
     if (loading) {
-
         return <TableLoading />
-
     }
 
     if (!loading && data.length === 0) {
-
         return (
-
             <TableEmpty
                 message={emptyMessage}
             />
-
         )
-
     }
 
     return (
-
         <div style={{ overflowX: 'auto' }}>
-
             <table
                 style={{
                     width: '100%',
                     borderCollapse: 'separate',
                     borderSpacing: 0,
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    borderRadius: 14,
+                    border: '1px solid #DADCE0',
+                    borderRadius: 12,
                     overflow: 'hidden',
                 }}
             >
-
                 <TableHeader
                     columns={columns}
                 />
-
                 <TableBody
                     columns={columns}
                     data={data}
                 />
-
             </table>
 
             {pagination && (
-
                 <TablePagination
                     {...pagination}
                 />
-
             )}
-
         </div>
-
     )
-
 }
 
 export default DataTable

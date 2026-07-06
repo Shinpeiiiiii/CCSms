@@ -1,19 +1,14 @@
 const TableHeader = ({
     columns,
 }) => {
-
     return (
-
         <thead>
-
             <tr
                 style={{
-                    background: 'rgba(99,102,241,0.08)',
+                    background: '#F1F3F4',
                 }}
             >
-
                 {columns.map((column) => (
-
                     <th
                         key={column.header}
                         style={{
@@ -23,24 +18,17 @@ const TableHeader = ({
                             fontWeight: 700,
                             textTransform: 'uppercase',
                             letterSpacing: '0.08em',
-                            color: '#818CF8',
-                            borderBottom: '1px solid rgba(255,255,255,0.06)',
+                            color: '#5F6368',
+                            borderBottom: '1px solid #DADCE0',
                             whiteSpace: 'nowrap',
                         }}
                     >
-
                         {column.header}
-
                     </th>
-
                 ))}
-
             </tr>
-
         </thead>
-
     )
-
 }
 
 export default TableHeader

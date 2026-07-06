@@ -1,20 +1,26 @@
 import { useEffect } from "react";
+import { X } from "lucide-react";
 
 const Modal = ({
     isOpen,
-    onClose,
+    onClose = () => {},
     title,
     children,
     footer,
     size = "md",
 }) => {
-    
+    const handleClose = () => {
+        if (typeof onClose === "function") {
+            onClose();
+        }
+    };
+
     useEffect(() => {
         if (!isOpen) return;
 
         const handleEscape = (event) => {
             if (event.key === "Escape") {
-                onClose();
+                handleClose();
             }
         };
 
@@ -23,7 +29,7 @@ const Modal = ({
         return () => {
             document.removeEventListener("keydown", handleEscape);
         };
-    }, [isOpen, onClose]);
+    }, [isOpen, handleClose]);
 
     if (!isOpen) return null;
 
@@ -43,8 +49,8 @@ const Modal = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: 'rgba(5, 8, 16, 0.75)',
-                backdropFilter: 'blur(8px)',
+                backgroundColor: 'rgba(0, 0, 0, 0.32)',
+                backdropFilter: 'blur(4px)',
                 padding: 16,
             }}
         >
@@ -52,14 +58,14 @@ const Modal = ({
                 style={{
                     width: '100%',
                     maxWidth: sizes[size] || sizes.md,
-                    background: '#0D1225',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 20,
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                    background: '#FFFFFF',
+                    border: '1px solid #DADCE0',
+                    borderRadius: 16,
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
-                    animation: 'fadeIn 0.25s ease-out',
+                    animation: 'fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
             >
                 {/* Header */}
@@ -68,28 +74,28 @@ const Modal = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        borderBottom: '1px solid #E8EAED',
                         padding: '18px 24px',
                     }}
                 >
                     <h2
                         style={{
                             fontFamily: 'Sora, sans-serif',
-                            fontSize: '1.25rem',
+                            fontSize: '1.2rem',
                             fontWeight: 700,
-                            color: '#F1F5F9',
+                            color: '#202124',
+                            margin: 0,
                         }}
                     >
                         {title}
                     </h2>
 
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         style={{
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            color: '#94A3B8',
-                            fontSize: '1.25rem',
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#5F6368',
                             width: 32,
                             height: 32,
                             borderRadius: '50%',
@@ -100,22 +106,20 @@ const Modal = ({
                             transition: 'all 0.2s',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                            e.currentTarget.style.color = '#EF4444';
-                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                            e.currentTarget.style.backgroundColor = '#F1F3F4';
+                            e.currentTarget.style.color = '#202124';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)';
-                            e.currentTarget.style.color = '#94A3B8';
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = '#5F6368';
                         }}
                     >
-                        &times;
+                        <X size={18} />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div style={{ padding: 24, overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+                <div style={{ padding: 24, overflowY: 'auto', maxHeight: 'calc(100vh - 200px)', color: '#3C4043' }}>
                     {children}
                 </div>
 
@@ -123,7 +127,7 @@ const Modal = ({
                 {footer && (
                     <div
                         style={{
-                            borderTop: '1px solid rgba(255,255,255,0.06)',
+                            borderTop: '1px solid #E8EAED',
                             padding: '16px 24px',
                             display: 'flex',
                             justifyContent: 'end',

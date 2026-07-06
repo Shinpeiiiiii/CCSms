@@ -1,13 +1,13 @@
 import { useMemo, useState, useEffect } from "react";
 
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
-
 import Card from "../../../../../components/cards/Cards";
 import DataTable from "../../../../../components/table/DataTable";
 import ConfirmModal from "../../../../../components/modal/ConfirmModal";
 
 import ProgramToolbar from "../components/ProgramToolbar";
 import ProgramModal from "../components/ProgramModal";
+import ProgramColumns from "../components/ProgramColumn";
 
 import useCrud from "../../../../../hooks/useCrud";
 import useProgram from "../hooks/useProgram";
@@ -38,7 +38,7 @@ const Program = () => {
     } = useProgram();
 
     const {
-        department = [],
+        departments = [],
     } = useDepartment();
 
     // Selected Department State
@@ -126,37 +126,21 @@ const Program = () => {
                     selectedItem._id,
                     formData
                 );
-
             } else {
-
                 await createProgram(formData);
-
             }
-
             closeModal();
-
             await refreshPrograms();
-
         }
-
         catch (error) {
-
             alert(
-
                 error.response?.data?.message ||
-
                 "Failed to save program."
-
             );
-
         }
-
         finally {
-
             setSaving(false);
-
         }
-
     };
 
     /*
@@ -164,86 +148,28 @@ const Program = () => {
     Delete
     =====================================
     */
-
     const handleDelete = async () => {
-
         try {
-
             setDeleting(true);
-
             await deleteProgram(selectedItem._id);
-
             closeDelete();
-
             await refreshPrograms();
-
         }
-
         catch (error) {
-
             alert(
-
                 error.response?.data?.message ||
-
                 "Failed to delete program."
-
             );
-
         }
-
         finally {
-
             setDeleting(false);
-
         }
-
     };
-
     /*
     =====================================
     Table
     =====================================
     */
-
-    const columns = [
-
-        {
-            header: "Code",
-            accessor: "programCode",
-        },
-
-        {
-            header: "Program",
-            accessor: "programName",
-        },
-
-        {
-            header: "Department",
-            render: (program) =>
-                program.department?.departmentName || "-",
-        },
-
-        {
-            header: "Status",
-            accessor: "status",
-        },
-
-        {
-            header: "Actions",
-            render: (program) => (
-
-                <ActionButtons
-
-                    onEdit={() => openEdit(program)}
-
-                    onDelete={() => openDelete(program)}
-
-                />
-
-            ),
-        },
-
-    ];
 
     return (
         <DashboardLayout>
@@ -256,7 +182,7 @@ const Program = () => {
                 }}
             >
                 <DepartmentFilter
-                    departments={department}
+                    departments={departments}
                     selectedDepartmentId={selectedDepartmentId}
                     onSelectDepartment={setSelectedDepartmentId}
                     programCounts={programCounts}
@@ -291,7 +217,7 @@ const Program = () => {
                 onSubmit={handleSave}
                 loading={saving}
                 program={selectedItem}
-                department={department}
+                departments={departments}
             />
 
             <ConfirmModal

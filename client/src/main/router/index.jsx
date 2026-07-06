@@ -14,6 +14,10 @@ import RoleProtectedRoute from '../../shared/components/RoleProtectedRoute'
 import EnrollmentReview from '../../modules/enrollment-review/pages/EnrollmentReview'
 import Department from '../../modules/academic/management/department/pages/Department'
 import Program from '../../modules/academic/management/program/pages/Program'
+import Subject from '../../modules/academic/management/subject/pages/Subject'
+import Curriculum from '@/modules/academic/management/curriculum/pages/Curriculum'
+import CurriculumSubject from '../../modules/academic/management/curriculumsubject/pages/CurriculumSubject'
+import DashboardLayout from '../../shared/layouts/DashboardLayout'
 
 const Router = () => {
     const token = useAuthStore((state) => state.token)
@@ -34,8 +38,7 @@ const Router = () => {
                     <ProtectedRoute>
                         <Dashboard />
                     </ProtectedRoute>
-                } />
-               
+                }/>
                 <Route path="/enrollment-review" element={
                     <RoleProtectedRoute allowedRoles={['registrar']}>
                         <EnrollmentReview />
@@ -60,8 +63,24 @@ const Router = () => {
                         <Program />
                     </RoleProtectedRoute>
                 } />
-
-
+                <Route path="/subject" element={
+                    <RoleProtectedRoute allowedRoles={['admin','registrar']}>
+                        <Subject />
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path="/curriculum" element={
+                    <RoleProtectedRoute allowedRoles={['admin','registrar']}>
+                        <Curriculum />
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path="/curriculum/:curriculumId/subjects" element={
+                    <RoleProtectedRoute allowedRoles={['admin', 'registrar']}>
+                        <CurriculumSubject />
+                    </RoleProtectedRoute>
+                }
+                />
             </Routes>
         </BrowserRouter>
     )

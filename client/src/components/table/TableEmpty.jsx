@@ -1,9 +1,9 @@
+import { Inbox } from "lucide-react";
+
 const TableEmpty = ({
     message = "No records found.",
 }) => {
-
     return (
-
         <div
             style={{
                 display: 'flex',
@@ -11,38 +11,26 @@ const TableEmpty = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '80px 24px',
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 18,
+                background: '#FFFFFF',
+                border: '1px solid #DADCE0',
+                borderRadius: 16,
+                boxShadow: '0 1px 2px 0 rgba(60,64,67,0.05)',
             }}
         >
-
             <div
                 style={{
                     width: 56,
                     height: 56,
                     borderRadius: 16,
-                    background: 'rgba(99,102,241,0.1)',
-                    border: '1px solid rgba(99,102,241,0.2)',
+                    background: '#E8F0FE',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#6366F1',
+                    color: '#1A73E8',
                     marginBottom: 20,
                 }}
             >
-                <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                >
-                    <path d="M3 7h18M6 11h12M8 15h8" />
-                </svg>
+                <Inbox size={24} />
             </div>
 
             <h3
@@ -50,8 +38,9 @@ const TableEmpty = ({
                     fontFamily: 'Sora, sans-serif',
                     fontSize: '1rem',
                     fontWeight: 700,
-                    color: '#F1F5F9',
+                    color: '#202124',
                     marginBottom: 6,
+                    margin: '0 0 6px 0',
                 }}
             >
                 Nothing Found
@@ -60,16 +49,14 @@ const TableEmpty = ({
             <p
                 style={{
                     fontSize: '0.8125rem',
-                    color: '#475569',
+                    color: '#5F6368',
+                    margin: 0,
                 }}
             >
                 {message}
             </p>
-
         </div>
-
     )
-
 }
 
 export default TableEmpty

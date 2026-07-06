@@ -2,11 +2,27 @@ const Program = require("../model/Program");
 const Department = require("../../department/models/Department");
 
 const getProgram = async () => {
-    return await Program.find().populate("department", "departmentCode departmentName ").sort({ createdAt: -1 })
+    return await Program.find()
+    .populate(
+        'department', 'departmentCode departmentName'
+    )
+    .populate(
+        'createdBy',
+        'firstName lastName'
+    )
+    .sort({ 
+        programName: 1,
+    })
 }
 
 const getProgramById = async (id) => {
-    const program = await Program.findById(id).populate("department", "departmentCode departmentName ")
+    const program = await Program.findById(id)
+    .populate('department')
+    .populate(
+        'createdBy',
+        'firstName lastName'
+    )
+
     if (!program) {
         throw new Error("Program not found.");
     }
@@ -15,89 +31,124 @@ const getProgramById = async (id) => {
 }
 
 const createProgram = async (data, userId) => {
+    const existingProgramCode = await Program.findOne({
+        programCode: data.programCode.toUpperCase(),
+    })
+
+    if(existingProgramCode){
+        throw new Error("Program code already exists.")
+    }
+
+    const existingProgramName = await Program.findOne({
+        programName: data.programName,
+    })
+
+    if(existingProgramName){
+        throw new Error("Program name already exists.")
+    }
     const department = await Department.findById(data.department)
 
     if (!department) {
         throw new Error("Department not found.")
     }
 
-    const duplicateCode = await Program.findOne({ programCode: data.programCode });
-
-    if (duplicateCode) {
-        throw new Error("Program code already exists.")
-    }
-
-    const duplicateName = await Program.findOne({ programName: data.programName });
-
-    if (duplicateName) {
-        throw new Error("Program name already exists.")
-    }
-
     return await Program.create({
-        ...data,
+        ...data, programCode: data.programCode.toUpperCase(),
         createdBy: userId
     });
 };
 
-const updateProgram = async (id, payload) => {
-    const { programCode, programName, description, department, status } = payload
+const updateProgram = async (id, data) => {
+    const program = await Program.findById(id)
 
-    const existingProgram = await Program.findById(id)
-    if (!existingProgram) {
-        throw new Error("Program not found")
+    if (!program) {
+        throw new Error('Program not found.')
     }
 
-    //Validate department
-    if(department){
-        const existingDepartment = await Department.findById(department);
+    if (data.programCode) {
 
-        if(!existingDepartment){
-            throw new Error("Department not found.")
+        const existingProgramCode =
+            await Program.findOne({
+                programCode: data.programCode.toUpperCase(),
+                _id: { $ne: id },
+            })
+
+        if (existingProgramCode) {
+            throw new Error(
+                'Program code already exists.'
+            )
+        }
+
+        data.programCode =
+            data.programCode.toUpperCase()
+
+    }
+
+    if (data.programName) {
+
+        const existingProgramName =
+            await Program.findOne({
+                programName: data.programName,
+                _id: { $ne: id },
+            })
+
+        if (existingProgramName) {
+            throw new Error(
+                'Program name already exists.'
+            )
         }
 
     }
 
-    //check duplicate program code
-    if(programCode){
-        const duplicateCode = await Program.findOne({
-            programCode, _id: {$ne: id},
-        });
+    if (data.department) {
 
+        const department =
+            await Department.findById(data.department)
 
-        if(duplicateCode){
-            throw new Error("Program code already exist.")
+        if (!department) {
+            throw new Error('Department not found.')
         }
-    }
-    //Check duplicate program name
-    if(programName){
 
-        const duplicateName = await Program.findOne({
-            programName, _id: {ne: id},
-        });
-
-        if(duplicateName){
-            throw new Error("Program name already exist.")
+        if (department.status !== 'Active') {
+            throw new Error(
+                'Department is inactive.'
+            )
         }
 
     }
-    existingProgram.programCode = programCode || existingProgram.programCode
-    existingProgram.programName = programName || existingProgram.programName
-    existingProgram.description = description || existingProgram.description
-    existingProgram.department = department || existingProgram.department
-    existingProgram.status = status || existingProgram.status
 
-    return await existingProgram.save()
+    return await Program.findByIdAndUpdate(
+        id,
+        data,
+        {
+            new: true,
+            runValidators: true,
+        }
+    )
 }
 
 const deleteProgram = async (id) => {
 
-    const program = await Program.findById(id);
+    const program = await Program.findById(id)
 
     if (!program) {
-        throw new Error("Program not found.");
+        throw new Error('Program not found.')
     }
 
-    await program.deleteOne();
+    /*
+        Future validation:
+
+        - Prevent deletion if
+          Curriculum exists.
+
+        - Prevent deletion if
+          Students are enrolled.
+
+        - Prevent deletion if
+          Sections exist.
+    */
+
+    return await Program.findByIdAndDelete(id)
 };
 
 module.exports = {getProgram, getProgramById,createProgram,updateProgram,deleteProgram}

@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 
 const Hero = () => (
   <section
     style={{
       background:
-        'radial-gradient(ellipse 90% 70% at 50% -10%, rgba(99,102,241,0.28) 0%, rgba(139,92,246,0.12) 40%, transparent 65%), #0A0F1E',
+        'radial-gradient(ellipse 90% 70% at 50% -10%, rgba(26, 115, 232, 0.12) 0%, rgba(139, 92, 246, 0.05) 40%, transparent 65%), #FFFFFF',
       minHeight: 'calc(100vh - 68px)',
       display: 'flex',
       alignItems: 'center',
@@ -22,7 +23,7 @@ const Hero = () => (
         right: '8%',
         width: 480,
         height: 480,
-        background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.03) 0%, transparent 70%)',
         borderRadius: '50%',
         pointerEvents: 'none',
       }}
@@ -34,7 +35,7 @@ const Hero = () => (
         left: '5%',
         width: 320,
         height: 320,
-        background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(26, 115, 232, 0.04) 0%, transparent 70%)',
         borderRadius: '50%',
         pointerEvents: 'none',
       }}
@@ -45,7 +46,7 @@ const Hero = () => (
         position: 'absolute',
         inset: 0,
         backgroundImage:
-          'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)',
+          'linear-gradient(rgba(0, 0, 0, 0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.01) 1px, transparent 1px)',
         backgroundSize: '60px 60px',
         pointerEvents: 'none',
       }}
@@ -58,9 +59,9 @@ const Hero = () => (
           display: 'inline-flex',
           alignItems: 'center',
           gap: 8,
-          background: 'rgba(99,102,241,0.13)',
-          border: '1px solid rgba(99,102,241,0.28)',
-          color: '#A5B4FC',
+          background: '#E8F0FE',
+          border: '1px solid rgba(26, 115, 232, 0.16)',
+          color: '#1A73E8',
           padding: '7px 18px',
           borderRadius: 100,
           fontSize: 12,
@@ -75,7 +76,7 @@ const Hero = () => (
           style={{
             width: 7,
             height: 7,
-            background: '#6EE7B7',
+            background: '#34A853',
             borderRadius: '50%',
             display: 'inline-block',
             flexShrink: 0,
@@ -91,7 +92,7 @@ const Hero = () => (
           fontSize: 'clamp(2.6rem, 6.5vw, 4.75rem)',
           fontWeight: 800,
           lineHeight: 1.08,
-          color: '#F1F5F9',
+          color: '#202124',
           marginBottom: 28,
           letterSpacing: '-0.03em',
         }}
@@ -99,7 +100,7 @@ const Hero = () => (
         Your{' '}
         <span
           style={{
-            background: 'linear-gradient(135deg, #818CF8 0%, #A78BFA 50%, #C084FC 100%)',
+            background: 'linear-gradient(135deg, #1A73E8 0%, #8B5CF6 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -113,7 +114,7 @@ const Hero = () => (
 
       <p
         style={{
-          color: '#64748B',
+          color: '#5F6368',
           fontSize: '1.125rem',
           lineHeight: 1.75,
           maxWidth: 540,
@@ -138,15 +139,15 @@ const Hero = () => (
           to="/enrollmentform"
           className="btn-primary"
           style={{
-            background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
+            background: '#1A73E8',
             color: 'white',
             padding: '15px 36px',
             borderRadius: 100,
             fontWeight: 600,
             fontSize: 15,
             textDecoration: 'none',
-            boxShadow: '0 0 32px rgba(99,102,241,0.38)',
-            transition: 'all 0.25s ease',
+            boxShadow: '0 2px 6px rgba(26, 115, 232, 0.24)',
+            transition: 'all 0.2s ease',
             cursor: 'pointer',
             display: 'inline-flex',
             alignItems: 'center',
@@ -154,24 +155,30 @@ const Hero = () => (
           }}
         >
           Enroll Now
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
+          <ArrowRight size={16} />
         </Link>
         <Link
           to="/program"
           className="btn-ghost"
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.11)',
-            color: '#94A3B8',
+            background: '#FFFFFF',
+            border: '1px solid #DADCE0',
+            color: '#5F6368',
             padding: '15px 36px',
             borderRadius: 100,
             fontWeight: 500,
             fontSize: 15,
             textDecoration: 'none',
-            transition: 'all 0.25s ease',
+            transition: 'all 0.2s ease',
             cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#F8F9FA';
+            e.currentTarget.style.color = '#202124';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#FFFFFF';
+            e.currentTarget.style.color = '#5F6368';
           }}
         >
           View Programs
@@ -196,12 +203,12 @@ const Hero = () => (
           <div
             key={label}
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.07)',
+              background: '#FFFFFF',
+              border: '1px solid #DADCE0',
               borderRadius: 18,
               padding: '22px 12px',
               textAlign: 'center',
-              backdropFilter: 'blur(8px)',
+              boxShadow: '0 1px 2px 0 rgba(60,64,67,0.05)',
             }}
           >
             <div
@@ -209,7 +216,7 @@ const Hero = () => (
                 fontFamily: 'Sora, sans-serif',
                 fontSize: '1.875rem',
                 fontWeight: 800,
-                color: '#F1F5F9',
+                color: '#202124',
                 lineHeight: 1,
               }}
             >
@@ -218,7 +225,7 @@ const Hero = () => (
             <div
               style={{
                 fontSize: '0.75rem',
-                color: '#475569',
+                color: '#5F6368',
                 marginTop: 6,
                 letterSpacing: '0.02em',
               }}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const PrimaryButton = ({
     children,
@@ -28,21 +29,25 @@ const PrimaryButton = ({
             onMouseUp={() => setActive(false)}
             style={{
                 background: isButtonDisabled 
-                    ? '#334155' 
-                    : 'linear-gradient(135deg, #6366F1, #8B5CF6)',
-                color: isButtonDisabled ? '#64748B' : 'white',
+                    ? '#F1F3F4' 
+                    : active 
+                        ? '#155CB3'
+                        : hovered
+                            ? '#1765CC'
+                            : '#1A73E8',
+                color: isButtonDisabled ? '#9AA0A6' : 'white',
                 padding: '10px 24px',
                 borderRadius: 100,
                 border: 'none',
                 fontWeight: 600,
                 fontSize: '0.875rem',
                 cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
-                transition: 'all 0.25s ease',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: hovered && !isButtonDisabled 
-                    ? '0 0 24px rgba(99, 102, 241, 0.45)' 
+                    ? '0 2px 6px rgba(26, 115, 232, 0.24)' 
                     : 'none',
                 transform: active && !isButtonDisabled 
-                    ? 'scale(0.96)' 
+                    ? 'scale(0.98)' 
                     : hovered && !isButtonDisabled 
                         ? 'translateY(-1px)' 
                         : 'none',
@@ -57,29 +62,7 @@ const PrimaryButton = ({
         >
             {loading ? (
                 <>
-                    <svg
-                        style={{
-                            animation: 'spin 1s linear infinite',
-                            marginRight: 4,
-                            width: 16,
-                            height: 16,
-                        }}
-                        viewBox="0 0 24 24"
-                        fill="none"
-                    >
-                        <circle
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            style={{ opacity: 0.25 }}
-                        />
-                        <path
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                    </svg>
+                    <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
                     <span>Loading...</span>
                 </>
             ) : (

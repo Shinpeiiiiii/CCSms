@@ -27,7 +27,7 @@ const Home = () => {
     }, [location])
 
     return (
-        <div style={{ background: '#0A0F1E', minHeight: '100vh' }}>
+        <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
             <NavHeader />
             <Hero />
             <About />
@@ -39,4 +39,3 @@ const Home = () => {
 }
 
 export default Home
-

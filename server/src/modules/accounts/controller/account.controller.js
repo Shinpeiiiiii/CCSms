@@ -1,39 +1,43 @@
-const bcrypt = require('bcrypt')
-const User = require('../../auth/models/User')
+const accountService = require('../services/account.services')
 
 const createAccount = async (req,res) => {
     try{
-        console.log('CREATE ACCOUNT CONTROLLER HIT')
-        const {
-            firstName,lastName,email,password,role,
-        } = req.body
+        const account = await accountService.createAccount(req.body)
 
-        const existingUser = await User.findOne({email,})
-
-        if(existingUser){
-            return res.status(400).json({
-                message: 'Email already exist.',
-            })
-        }
-
-        const hashedPassword = await bcrypt.hash(password,10)
-
-        const user = await User.create({
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword,
-            role,
+        return res.status(201).json({
+            message: 'Account created successfully.',
+            account,
         })
-
-        res.status(201).json({
-            message: 'Account created successfully', user,
-        })
-
 
     }catch(error){
-        console.error(error)
+        return res.status(400).json({
+            message: error.message,
+        })
     }
-}
+};
 
-module.exports = {createAccount}
+const getAccountById = async (req, res, next) => {
+    try{
+        const account = await accountService.getUserById(req.params.id)
+        return res.status(200).json(account)
+    }catch(error){
+        return res.status(404).json({
+            message: error.message
+        })
+    }
+};
+
+const getAccount = async (req, res, next) => {
+    try{
+        const account = await accountService.getAccount();
+
+        res.status(200).json(account);
+
+    }catch(error){
+        return res.status(400).json({
+            message: error.message,
+        })
+    }
+};
+
+module.exports = {createAccount, getAccount, getAccountById}

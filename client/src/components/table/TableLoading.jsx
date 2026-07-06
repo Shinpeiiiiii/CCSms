@@ -1,3 +1,5 @@
+import { Loader2 } from "lucide-react";
+
 const TableLoading = () => {
     return (
         <div
@@ -9,23 +11,19 @@ const TableLoading = () => {
                 padding: '64px 24px',
             }}
         >
-
-            <div
-                style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    border: '3px solid rgba(99,102,241,0.2)',
-                    borderTopColor: '#6366F1',
-                    animation: 'spin 0.8s linear infinite',
-                }}
+            <Loader2 
+                size={36} 
+                style={{ 
+                    color: '#1A73E8',
+                    animation: 'spin 1s linear infinite',
+                }} 
             />
 
             <p
                 style={{
                     marginTop: 16,
                     fontSize: '0.8125rem',
-                    color: '#475569',
+                    color: '#5F6368',
                 }}
             >
                 Loading data...
@@ -36,7 +34,6 @@ const TableLoading = () => {
                     to { transform: rotate(360deg); }
                 }
             `}</style>
-
         </div>
     )
 }

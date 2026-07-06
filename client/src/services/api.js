@@ -2,12 +2,12 @@ import axios from 'axios';
 import useAuthStore from '../modules/auth/state/auth-store';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: "/api",
+    withCredentials: true,
+    timeout: 10000,
     headers: {
         "Content-Type": "application/json",
     },
-    timeout: 10000,
-
 })
 
 
@@ -35,9 +35,9 @@ api.interceptors.response.use(
     },
 
     (error) => {
-        if (error.response?.status === 401 && !error.config.url.includes('/auth/login')) {
+        if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
             useAuthStore.getState().logout();
-            window.location.replace ("/login");
+            window.location.href("/login");
         }
 
         return Promise.reject(error)

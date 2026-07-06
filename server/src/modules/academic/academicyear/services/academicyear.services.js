@@ -1,4 +1,4 @@
-import AcademicYear from "../models/academicyear.model"
+const AcademicYear = require('../models/academicyear.model')
 
 const createAcademicYear = async (data) => {
     const startYear = data.academicYearName.split('-')[0]
@@ -32,13 +32,16 @@ const createAcademicYear = async (data) => {
             'Academic Year dates overlap with an existing Academic Year.'
         )
     }
+    console.log(data)
 
     return await AcademicYear.create({
-        ...data, academicYearCode, status: 'Draft',
+        ...data, academicYearCode, status: 'Draft',createdBy: data.createdBy
     });
+
+    
 }
 
-const getAcademicYears = async () => {
+const getAcademicYear = async () => {
      return await AcademicYear.find().sort({
         startDate: -1,
     })
@@ -170,11 +173,32 @@ const publishAcademicYear = async (id) => {
     return academicYear
 }
 
+const getCurrentAcademicYear = async () => {
+    const academicYear = await AcademicYear.findOne({ status: 'Active' })
+
+    if(!academicYear) {
+        throw new Error('No active academic year found.')
+    }
+
+    return academicYear
+}
+
+const getAcademicYearById = async (id) => {
+    const academicYear = await AcademicYear.findById(id)
+    return academicYear
+    
+    if(!academicYear) {
+        throw new Error('Academic Year not found.')
+    }
+}
+
 module.exports = {
     createAcademicYear,
-    getAcademicYears,
+    getAcademicYear,
     updateAcademicYear,
     activateAcademicYear,
     publishAcademicYear,
     archiveAcademicYear,
+    getAcademicYearById,
+    getCurrentAcademicYear,
 }

@@ -1,5 +1,3 @@
-import { useMemo, useState } from "react";
-
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
 
 import Card from "../../../../../components/cards/Cards";
@@ -8,17 +6,11 @@ import ConfirmModal from "../../../../../components/modal/ConfirmModal";
 
 import DepartmentToolbar from "../components/DepartmentToolbar";
 import DepartmentModal from "../components/DepartmentModal";
+import DepartmentColumns from "../components/DepartmentColumn";
 
 import useCrud from "../../../../../hooks/useCrud";
-import useDepartments from "../hooks/useDepartment";
+import useDepartment from "../hooks/useDepartment";
 
-import {
-    createDepartment,
-    updateDepartment,
-    deleteDepartment,
-} from "../services/department.services";
-
-import ActionButtons from "../../../../../components/actions/ActionButton";
 
 const Department = () => {
 
@@ -30,13 +22,21 @@ const Department = () => {
 
     const {
 
-        department,
+        filteredDepartments,
 
         loading,
 
-        refreshDepartments,
+        search,
 
-    } = useDepartments();
+        setSearch,
+
+        create,
+
+        update,
+
+        remove,
+
+    } = useDepartment();
 
     /*
     =====================================
@@ -45,124 +45,69 @@ const Department = () => {
     */
 
     const {
-
-        search,
-
-        setSearch,
-
         selectedItem,
-
         isModalOpen,
-
         isDeleteOpen,
-
         openCreate,
-
         openEdit,
-
         openDelete,
-
         closeModal,
-
         closeDelete,
-
     } = useCrud();
 
-    const [saving, setSaving] = useState(false);
-
-    const [deleting, setDeleting] = useState(false);
-
-
     /*
-=====================================
-Search
-=====================================
-*/
-
-    const filteredDepartments = useMemo(() => {
-
-        return department.filter((department) => {
-
-            const keyword = search.toLowerCase();
-
-            return (
-
-                department.departmentCode
-                    ?.toLowerCase()
-                    .includes(keyword)
-
-                ||
-
-                department.departmentName
-                    ?.toLowerCase()
-                    .includes(keyword)
-
-                ||
-
-                department.description
-                    ?.toLowerCase()
-                    .includes(keyword)
-
-            );
-
-        });
-
-    }, [department, search]);
-    /*
-=====================================
-Save
-=====================================
-*/
+    =====================================
+    Save
+    =====================================
+    */
 
     const handleSave = async (formData) => {
 
         try {
 
-            setSaving(true);
-
             if (selectedItem) {
 
-                await updateDepartment(
-                    selectedItem._id,
-                    formData
-                );
+                await update.mutateAsync({
+
+                    id: selectedItem._id,
+
+                    data: formData,
+
+                });
 
             } else {
 
-                await createDepartment(formData);
+                await create.mutateAsync(formData);
 
             }
 
             closeModal();
 
-            await refreshDepartments();
-
         } catch (error) {
 
             alert(
+
                 error.response?.data?.message ||
+
                 "Failed to save department."
+
             );
-
-        } finally {
-
-            setSaving(false);
 
         }
 
     };
+
     /*
-=====================================
-Delete
-=====================================
-*/
+    =====================================
+    Delete
+    =====================================
+    */
 
     const handleDelete = async () => {
 
         try {
-            setDeleting(true);
 
-            await deleteDepartment(
+            await remove.mutateAsync(
 
                 selectedItem._id
 
@@ -170,86 +115,35 @@ Delete
 
             closeDelete();
 
-            await refreshDepartments();
-
         }
 
         catch (error) {
 
             alert(
-                error.response?.data?.message || "Failed to delete department."
-            )
 
-        } finally {
+                error.response?.data?.message ||
 
-            setDeleting(false);
+                "Failed to delete department."
+
+            );
+
         }
 
     };
 
     /*
-=====================================
-Table Columns
-=====================================
-*/
+    =====================================
+    Columns
+    =====================================
+    */
 
-    const columns = [
+    const columns = DepartmentColumns({
 
-        {
+        openEdit,
 
-            header: "Code",
+        openDelete,
 
-            accessor: "departmentCode",
-
-        },
-
-        {
-
-            header: "Department",
-
-            accessor: "departmentName",
-
-        },
-
-        {
-
-            header: "Description",
-
-            accessor: "descriptions",
-
-        },
-        {
-            header: 'Department Head',
-            accessor: 'departmentHead'
-        },
-
-        {
-
-            header: "Status",
-
-            accessor: "status",
-
-        },
-
-        {
-
-            header: "Actions",
-
-            render: (department) => (
-
-                <ActionButtons
-
-                    onEdit={() => openEdit(department)}
-
-                    onDelete={() => openDelete(department)}
-
-                />
-
-            ),
-
-        },
-
-    ];
+    });
 
     return (
 
@@ -290,6 +184,7 @@ Table Columns
                 />
 
             </Card>
+
             <DepartmentModal
 
                 isOpen={isModalOpen}
@@ -299,15 +194,23 @@ Table Columns
                 onSubmit={handleSave}
 
                 department={selectedItem}
-                loading={saving}
+
+                loading={
+
+                    create.isPending ||
+
+                    update.isPending
+
+                }
 
             />
+
             <ConfirmModal
-
                 isOpen={isDeleteOpen}
-
                 title="Delete Department"
-
+                onCancel={closeDelete}
+                onClose={closeDelete}
+                onConfirm={handleDelete}
                 message={
 
                     selectedItem
@@ -315,20 +218,14 @@ Table Columns
                         ? `Are you sure you want to delete "${selectedItem.departmentName}"?`
 
                         : ""
-
                 }
-
-                onCancel={closeDelete}
-
-                onConfirm={handleDelete}
-
+                
             />
+
         </DashboardLayout>
 
     );
 
 };
 
-export default Department
-
-
+export default Department;

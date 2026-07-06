@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
-import DashboardLayout from '../../../shared/layouts/DashboardLayout'
+import DashboardLayout from "../../../shared/layouts/DashboardLayout";
 import useAuthStore from '../../auth/state/auth-store'
 
 const inputStyle = {

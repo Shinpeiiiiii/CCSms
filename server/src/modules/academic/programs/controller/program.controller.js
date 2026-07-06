@@ -1,21 +1,21 @@
 const programService = require("../services/program.services");
 
-const createProgram = async (req, res, next) => {
+const createProgram = async (req, res) => {
 
     try {
 
-        const program = await programService.createProgram(req.body, req.userId)
+        const program = await programService.createProgram({ ...req.body, createdBy: req.userId });
 
         res.status(201).json({
-            success: true,
             message: "Program created successfully",
-            data: program
+            program,
         });
 
 
     } catch (error) {
-        next(error);
-        console.error(error);
+        return res.status(400).json({
+            message: error.message,
+        })
     }
 
 };
@@ -28,22 +28,21 @@ const getProgram = async (req, res, next) => {
         res.status(200).json(programs);
 
     } catch (error) {
-        next(error);
+         return res.status(500).json({
+            message: error.message,
+        })
     }
 };
 
 const getProgramById = async (req, res, next) => {
+
     try {
-
-        const program = await programService.getProgramById(req.params.id);
-
-        res.status(200).json({
-            success: true,
-            data: program,
-        });
-
+        const program = await programService.getProgramById(req.params.id)
+        return res.status(200).json(program)
     } catch (error) {
-        next(error);
+        return res.status(404).json({
+            message: error.message,
+        })
     }
 };
 
@@ -52,33 +51,38 @@ const updateProgram = async (req, res, next) => {
 
         const program = await programService.updateProgram(
             req.params.id,
-            req.body,
-            req.userId
-        );
+            req.body
+        )
 
-        res.status(200).json({
-            success: true,
-            message: "Program updated successfully.",
-            data: program,
-        });
+        return res.status(200).json({
+            message: 'Program updated successfully.',
+            program,
+        })
 
     } catch (error) {
-        next(error);
+
+        return res.status(400).json({
+            message: error.message,
+        })
     }
 };
 
 const deleteProgram = async (req, res, next) => {
+    
     try {
 
-        await programService.deleteProgram(req.params.id);
+        await programService.deleteProgram(req.params.id)
 
-        res.status(200).json({
-            success: true,
-            message: "Program deleted successfully.",
-        });
+        return res.status(200).json({
+            message: 'Program deleted successfully.',
+        })
 
     } catch (error) {
-        next(error);
+
+        return res.status(400).json({
+            message: error.message,
+        })
+
     }
 };
 

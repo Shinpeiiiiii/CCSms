@@ -1,21 +1,26 @@
 import api from "../../../../../services/api";
 
 export const getProgram = async () => {
-    const response = await api.get("/program")
-    return response.data;
+    const { data } = await api.get("/program");
+    return data;
 };
 
-export const createProgram = async (data) => {
-    const response = await api.post("/program",data);
-    return response.data;
-}
+export const getProgramById = async (id) => {
+    const { data } = await api.get(`/program/${id}`);
+    return data;
+};
 
-export const updateProgram = async (id, data) => {
-    const response = await api.put(`/program/${id}`,data);
-    return response.data;
-}
+export const createProgram = async (formData) => {
+    const { data } = await api.post("/program", formData);
+    return data;
+};
+
+export const updateProgram = async (id, formData) => {
+    const { data } = await api.put(`/program/${id}`, formData);
+    return data;
+};
 
 export const deleteProgram = async (id) => {
-    const response = await api.delete(`/program/${id}`);
-    return response.data;
-}
+    const { data } = await api.delete(`/program/${id}`);
+    return data;
+};

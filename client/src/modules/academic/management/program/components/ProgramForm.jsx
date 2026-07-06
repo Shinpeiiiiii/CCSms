@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 
-import{
+import {
     TextField,
     TextAreaField,
     SelectField,
     FormActions,
-} from "../../../../../components/forms"
-
+} from "../../../../../components/forms";
 
 const ProgramForm = ({
-    initialValues,
+    initialValues = null,
     department = [],
     onSubmit,
     loading = false,
@@ -18,22 +17,22 @@ const ProgramForm = ({
     const getInitialForm = () => ({
         programCode: initialValues?.programCode || "",
         programName: initialValues?.programName || "",
-        description: initialValues?.description || "",
         department:
             initialValues?.department?._id ||
             initialValues?.department ||
             "",
+        programLevel: initialValues?.programLevel || "College",
+        durationYears: initialValues?.durationYears || 4,
+        description: initialValues?.description || "",
         status: initialValues?.status || "Active",
     });
 
     const [form, setForm] = useState(getInitialForm);
 
-
     useEffect(() => {
         setForm(getInitialForm());
     }, [initialValues]);
 
-    
     const handleChange = (e) => {
 
         const { name, value } = e.target;
@@ -49,10 +48,13 @@ const ProgramForm = ({
 
         e.preventDefault();
 
-        onSubmit(form);
+        onSubmit({
+            ...form,
+            durationYears: Number(form.durationYears),
+        });
 
     };
-    console.log("Departments received:", department);
+
     return (
 
         <form
@@ -91,6 +93,31 @@ const ProgramForm = ({
                 required
             />
 
+            <SelectField
+                label="Program Level"
+                name="programLevel"
+                value={form.programLevel}
+                onChange={handleChange}
+                options={[
+                    {
+                        value: "College",
+                        label: "College",
+                    },
+                ]}
+                valueField="value"
+                labelField="label"
+                required
+            />
+
+            <TextField
+                label="Duration (Years)"
+                name="durationYears"
+                type="number"
+                value={form.durationYears}
+                onChange={handleChange}
+                required
+            />
+
             <TextAreaField
                 label="Description"
                 name="description"
@@ -113,6 +140,9 @@ const ProgramForm = ({
                         label: "Inactive",
                     },
                 ]}
+                valueField="value"
+                labelField="label"
+                required
             />
 
             <FormActions

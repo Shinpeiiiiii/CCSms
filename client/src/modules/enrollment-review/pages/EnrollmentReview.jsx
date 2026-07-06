@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import DashboardLayout from '../../../shared/layouts/DashboardLayout'
+import DashboardLayout from "../../../shared/layouts/DashboardLayout";
 import { getApplications, updateApplicationStatus } from '../services/review.service'
 import { getEnrollmentStats } from '../utils/getEnrollmentStats'
 import StatusBadge from '../components/StatusBadge'

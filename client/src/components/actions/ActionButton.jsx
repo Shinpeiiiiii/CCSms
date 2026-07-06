@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 
 const ActionButtons = ({
     onEdit,
@@ -14,45 +15,53 @@ const ActionButtons = ({
             <button
                 onClick={onEdit}
                 style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
                     padding: '6px 14px',
                     borderRadius: 100,
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    border: '1px solid #FFE082',
                     background: editHovered 
-                        ? 'rgba(245, 158, 11, 0.15)' 
-                        : 'rgba(245, 158, 11, 0.05)',
-                    color: '#F59E0B',
+                        ? '#FFF8E1' 
+                        : 'transparent',
+                    color: '#B06000', // darker amber for readability on light bg
                     fontSize: '0.8125rem',
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    boxShadow: editHovered ? '0 0 12px rgba(245, 158, 11, 0.25)' : 'none',
                 }}
                 onMouseEnter={() => setEditHovered(true)}
                 onMouseLeave={() => setEditHovered(false)}
             >
-                {editLabel}
+                <Pencil size={13} />
+                <span>{editLabel}</span>
             </button>
 
             <button
                 onClick={onDelete}
                 style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
                     padding: '6px 14px',
                     borderRadius: 100,
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    border: '1px solid #FAD2CF',
                     background: deleteHovered 
-                        ? 'rgba(239, 68, 68, 0.15)' 
-                        : 'rgba(239, 68, 68, 0.05)',
-                    color: '#EF4444',
+                        ? '#FCE8E6' 
+                        : 'transparent',
+                    color: '#C5221F', // darker red for readability on light bg
                     fontSize: '0.8125rem',
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    boxShadow: deleteHovered ? '0 0 12px rgba(239, 68, 68, 0.25)' : 'none',
                 }}
                 onMouseEnter={() => setDeleteHovered(true)}
                 onMouseLeave={() => setDeleteHovered(false)}
             >
-                {deleteLabel}
+                <Trash2 size={13} />
+                <span>{deleteLabel}</span>
             </button>
         </div>
     );

@@ -23,23 +23,15 @@ const TablePagination = ({
     );
 
     const handlePrevious = () => {
-
         if (currentPage > 1) {
-
             onPageChange(currentPage - 1);
-
         }
-
     };
 
     const handleNext = () => {
-
         if (currentPage < totalPages) {
-
             onPageChange(currentPage + 1);
-
         }
-
     };
 
     const PaginationButton = ({ onClick, disabled, children }) => {
@@ -50,12 +42,12 @@ const TablePagination = ({
                 disabled={disabled}
                 style={{
                     padding: '8px 16px',
-                    borderRadius: 10,
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 100,
+                    border: '1px solid #DADCE0',
                     background: hovered && !disabled
-                        ? 'rgba(99,102,241,0.15)'
-                        : 'rgba(255,255,255,0.03)',
-                    color: disabled ? '#334155' : '#94A3B8',
+                        ? '#F1F3F4'
+                        : '#FFFFFF',
+                    color: disabled ? '#C5C7CA' : '#5F6368',
                     fontSize: '0.8125rem',
                     fontWeight: 500,
                     cursor: disabled ? 'not-allowed' : 'pointer',
@@ -71,7 +63,6 @@ const TablePagination = ({
     };
 
     return (
-
         <div
             style={{
                 display: 'flex',
@@ -82,48 +73,30 @@ const TablePagination = ({
                 flexWrap: 'wrap',
             }}
         >
-
             {/* Left */}
-
             <div
                 style={{
                     fontSize: '0.8125rem',
-                    color: '#475569',
+                    color: '#5F6368',
                 }}
             >
-
                 Showing{' '}
-
-                <span style={{ fontWeight: 600, color: '#94A3B8' }}>
-
+                <span style={{ fontWeight: 600, color: '#202124' }}>
                     {startItem}
-
                 </span>
-
                 {' '}to{' '}
-
-                <span style={{ fontWeight: 600, color: '#94A3B8' }}>
-
+                <span style={{ fontWeight: 600, color: '#202124' }}>
                     {endItem}
-
                 </span>
-
                 {' '}of{' '}
-
-                <span style={{ fontWeight: 600, color: '#94A3B8' }}>
-
+                <span style={{ fontWeight: 600, color: '#202124' }}>
                     {totalItems}
-
                 </span>
-
                 {' '}entries
-
             </div>
 
             {/* Right */}
-
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-
                 <PaginationButton
                     onClick={handlePrevious}
                     disabled={currentPage === 1}
@@ -135,13 +108,11 @@ const TablePagination = ({
                     style={{
                         fontSize: '0.8125rem',
                         fontWeight: 500,
-                        color: '#94A3B8',
+                        color: '#202124',
                         padding: '0 8px',
                     }}
                 >
-
                     Page {currentPage} of {totalPages}
-
                 </span>
 
                 <PaginationButton
@@ -150,13 +121,9 @@ const TablePagination = ({
                 >
                     Next
                 </PaginationButton>
-
             </div>
-
         </div>
-
     );
-
 };
 
 export default TablePagination;

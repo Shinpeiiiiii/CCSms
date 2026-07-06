@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import DashboardLayout from '../../../shared/layouts/DashboardLayout'
+import DashboardLayout from "../../../shared/layouts/DashboardLayout";
 import { getStudents, createStudent, deleteStudent } from '../services/student.service'
 
 const inputStyle = {

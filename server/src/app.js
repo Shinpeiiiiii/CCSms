@@ -10,6 +10,16 @@ const enrollmentRoutes = require('./modules/enrollment/routes/enrollment.routes'
 const accountRoutes = require('./modules/accounts/routes/account.routes')
 const departmentRoutes = require('./modules/academic/department/routes/department.routes')
 const programRoutes = require('./modules/academic/programs/routes/program.routes')
+const academicYearRoutes = require('./modules/academic/academicyear/routes/academicyear.routes')
+const enrollmentPeriodRoutes = require('./modules/academic/enrollmentperiod/routes/enrollmentperiod.routes')
+const subjectRoutes = require('./modules/academic/subject/routes/subject.routes')
+const subjectAssignmentRoutes = require('./modules/academic/subject/routes/subjectassignment.routes')
+const sectionRoutes = require('./modules/academic/section/routes/section.routes')
+const curriculumRoutes = require('./modules/academic/curriculum/routes/curriculum.routes')
+const curriculumsubjectRoutes = require('./modules/academic/curriculum/routes/curriculum.subject.routes')
+const teacherassignmentRoutes = require('./modules/teacherassignment/routes/teacherassignment.routes')
+const userRoutes = require('./modules/accounts/routes/account.routes')
+
 connectDB()
 const app = express()
 
@@ -21,5 +31,14 @@ app.use('/api/enrollment', enrollmentRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/department', departmentRoutes);
 app.use('/api/program', programRoutes);
+app.use('/api/academicyear', academicYearRoutes);
+app.use('/api/enrollmentperiod', enrollmentPeriodRoutes);
+app.use('/api/subject', subjectRoutes);
+app.use('/api/subjectassignment', subjectAssignmentRoutes);
+app.use('/api/section', sectionRoutes);
+app.use('/api/curriculum', curriculumRoutes);
+app.use('/api', curriculumsubjectRoutes);
+app.use('/api/teacherassignment', teacherassignmentRoutes)
+
 
 module.exports = app;
