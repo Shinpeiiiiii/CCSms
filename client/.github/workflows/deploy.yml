@@ -1,0 +1,39 @@
+name: Deplot React + Vite to Github pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      -main
+
+
+jobs:
+    build-deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            #CHECK THE REPOSITORY
+            - name: Check out code
+              uses: actions/checkout@v3
+
+            #SET UP NODE JS
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+
+
+            #INSTALL DEPENDENCIES
+            - name: Install Dependencies
+              run: npm install
+            
+            #BUILD THE PROJECT
+            - name: Build project
+              run: npm run build
+
+            #DEPLOY TO GITHUB PAGES
+            - name: Deploy to github pages
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  publish_dir: dist
