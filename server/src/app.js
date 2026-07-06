@@ -23,7 +23,13 @@ const userRoutes = require('./modules/accounts/routes/account.routes')
 connectDB()
 const app = express()
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        "https://localhost:5173",
+        "https:college-portal.seddy012345.workers.dev",
+    ]
+}));
+app.options("*",cors());
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
