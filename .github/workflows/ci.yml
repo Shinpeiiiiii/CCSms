@@ -40,6 +40,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: server
+          file: server/Dockerfile
           push: false
           tags: college-portal-backend:ci
           cache-from: type=gha
