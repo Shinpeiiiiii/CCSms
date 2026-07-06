@@ -29,7 +29,6 @@ app.use(cors({
         "https:college-portal.seddy012345.workers.dev",
     ]
 }));
-app.options("*",cors());
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
