@@ -30,6 +30,8 @@ app.use(cors({
     ]
 }));
 app.use(express.json());
+
+app.get('/api/health', (req,res) => res.status(200).json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/enrollment', enrollmentRoutes);
