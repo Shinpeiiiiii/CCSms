@@ -1,13 +1,7 @@
 const mongoose = require("mongoose");
 
 const subjectSchema = new mongoose.Schema({
-    subjectCode: {
-        type: String,
-        required: true,
-        trim: true,
-        uppercase: true,
-        unique: true,
-    },
+    subjectCode: {type: String,required: true,trim: true, uppercase: true, unique: true,},
 
     subjectName: {
         type: String,

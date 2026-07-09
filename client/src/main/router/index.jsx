@@ -17,6 +17,12 @@ import Program from '../../modules/academic/management/program/pages/Program'
 import Subject from '../../modules/academic/management/subject/pages/Subject'
 import Curriculum from '@/modules/academic/management/curriculum/pages/Curriculum'
 import CurriculumSubject from '../../modules/academic/management/curriculumsubject/pages/CurriculumSubject'
+import Prerequisites from '@/modules/academic/management/prerequisite/pages/Prerequisite'
+
+
+
+
+
 import DashboardLayout from '../../shared/layouts/DashboardLayout'
 
 const Router = () => {
@@ -78,6 +84,12 @@ const Router = () => {
                 <Route path="/curriculum/:curriculumId/subjects" element={
                     <RoleProtectedRoute allowedRoles={['admin', 'registrar']}>
                         <CurriculumSubject />
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path= "/prerequisites" element={
+                    <RoleProtectedRoute allowedRoles={['admin']}>
+                        <Prerequisites />
                     </RoleProtectedRoute>
                 }
                 />

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import useAuthStore from '../state/auth-store'
 import { loginUser } from '../services/auth.services'
 import { Layers, AlertCircle, Loader2, ArrowLeft } from 'lucide-react'
+
 
 const Login = () => {
   const navigate = useNavigate()
@@ -17,18 +18,64 @@ const Login = () => {
   const [passwordFocused, setPasswordFocused] = useState(false)
   const [submitHovered, setSubmitHovered] = useState(false)
 
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const turnstileRef = useRef(null)
+  const widgetIdRef = useRef(null)
+
+  useEffect(() => {
+    const renderWidget = () => {
+      if(window.turnstile && turnstileRef.current && !widgetIdRef.current){
+        widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+          sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY,
+          callback: (t) => setTurnstileToken(t),
+          'expired-callback': () => setTurnstileToken(''),
+        })
+      }
+    }
+
+    //Turnstile script loads async
+    if(window.turnstile){
+      renderWidget()
+    }else{
+      const interval = setInterval(() => {
+        if(window.turnstile){
+          renderWidget()
+          clearInterval(interval)
+        }
+      }, 100)
+
+      return () => clearInterval(interval)
+    }
+  }, [])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if(!turnstileToken){
+      setError('Please complete the verification challenge.')
+      return
+    }
+
     setLoading(true)
     setError('')
+
     try {
       const data = await loginUser({ 
-        email, password 
+        email, password, turnstileToken
       })
+
       login(data)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password.')
+
+      //Turnstile tokens are single use, reset the widget so it can retry
+
+      if(window.turnstile && widgetIdRef.current){
+        window.turnstile.reset(widgetIdRef.current)
+      }
+
+      setTurnstileToken('')
     } finally {
       setLoading(false)
     }
@@ -203,6 +250,7 @@ const Login = () => {
               />
             </div>
 
+            <div ref={turnstileRef}/>
             <button
               type="submit"
               disabled={loading}

@@ -19,6 +19,7 @@ const curriculumRoutes = require('./modules/academic/curriculum/routes/curriculu
 const curriculumsubjectRoutes = require('./modules/academic/curriculum/routes/curriculum.subject.routes')
 const teacherassignmentRoutes = require('./modules/teacherassignment/routes/teacherassignment.routes')
 const userRoutes = require('./modules/accounts/routes/account.routes')
+const prerequisiteRoutes = require('./modules/academic/prerequisites/routes/prerequisites.routes')
 
 connectDB()
 const app = express()
@@ -45,7 +46,9 @@ app.use('/api/subjectassignment', subjectAssignmentRoutes);
 app.use('/api/section', sectionRoutes);
 app.use('/api/curriculum', curriculumRoutes);
 app.use('/api', curriculumsubjectRoutes);
-app.use('/api/teacherassignment', teacherassignmentRoutes)
+app.use('/api/teacherassignment', teacherassignmentRoutes);
+console.log("Error prere: ",prerequisiteRoutes);
+app.use('/api/prerequisite', prerequisiteRoutes);
 
 
 module.exports = app;

@@ -55,6 +55,12 @@ const NAV_ITEMS = [
     icon: <Users size={18} />
   },
   {
+    label: 'Prerequisites', 
+    to: '/prerequisites', 
+    role: 'admin',
+    icon: <Clock size={18} />
+  },
+  {
     label: 'Attendance', 
     to: '/attendance', 
     role: 'teacher',
