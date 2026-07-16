@@ -29,11 +29,11 @@ const verifyTurnstile = async (req, res, next) => {
             }
         );
 
-        const data = await response.json()
-        console.log("Turnstile Status:" ,response.status)
-        console.log(await response.text());
+        const data = await response.json();
+
+        console.log("Turnstile Status:" ,data);
+
         if(!data.success){
-            console.log("Cloudflare error code:", data["error-codes"]);
             return res.status(400).json({
                 message: 'Verification failed. Please try again.',
                 errors: data["error-codes"]

@@ -37,6 +37,8 @@ app.use(cors({
     ],
     credentials: true,
 }));
+
+app.set("trust proxy", 1);
 app.use(express.json());
 
 app.get('/api/health', (req,res) => res.status(200).json({ status: 'ok' }));
