@@ -1,13 +1,12 @@
 const mongoose = require("mongoose");
 
 const subjectSchema = new mongoose.Schema({
-    subjectCode: {type: String,required: true,trim: true, uppercase: true, unique: true,},
+    subjectCode: {type: String,required: true,trim: true, uppercase: true,},
 
     subjectName: {
         type: String,
         required: true,
         trim: true,
-        unique: true,
     },
 
     units: {
@@ -52,12 +51,41 @@ const subjectSchema = new mongoose.Schema({
         enum: ['Active', 'Inactive'],
         default: 'Active',
     },
-
+    version: {
+        type: Number,
+        default: 1,
+    },
+    parentSubject: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Subject",
+        default: null   
+    },
+    isCurrentVersion: {
+        type: Boolean,
+        default: true,
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
     },
+},{
+    timestamps: true,
 })
+
+subjectSchema.index(
+    {
+        subjectCode: 1,
+        version: 1,
+    }
+);
+
+subjectSchema.index({
+    parentSubject: 1,
+});
+
+subjectSchema.index({
+    isCurrentVersion: 1,
+});
 
 module.exports = mongoose.model('Subject', subjectSchema)

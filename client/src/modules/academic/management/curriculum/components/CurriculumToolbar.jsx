@@ -25,6 +25,7 @@ const CurriculumToolbar = ({
 
             <PrimaryButton
                 onClick={onAdd}
+                
             >
                 Add Curriculum
             </PrimaryButton>

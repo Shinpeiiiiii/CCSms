@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import useAuthStore from '../state/auth-store'
 import { loginUser } from '../services/auth.services'
-import { Layers, AlertCircle, Loader2, ArrowLeft } from 'lucide-react'
-
+import { Layers, AlertCircle, Loader2, ArrowLeft, RefreshCw } from 'lucide-react'
+import ArrowBackUpIcon from '@/components/movingicons/arrowBackIcon'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -19,16 +19,48 @@ const Login = () => {
   const [submitHovered, setSubmitHovered] = useState(false)
 
   const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileError, setTurnstileError] = useState(false)
   const turnstileRef = useRef(null)
   const widgetIdRef = useRef(null)
+  const iconRef = useRef(null)
+  const ENABLE_TURNSTILE = import.meta.env.VITE_ENABLE_TURNSTILE !== 'false'
+
 
   useEffect(() => {
+    //TURNSTILE
+    if(!ENABLE_TURNSTILE) return
+
+    let intervalId = null
+
     const renderWidget = () => {
       if(window.turnstile && turnstileRef.current && !widgetIdRef.current){
+
+        console.log("Site Key:", import.meta.env.VITE_TURNSTILE_SITE_KEY);
+
         widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
           sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY,
-          callback: (t) => setTurnstileToken(t),
-          'expired-callback': () => setTurnstileToken(''),
+          retry: 'auto',
+          'retry-interval': 3000,
+          'refresh-expired': 'auto',
+          theme: 'light',
+
+           callback: (token) => {
+              console.log("✅ Turnstile Success:", token);
+              setTurnstileToken(token);
+              setTurnstileError(false);
+            },
+
+            "expired-callback": () => {
+              console.log("⏰ Turnstile Expired");
+              setTurnstileToken("");
+            },
+
+            "error-callback": (code) => {
+              console.error("❌ Turnstile Error:", code);
+              setTurnstileError(true);
+              // Return true so Turnstile retries automatically
+              return true;
+            },
         })
       }
     }
@@ -37,21 +69,68 @@ const Login = () => {
     if(window.turnstile){
       renderWidget()
     }else{
-      const interval = setInterval(() => {
+      intervalId = setInterval(() => {
         if(window.turnstile){
           renderWidget()
-          clearInterval(interval)
+          clearInterval(intervalId)
+          intervalId = null
         }
       }, 100)
+    }
 
-      return () => clearInterval(interval)
+    //Cleanup: remove widget on unmount so re-mount can create a fresh one
+    return () => {
+      if(intervalId) clearInterval(intervalId)
+      if(window.turnstile && widgetIdRef.current){
+        try {
+          window.turnstile.remove(widgetIdRef.current)
+        } catch(e) {
+          // Widget may already be gone if the DOM node was removed
+        }
+        widgetIdRef.current = null
+      }
     }
   }, [])
+
+  //Manual retry: tear down and re-render a fresh widget
+  const handleRetryTurnstile = () => {
+    if(!window.turnstile || !turnstileRef.current) return
+    setTurnstileError(false)
+    setTurnstileToken('')
+
+    if(widgetIdRef.current){
+      try { window.turnstile.remove(widgetIdRef.current) } catch(e) {}
+      widgetIdRef.current = null
+    }
+
+    widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+      sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY,
+      retry: 'auto',
+      'retry-interval': 3000,
+      'refresh-expired': 'auto',
+      theme: 'light',
+      callback: (token) => {
+        console.log("✅ Turnstile Success:", token);
+        setTurnstileToken(token);
+        setTurnstileError(false);
+      },
+      "expired-callback": () => {
+        console.log("⏰ Turnstile Expired");
+        setTurnstileToken("");
+      },
+      "error-callback": (code) => {
+        console.error("❌ Turnstile Error:", code);
+        setTurnstileError(true);
+        return true;
+      },
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if(!turnstileToken){
+    //Turnstile
+    if(ENABLE_TURNSTILE && !turnstileToken){
       setError('Please complete the verification challenge.')
       return
     }
@@ -61,21 +140,24 @@ const Login = () => {
 
     try {
       const data = await loginUser({ 
-        email, password, turnstileToken
+        email, password, turnstileToken: ENABLE_TURNSTILE ? turnstileToken : undefined,
       })
-
       login(data)
       navigate('/dashboard')
+      console.log('login success:', data)
+      console.log("Turnstile response", turnstileToken)
+      
+
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password.')
 
-      //Turnstile tokens are single use, reset the widget so it can retry
+      //Turnstile tokens are single use, clear token first then reset widget
+      //Reset must happen after clearing so the new callback can set the fresh token
+      setTurnstileToken('')
 
       if(window.turnstile && widgetIdRef.current){
         window.turnstile.reset(widgetIdRef.current)
       }
-
-      setTurnstileToken('')
     } finally {
       setLoading(false)
     }
@@ -157,9 +239,11 @@ const Login = () => {
               fontWeight: 500,
               marginBottom: 20
             }}
+            onMouseEnter={() => iconRef.current?.startAnimation()}
+            onMouseLeave={() => iconRef.current?.stopAnimation()}
           >
-            <ArrowLeft size={16} />
-            Back to Home
+            <ArrowBackUpIcon size={28} color="#185FA5" ref={iconRef}/>
+              Back
           </Link>
           <h1 style={{
             fontFamily: 'Sora, sans-serif',
@@ -250,7 +334,35 @@ const Login = () => {
               />
             </div>
 
-            <div ref={turnstileRef}/>
+            {ENABLE_TURNSTILE && (
+              <div>
+                <div ref={turnstileRef} />
+                {turnstileError && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    marginTop: 8, padding: '10px 14px',
+                    background: '#FFF8E1', border: '1px solid #FFE082',
+                    borderRadius: 10, fontSize: 13, color: '#F57F17',
+                  }}>
+                    <AlertCircle size={15} style={{ flexShrink: 0 }} />
+                    <span style={{ flex: 1 }}>Verification failed to load.</span>
+                    <button
+                      type="button"
+                      onClick={handleRetryTurnstile}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        background: 'none', border: '1px solid #FFE082',
+                        borderRadius: 6, padding: '4px 10px',
+                        color: '#F57F17', fontSize: 12, fontWeight: 600,
+                        cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      <RefreshCw size={12} /> Retry
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             <button
               type="submit"
               disabled={loading}

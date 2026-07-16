@@ -9,6 +9,7 @@ const createCurriculum = async (data) => {
 
     const existingCode = await Curriculum.findOne({
         curriculumCode: data.curriculumCode.toUpperCase(),
+        isCurrentVersion: true,
     })
 
     if (existingCode) {
@@ -27,7 +28,7 @@ const createCurriculum = async (data) => {
     if (!academicYear) {
         throw new Error('Academic Year not found.')
     }
-
+    console.log(data);
     return await Curriculum.create({
         ...data,
         curriculumCode:
@@ -38,7 +39,9 @@ const createCurriculum = async (data) => {
 
 const getCurriculum = async () => {
 
-    return await Curriculum.find()
+    return await Curriculum.find({
+        isCurrentVersion: true,
+    })
         .populate(
             'program',
             'programCode programName'
@@ -73,7 +76,9 @@ const getCurriculumById = async (id) => {
 
 const updateCurriculum = async (id, data) => {
 
-    const curriculum = await Curriculum.findById(id)
+    const curriculum = await Curriculum.findOne({
+        _id: id, isCurrentVersion: true,
+    })
 
     if (!curriculum) {
         throw new Error('Curriculum not found.')
@@ -114,7 +119,7 @@ const updateCurriculum = async (id, data) => {
 
         const existing = await Curriculum.findOne({
             curriculumCode: data.curriculumCode.toUpperCase(),
-            _id: { $ne: id },
+            _id: { $ne: id }, isCurrentVersion: true,
         })
 
         if (existing) {
@@ -152,6 +157,20 @@ const publishCurriculum = async (id) => {
             'Curriculum is already published.'
         )
     }
+    if (!curriculum.isCurrentVersion) {
+        throw new Error("Only the current curriculum version can be published."
+        );
+
+     // 👇 Validate the curriculum before publishing
+    const validation = await validateCurriculum(id);
+
+    if (!validation.valid) {
+        throw new Error({
+            message: "Curriculum validation failed.",
+            errors: validation.errors,
+            warnings: validation.warnings,
+        });
+    }
 
     const totalSubjects =
         await CurriculumSubject.countDocuments({
@@ -164,6 +183,8 @@ const publishCurriculum = async (id) => {
         )
     }
 
+  
+}
     curriculum.status = 'Published'
 
     await curriculum.save()
@@ -179,6 +200,11 @@ const archiveCurriculum = async (id) => {
     if (!curriculum) {
         throw new Error('Curriculum not found.')
     }
+    if (!curriculum.isCurrentVersion) {
+    throw new Error(
+        "Historical curriculum versions cannot be archived."
+    );
+}
 
     if (curriculum.status === 'Archived') {
         throw new Error(
@@ -193,7 +219,169 @@ const archiveCurriculum = async (id) => {
     return curriculum
 
 }
+const createNewVersion = async (
+    curriculumId,
+    data,
+    userId
+) => {
 
+    const curriculum =
+        await Curriculum.findById(curriculumId);
+
+    if (!curriculum) {
+        throw new Error("Curriculum not found.");
+    }
+
+    if (!curriculum.isCurrentVersion) {
+        throw new Error(
+            "Only the current curriculum version can be versioned."
+        );
+    }
+
+    const existingCode =
+        await Curriculum.findOne({
+            curriculumCode: data.curriculumCode.toUpperCase(),
+            _id: { $ne: curriculumId },
+            isCurrentVersion: true,
+        });
+
+    if (existingCode) {
+        throw new Error(
+            "Curriculum code already exists."
+        );
+    }
+
+    curriculum.isCurrentVersion = false;
+
+    await curriculum.save();
+
+    const newCurriculum =
+        await Curriculum.create({
+
+            curriculumCode:
+                data.curriculumCode.toUpperCase(),
+
+            curriculumName:
+                data.curriculumName,
+
+            program:
+                data.program,
+
+            academicYear:
+                data.academicYear,
+
+            totalYears:
+                data.totalYears,
+
+            remarks:
+                data.remarks,
+
+            status: "Draft",
+
+            version:
+                curriculum.version + 1,
+
+            parentCurriculum:
+                curriculum.parentCurriculum ||
+                curriculum._id,
+
+            isCurrentVersion: true,
+
+            createdBy: userId,
+
+        });
+
+    const curriculumSubjects =
+        await CurriculumSubject.find({
+            curriculum: curriculumId,
+        });
+
+    for (const item of curriculumSubjects) {
+
+        await CurriculumSubject.create({
+
+            curriculum:
+                newCurriculum._id,
+
+            subject:
+                item.subject,
+
+            yearLevel:
+                item.yearLevel,
+
+            semester:
+                item.semester,
+
+            prerequisites:
+                item.prerequisites,
+
+            isRequired:
+                item.isRequired,
+
+            displayOrder:
+                item.displayOrder,
+
+        });
+
+    }
+
+    return newCurriculum;
+
+};
+
+const getVersionHistory = async (
+    curriculumId
+) => {
+
+    const curriculum =
+        await Curriculum.findById(curriculumId);
+
+    if (!curriculum) {
+        throw new Error(
+            "Curriculum not found."
+        );
+    }
+
+    const rootId =
+        curriculum.parentCurriculum ||
+        curriculum._id;
+
+    return await Curriculum.find({
+
+        $or: [
+
+            {
+                _id: rootId,
+            },
+
+            {
+                parentCurriculum: rootId,
+            },
+
+        ],
+
+    })
+
+    .populate(
+        "program",
+        "programCode programName"
+    )
+
+    .populate(
+        "academicYear",
+        "academicYearName"
+    )
+
+    .populate(
+        "createdBy",
+        "firstName lastName"
+    )
+
+    .sort({
+        version: -1,
+    });
+
+};
 
 
 module.exports = {
@@ -204,7 +392,6 @@ module.exports = {
     updateCurriculum,
     publishCurriculum,
     archiveCurriculum,
-
-
+    createNewVersion,
+    getVersionHistory,
 }
-

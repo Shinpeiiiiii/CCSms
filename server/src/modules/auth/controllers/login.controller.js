@@ -13,7 +13,7 @@ const login = async (req, res) => {
     const { email, password } = req.body
     const user = await User.findOne({email})
     const invalidCredentialsResponse = () => res.status(400).json({message: 'Invalid email and password.'})
-    //console.log('FOUND USER',user)
+    console.log('FOUND USER',user)
 
 
     if (!user) {
@@ -50,26 +50,33 @@ const login = async (req, res) => {
 
     console.log('PASSWORD MATCH',isMatch)
 
-    const token = jwt.sign(
-      {
-        id: user._id,role: user.role, tokenVersion: user.tokenVersion,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: '15m',
-      },
-      console.log(user.role)
-    )
+    const {
+        generateAccessToken,
+        generateRefreshToken,
+    } = require("../../../utils/token");
 
-    res.status(200).json({
-      token,
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    res.cookie("refreshToken",refreshToken,{
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      secure: true,
+      maxAge: 5 * 60 * 60 * 1000,
+    })
+    .status(200)
+    .json({
+      accessToken,
+
       user: {
         id: user._id,
         email: user.email,
         role: user.role,
       },
     })
-  } catch (error) {
+  }catch (error) {
+    console.error(error);
     res.status(500).json({
       message: error.message,
     })

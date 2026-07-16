@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     environment:
-      - MONGO_URI=mongodb://mongo:27017/college-portal
+      - MONGO_URI: mongodb://mongo:27017/college-portal
     depends_on:
       - mongo
     volumes:
@@ -23,6 +23,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+  
 
 volumes:
   mongo-data:

@@ -16,7 +16,6 @@ const createEnrollmentPeriod = async (req, res) => {
         })
 
     } catch (error) {
-
         return res.status(400).json({
             message: error.message,
         })
@@ -25,23 +24,27 @@ const createEnrollmentPeriod = async (req, res) => {
 
 }
 
+const getPublicEnrollmentAnnouncement = async (req, res) => {
+    try{
+        const announcement = await enrollmentPeriodService.getPublicEnrollmentAnnouncement();
+        return res.status(200).json(announcement);
+    }catch(error){
+        return res.status(500).json({
+            message: error.message,
+        });
+    }
+}
+
 const getEnrollmentPeriod = async (req, res) => {
-
     try {
-
-        const enrollmentPeriod =
-            await enrollmentPeriodService.getEnrollmentPeriod()
-
-        return res.status(200).json(enrollmentPeriod)
-
+        const enrollmentPeriods = await enrollmentPeriodService.getEnrollmentPeriod()
+        return res.status(200).json(enrollmentPeriods)
+        
     } catch (error) {
-
         return res.status(500).json({
             message: error.message,
         })
-
     }
-
 }
 
 const getEnrollmentPeriodById = async (req, res) => {
@@ -208,6 +211,7 @@ const archiveEnrollmentPeriod = async (req, res) => {
 module.exports = {
     createEnrollmentPeriod,
     getEnrollmentPeriod,
+    getPublicEnrollmentAnnouncement,
     getEnrollmentPeriodById,
     getCurrentEnrollmentPeriod,
     updateEnrollmentPeriod,

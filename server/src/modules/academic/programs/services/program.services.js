@@ -1,7 +1,20 @@
 const Program = require("../model/Program");
 const Department = require("../../department/models/Department");
+const {getCache, setCache, deleteCache} = require("../../../../utils/cache");
+
 
 const getProgram = async () => {
+
+    const cacheKey = "program";
+    const cached = await getCache(cacheKey);
+
+    if(cached){
+        console.log("Serving cached from redis");
+        return cached;
+    }
+
+    console.log("Serving from mongo db.")
+
     return await Program.find()
     .populate(
         'department', 'departmentCode departmentName'

@@ -77,6 +77,8 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
     setIsLoggingOut(true)
 
     setTimeout(() => {
+      
+      console.log('logout success');
       logout()
       navigate('/', { replace: true })
       onClose()

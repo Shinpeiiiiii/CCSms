@@ -1,0 +1,301 @@
+import { useMemo, useState } from "react";
+
+import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
+
+import Card from "../../../../../components/cards/Cards";
+import DataTable from "../../../../../components/table/DataTable";
+
+import SectionToolbar from "../components/SectionToolbar";
+import SectionModal from "../components/SectionModal";
+import SectionColumns from "../components/SectionColumn";
+
+import useCrud from "../../../../../hooks/useCrud";
+import useSection from "../hooks/useSection";
+
+import {
+
+    createSection,
+
+    updateSection,
+
+    activateSection,
+
+    archiveSection,
+
+} from "../services/section.services";
+
+const Section = () => {
+
+    const {
+
+        sections,
+
+        loading,
+
+        refreshSections,
+
+    } = useSection();
+
+    const {
+
+        search,
+
+        setSearch,
+
+        selectedItem,
+
+        isModalOpen,
+
+        openCreate,
+
+        openEdit,
+
+        closeModal,
+
+    } = useCrud();
+
+    const [saving, setSaving] = useState(false);
+
+    /*
+    =====================================
+    Search
+    =====================================
+    */
+
+    const filteredSections = useMemo(() => {
+
+        const keyword = search.toLowerCase();
+
+        return sections.filter((section) =>
+
+            section.sectionCode
+                ?.toLowerCase()
+                .includes(keyword)
+
+            ||
+
+            section.sectionName
+                ?.toLowerCase()
+                .includes(keyword)
+
+            ||
+
+            section.program?.programName
+                ?.toLowerCase()
+                .includes(keyword)
+
+            ||
+
+            section.curriculum?.curriculumName
+                ?.toLowerCase()
+                .includes(keyword)
+
+            ||
+
+            section.academicYear?.academicYearName
+                ?.toLowerCase()
+                .includes(keyword)
+
+        );
+
+    }, [sections, search]);
+
+    /*
+    =====================================
+    Save
+    =====================================
+    */
+
+    const handleSave = async (formData) => {
+
+        try {
+
+            setSaving(true);
+
+            if (selectedItem) {
+
+                await updateSection(
+
+                    selectedItem._id,
+
+                    formData
+
+                );
+
+            }
+
+            else {
+
+                await createSection(
+
+                    formData
+
+                );
+
+            }
+
+            closeModal();
+
+            await refreshSections();
+
+        }
+
+        catch (error) {
+
+            alert(
+
+                error.response?.data?.message ||
+
+                "Failed to save section."
+
+            );
+
+        }
+
+        finally {
+
+            setSaving(false);
+
+        }
+
+    };
+
+    /*
+    =====================================
+    Activate
+    =====================================
+    */
+
+    const handleActivate = async (section) => {
+
+        try {
+
+            await activateSection(
+
+                section._id
+
+            );
+
+            await refreshSections();
+
+        }
+
+        catch (error) {
+
+            alert(
+
+                error.response?.data?.message ||
+
+                "Failed to activate section."
+
+            );
+
+        }
+
+    };
+
+    /*
+    =====================================
+    Archive
+    =====================================
+    */
+
+    const handleArchive = async (section) => {
+
+        try {
+
+            await archiveSection(
+
+                section._id
+
+            );
+
+            await refreshSections();
+
+        }
+
+        catch (error) {
+
+            alert(
+
+                error.response?.data?.message ||
+
+                "Failed to archive section."
+
+            );
+
+        }
+
+    };
+
+    const columns = SectionColumns({
+
+        openEdit,
+
+        onActivate: handleActivate,
+
+        onArchive: handleArchive,
+
+    });
+
+    return (
+
+        <DashboardLayout>
+
+            <Card
+
+                title="Sections"
+
+                subtitle="Manage class sections"
+
+                actions={
+
+                    <SectionToolbar
+
+                        search={search}
+
+                        setSearch={setSearch}
+
+                        onAdd={openCreate}
+
+                    />
+
+                }
+
+            >
+
+                <DataTable
+
+                    columns={columns}
+
+                    data={filteredSections}
+
+                    loading={loading}
+
+                    emptyMessage="No sections found."
+
+                />
+
+            </Card>
+
+            <SectionModal
+
+                isOpen={isModalOpen}
+
+                onClose={closeModal}
+
+                onSubmit={handleSave}
+
+                section={selectedItem}
+
+                loading={saving}
+
+            />
+
+        </DashboardLayout>
+
+    );
+
+};
+
+export default Section;

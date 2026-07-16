@@ -1,8 +1,15 @@
+import { PrimaryButton } from "@/components/buttons";
 import ActionButtons from "../../../../../components/actions/ActionButton";
+import CurriculumStatusBadge from "./CurriculumStatusBadge";
+import {
+    Pencil, History, Upload, Archive, BookOpen
+} from "lucide-react"
 
+import ActionMenu from "../../../../../components/actions/ActionMenu";
 const CurriculumColumn = ({
     openEdit,
     onPublish,
+    openHistory,
     onArchive,
     navigate,
 }) => [
@@ -37,7 +44,12 @@ const CurriculumColumn = ({
 
     {
         header: "Status",
-        accessor: "status",
+        render: (curriculum) => (
+            <CurriculumStatusBadge
+                status={curriculum.status}
+            />
+
+        ),
     },
 
    {
@@ -45,74 +57,56 @@ const CurriculumColumn = ({
 
         render: (curriculum) => {
 
-        return (
+            const actions = [];
 
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                }}
-            >
+            actions.push({
+                label: "History",
+                icon: "history",
+                onClick: () => openHistory(curriculum),
+            });
 
-                <button
-                    style={{
-                        background: "#2563EB",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: 6,
-                        padding: "6px 12px",
-                        cursor: "pointer",
-                    }}
-                    onClick={() =>{
-                        console.log('Clicked the view subjects at the curriculum', curriculum._id)
-                        navigate(
-                            `/curriculum/${curriculum._id}/subjects`
-                        )
-                    }
-                        
-                    }
-                >
-                    View Subject
-                </button>
+            actions.push({
+                label: "View Subjects",
+                icon: "edit",
+                onClick: () =>
+                    navigate(
+                        `/curriculum/${curriculum._id}/subjects`
+                    ),
+            });
 
-                {curriculum.status === "Draft" && (
-                    <ActionButtons
-                        onEdit={() => openEdit(curriculum)}
-                        customButtons={[
-                            {
-                                label: "Publish",
-                                onClick: () => onPublish(curriculum),
-                            },
-                        ]}
-                    />
-                )}
+            if (curriculum.status === "Draft") {
 
-                {curriculum.status === "Published" && (
-                    <ActionButtons
-                        customButtons={[
-                            {
-                                label: "Archive",
-                                onClick: () => onArchive(curriculum),
-                            },
-                        ]}
-                    />
-                )}
+                actions.push({
+                    label: "Edit",
+                    icon: "edit",
+                    onClick: () => openEdit(curriculum),
+                });
 
-                {curriculum.status === "Archived" && (
-                    <span
-                        style={{
-                            color: "#94A3B8",
-                            fontSize: 13,
-                        }}
-                    >
-                        Archived
-                    </span>
-                )}
+                actions.push({
+                    label: "Publish",
+                    icon: "publish",
+                    onClick: () => onPublish(curriculum),
+                });
 
-            </div>
+            }
 
-        );},
+            if (curriculum.status === "Published") {
+
+                actions.push({
+                    label: "Archive",
+                    icon: "archive",
+                    onClick: () => onArchive(curriculum),
+                });
+
+            }
+
+            return (
+                <ActionMenu
+                    actions={actions}
+                />
+            );
+       
+        },
    }
 ];
 

@@ -108,6 +108,7 @@ const CurriculumForm = ({
                 valueField="_id"
                 labelField="programName"
                 required
+                error="This field is required"
             />
 
             <SelectField
@@ -119,6 +120,7 @@ const CurriculumForm = ({
                 valueField="_id"
                 labelField="academicYearName"
                 required
+
             />
 
             <TextField

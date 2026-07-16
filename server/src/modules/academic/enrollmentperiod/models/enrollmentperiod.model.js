@@ -2,31 +2,25 @@ const mongoose = require('mongoose')
 
 const enrollmentPeriodSchema = new mongoose.Schema(
     {
-       
-
-        enrollmentName: {
+        enrollmentPeriodName: {
             type: String,
             required: true,
-            unique: true,
+            //unique: true,
             trim: true,
         },
-
         academicYear: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'AcademicYear',
             required: true,
         },
-
-        applicationStart: {
+        startDate: {
             type: Date,
             required: true,
         },
-
-        applicationEnd: {
+        endDate: {
             type: Date,
             required: true,
         },
-
         status: {
             type: String,
             enum: [
@@ -38,13 +32,11 @@ const enrollmentPeriodSchema = new mongoose.Schema(
             ],
             default: 'Draft',
         },
-
         remarks: {
             type: String,
             default: '',
             trim: true,
         },
-
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
@@ -53,7 +45,6 @@ const enrollmentPeriodSchema = new mongoose.Schema(
     },
     {
         timestamps: true,
-
     }
 )
 

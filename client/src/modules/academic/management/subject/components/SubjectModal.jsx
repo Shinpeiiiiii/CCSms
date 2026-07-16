@@ -25,7 +25,6 @@ const SubjectModal = ({
         >
 
             <SubjectForm
-                key={subject?._id || "new"}
                 initialValues={subject}
                 loading={loading}
                 onSubmit={onSubmit}

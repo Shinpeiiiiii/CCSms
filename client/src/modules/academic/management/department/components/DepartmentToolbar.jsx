@@ -48,8 +48,7 @@ const DepartmentToolbar = ({
 
             <PrimaryButton
                 onClick={onAdd}
-            >
-                <Plus size={16} />
+            >   
                 Add Department
             </PrimaryButton>
         </div>

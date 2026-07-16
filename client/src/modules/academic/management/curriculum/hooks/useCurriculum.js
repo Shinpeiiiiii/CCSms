@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-
-import { getCurriculum } from "../services/curriculum.services";
+import { toast } from "react-toastify";
+import { getCurriculum, publishCurriculum as publishCurriculumService,
+     archiveCurriculum as archiveCurriculumService} from "../services/curriculum.services";
 
 const useCurriculum = () => {
 
@@ -35,6 +36,25 @@ const useCurriculum = () => {
 
     };
 
+    const publishCurriculum = async(id) => {
+        try{
+            await publishCurriculumService(id);
+            toast.success("Curriculum published successfully.");
+            loadCurriculums();
+        }catch(error){
+            toast.error(error.response?.data?.message || "Failed to publish curriculum")
+        }
+    }
+    const archiveCurriculum = async(id) => {
+        try{
+            await archiveCurriculumService(id);
+            toast.success("Archive curriculum successfully.");
+            loadCurriculums();
+        }catch(error){
+            toast.error(error.response?.data?.message || "Failed to archive.")
+        }
+    }
+
     useEffect(() => {
 
         loadCurriculums();
@@ -48,6 +68,14 @@ const useCurriculum = () => {
         loading,
 
         refreshCurriculums: loadCurriculums,
+        publishCurriculum: async (id) => {
+            await publishCurriculumService(id);
+            await loadCurriculums();
+        },
+        archiveCurriculum: async (id) => {
+            await archiveCurriculumService(id);
+            await loadCurriculums();
+        },
 
     };
 

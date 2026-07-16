@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import NavHeader from './components/NavHeader'
 import Footer from '../home/components/Footer'
@@ -6,6 +6,7 @@ import Hero from '../home/components/Hero'
 import About from './components/About'
 import Program from '../home/components/Program'
 import Enrollment from './components/Enrollment'
+
 
 const Home = () => {
     const location = useLocation()

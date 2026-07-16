@@ -2,58 +2,61 @@ const subjectPrerequisites = require('../models/prerequisites.models')
 const Subject = require('../../subject/model/subject.model')
 const { hasPath } = require('../utils/graph.utils')
 
-const createPrerequisite = async (data, userID) => {
-    const{
-        subject, requiredSubject, type, minimumGrade
-    } = data;
+const validateSubject = async (subjectId, reqiuredSubjectId) => {
+    const subject = await Subject.findById(subjectId)
+    const requiredSubject = await Subject.findById(reqiuredSubjectId)
 
-    //If the subject exist
-    const subjectExist = await Subject.findOne({
-        id: subject,
-        status: "Active"
-    });
-
-    if(!subjectExist){
-        throw new Error("Subject not found")
+    if (!subject) {
+        throw new Error('Subject not found.')
     }
-
-    //If requried subject exist
-    const requiredsubjectExist = await Subject.findOne({
-        id: requiredSubject,
-        status: "Active"
-    });
-
-    if(!requiredsubjectExist){
-        throw new Error("Required subject not found");
+ 
+    if (!requiredSubject) {
+        throw new Error('Required subject not found.')
     }
-
-    //Cannot be reference itself
-
-    if(subject.toString() === requiredSubject.toString()){
-        throw new Error("Subject cannot be own its prerequisite")
+ 
+    if (subject.status !== 'Active') {
+        throw new Error('Subject is not Active.')
     }
-
-    //Duplicate validation
-    const duplicate = await subjectPrerequisites.findOne({
-        subject, requiredSubject, status: "Active"
-    });
-
-    if(duplicate){
-        throw new Error("Prerequisites already exist")
+ 
+    if (requiredSubject.status !== 'Active') {
+        throw new Error('Required subject is not Active.')
     }
-
-    const createCycle = await hasPath(requiredSubject, subject);
-
-    if(createCycle){
-        throw new Error("This prerequisites create a circular dependecy.")
+ 
+    if (String(subjectId) === String(requiredSubjectId)) {
+        throw new Error('A subject cannot be a prerequisite of itself.')
     }
+}
 
-    const prerequisite = await subjectPrerequisites.create({
-        subject, requiredSubject, minimumGrade, createdBy: userID, createdAt: userID
+
+const createPrerequisite = async (data) => {
+    const { subject, requiredSubject, minimumGrade, type, createdBy } = data
+ 
+    await validateSubject(subject, requiredSubject)
+ 
+    const existing = await subjectPrerequisites.findOne({
+        subject,
+        requiredSubject,
     })
-
-    return prerequisite.populate(["subject", "requiredSubject"])
-
+ 
+    if (existing) {
+        throw new Error('This prerequisite relationship already exists.')
+    }
+ 
+    const isCyclic = await hasPath(subject, requiredSubject)
+ 
+    if (isCyclic) {
+        throw new Error(
+            'This would create a circular prerequisite chain (e.g., A requires B, B requires A).'
+        )
+    }
+ 
+    return await subjectPrerequisites.create({
+        subject,
+        requiredSubject,
+        minimumGrade: minimumGrade ?? null,
+        type: type || 'Prerequisite',
+        createdBy,
+    })
 }
 
 
@@ -62,20 +65,33 @@ const getPrerequisite = async () => {
     return await subjectPrerequisites.find({
         status: "Active"
     })
-        .populate("subject")
-        .populate("requiredSubject")
+        .populate('subject','subjectCode subjectName')
+        .populate('requiredSubject', 'subjectCode subjectName units version')
+        .populate('createdBy', 'firstName lastName')
         .sort({
             createdAt: -1
         });
 
 };
+const getPrerequisiteBySubject = async (subjectId) => {
+ 
+    return await subjectPrerequisites.find({
+        subject: subjectId,
+        status: 'Active',
+    })
+        .populate('requiredSubject', 'subjectCode subjectName units version')
+        .populate('createdBy', 'firstName lastName')
+        .sort({ createdAt: -1 })
+ 
+}
 
 const getPrerequisiteById = async (id) => {
 
     const prerequisite =
         await subjectPrerequisites.findById(id)
-            .populate("subject")
-            .populate("requiredSubject");
+            .populate('subject', 'subjectCode subjectName')
+            .populate('requiredSubject', 'subjectCode subjectName')
+            .populate('createdBy', 'firstName lastName')
 
     if (!prerequisite) {
         throw new Error("Prerequisite not found.");
@@ -133,11 +149,55 @@ const deactivatePrerequisite = async (
 
 };
 
+// array of { subject, grade } already completed by the student.
+const checkPrerequisiteMet = async (subjectId, academicRecordEntries = []) => {
+ 
+    const prerequisites = await subjectPrerequisites.find({
+        subject: subjectId,
+        status: 'Active',
+        type: 'Prerequisite',
+    }).populate('requiredSubject', 'subjectCode subjectName')
+ 
+    const completedMap = new Map(
+        academicRecordEntries.map((entry) => [String(entry.subject), entry.grade])
+    )
+ 
+    const unmetPrerequisites = []
+ 
+    for (const prereq of prerequisites) {
+ 
+        const requiredId = String(prereq.requiredSubject._id)
+        const wasCompleted = completedMap.has(requiredId)
+        const gradeObtained = completedMap.get(requiredId)
+ 
+        const meetsMinimumGrade =
+            prereq.minimumGrade == null || (gradeObtained ?? 0) >= prereq.minimumGrade
+ 
+        if (!wasCompleted || !meetsMinimumGrade) {
+            unmetPrerequisites.push({
+                requiredSubject: prereq.requiredSubject,
+                minimumGrade: prereq.minimumGrade,
+                gradeObtained: gradeObtained ?? null,
+            })
+        }
+ 
+    }
+ 
+    return {
+        eligible: unmetPrerequisites.length === 0,
+        unmetPrerequisites,
+    }
+ 
+}
+
+
 
 module.exports = {
     createPrerequisite,
     getPrerequisite,
     getPrerequisiteById,
     updatePrerequisite,
-    deactivatePrerequisite
+    deactivatePrerequisite,
+    checkPrerequisiteMet,
+    getPrerequisiteBySubject
 };

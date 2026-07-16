@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken')
 
-
 const authMiddleware = async (req,res,next) => {
 
     console.log("Authorization Header:", req.headers.authorization);
@@ -19,7 +18,6 @@ const authMiddleware = async (req,res,next) => {
         const decoded = jwt.verify(token,process.env.JWT_SECRET)
 
         req.user = decoded
-        console.log(decoded)
         next()
 
         if(decoded.tokenVersion !== req.user.tokenVersion){

@@ -1,80 +1,53 @@
-import { useState } from "react";
+import { forwardRef } from "react";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const PrimaryButton = ({
-    children,
-    type = "button",
-    onClick,
-    disabled = false,
-    loading = false,
-    className = "",
-    style = {},
-}) => {
-    const [hovered, setHovered] = useState(false);
-    const [active, setActive] = useState(false);
+const PrimaryButton = forwardRef(
+    (
+        {
+            children,
+            type = "button",
+            onClick,
+            disabled = false,
+            loading = false,
+            className = "",
+            ...props
+        },
+        ref
+    ) => {
+        const isDisabled = disabled || loading;
 
-    const isButtonDisabled = disabled || loading;
+        return (
+            <button
+                ref={ref}
+                type={type}
+                onClick={onClick}
+                disabled={isDisabled}
+                className={cn(
+                    "inline-flex items-center justify-center gap-2 rounded-full px-8 py-3 shrink-0 whitespace-nowrap w-fit self-center",
+                    "text-sm font-semibold transition-all duration-200 ease-out border",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#185FA5]/30 focus-visible:ring-offset-2",
+                    !isDisabled &&
+                        "bg-white text-[#3C4043] border-[#DADCE0] shadow-[0_1px_2px_rgba(60,64,67,0.08)] hover:shadow-[0_1px_3px_rgba(60,64,67,0.15),0_1px_2px_rgba(60,64,67,0.10)] hover:border-[#C6C9CC] active:bg-[#F8F9FA] active:shadow-none cursor-pointer",
+                    isDisabled &&
+                        "bg-white text-gray-400 border-gray-200 shadow-none cursor-not-allowed",
+                    className
+                )}
+                {...props}
+            >
+                {loading ? (
+                    <>
+                        <Loader2 size={16} className="animate-spin text-[#185FA5]" />
+                        <span>Loading...</span>
+                    </>
+                ) : (
+                    children
+                )}
+            </button>
+        );
+    }
+);
 
-    return (
-        <button
-            type={type}
-            onClick={onClick}
-            disabled={isButtonDisabled}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => {
-                setHovered(false);
-                setActive(false);
-            }}
-            onMouseDown={() => setActive(true)}
-            onMouseUp={() => setActive(false)}
-            style={{
-                background: isButtonDisabled 
-                    ? '#F1F3F4' 
-                    : active 
-                        ? '#155CB3'
-                        : hovered
-                            ? '#1765CC'
-                            : '#1A73E8',
-                color: isButtonDisabled ? '#9AA0A6' : 'white',
-                padding: '10px 24px',
-                borderRadius: 100,
-                border: 'none',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: hovered && !isButtonDisabled 
-                    ? '0 2px 6px rgba(26, 115, 232, 0.24)' 
-                    : 'none',
-                transform: active && !isButtonDisabled 
-                    ? 'scale(0.98)' 
-                    : hovered && !isButtonDisabled 
-                        ? 'translateY(-1px)' 
-                        : 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                outline: 'none',
-                ...style,
-            }}
-            className={className}
-        >
-            {loading ? (
-                <>
-                    <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                    <span>Loading...</span>
-                </>
-            ) : (
-                children
-            )}
-            <style>{`
-                @keyframes spin {
-                    to { transform: rotate(360deg); }
-                }
-            `}</style>
-        </button>
-    );
-};
+PrimaryButton.displayName = "PrimaryButton";
 
 export default PrimaryButton;

@@ -80,3 +80,46 @@ export const deleteSubject = async (id) => {
     return data;
 
 };
+
+export const createSubjectVersion = async (
+    id,
+    data
+) => {
+
+    const response =
+        await api.post(
+
+            `/subject/${id}/version`,
+
+            data
+
+        );
+
+    return response.data;
+
+};
+
+export const getVersionHistory =
+async (id) => {
+
+    const response =
+        await api.get(
+
+            `/subject/${id}/history`
+
+        );
+
+    return response.data;
+
+};
+
+export const getSubjectHistory =
+async (id) => {
+    const response =
+        await api.get(
+            `/subject/${id}/history`
+        );
+    console.log("Subject history are: ", response.data);
+    return response.data;
+
+};

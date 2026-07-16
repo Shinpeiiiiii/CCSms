@@ -10,13 +10,15 @@ const Card = ({
                 background: '#FFFFFF',
                 border: '1px solid #DADCE0',
                 borderRadius: 16,
-                overflow: 'hidden',
+                overflow: 'visible',
                 boxShadow: '0 1px 2px 0 rgba(60,64,67,0.05)',
             }}
         >
             {(title || subtitle || actions) && (
                 <div
                     style={{
+                        minWidth: 0,
+                        flex: 1,
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'flex-start',
@@ -28,6 +30,9 @@ const Card = ({
                         {title && (
                             <h2
                                 style={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
                                     fontFamily: 'Sora, sans-serif',
                                     fontSize: '1.25rem',
                                     fontWeight: 700,
@@ -57,7 +62,7 @@ const Card = ({
                     </div>
 
                     {actions && (
-                        <div>
+                        <div style={{ flexShrink: 0}}>
                             {actions}
                         </div>
                     )}

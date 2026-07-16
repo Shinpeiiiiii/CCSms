@@ -4,6 +4,7 @@ const router = express.Router();
 const{
     createEnrollmentPeriod,
     getEnrollmentPeriod,
+    getPublicEnrollmentAnnouncement,
     getEnrollmentPeriodById,
     getCurrentEnrollmentPeriod,
     updateEnrollmentPeriod,
@@ -13,8 +14,12 @@ const{
     archiveEnrollmentPeriod,
 } = require('../controller/enrollmentperiod.controller');
 
+router.get('/announcement', getPublicEnrollmentAnnouncement);
+
+
 const authMiddleware = require('../../../../middlewares/auth.middleware');
 const authorizeRole = require('../../../../middlewares/role.middleware');
+
 
 router.get('/', authMiddleware, authorizeRole('admin', 'registrar'), getEnrollmentPeriod);
 router.get('/current', authMiddleware, authorizeRole('admin', 'registrar', 'teacher', 'student'), getCurrentEnrollmentPeriod);
@@ -25,5 +30,6 @@ router.put('/:id', authMiddleware, authorizeRole('admin'), updateEnrollmentPerio
 router.patch('/:id/open', authMiddleware, authorizeRole('admin'), openEnrollmentPeriod);
 router.patch('/:id/close', authMiddleware, authorizeRole('admin'), closeEnrollmentPeriod);
 router.patch('/:id/archive', authMiddleware, authorizeRole('admin'), archiveEnrollmentPeriod);
+
 
 module.exports = router;

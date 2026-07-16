@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
 import { Layers, Menu, X } from 'lucide-react'
@@ -95,7 +95,7 @@ const NavHeader = () => {
               letterSpacing: '-0.01em',
             }}
           >
-            TeacherPortal
+            School Management System
           </span>
         </Link>
 

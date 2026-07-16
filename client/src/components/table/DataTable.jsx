@@ -3,6 +3,8 @@ import TableBody from "./TableBody";
 import TableLoading from "./TableLoading";
 import TableEmpty from "./TableEmpty";
 import TablePagination from "./TablePagination";
+import { useMemo, useState, useEffect } from "react";
+
 
 const DataTable = ({
     columns,
@@ -10,46 +12,97 @@ const DataTable = ({
     loading = false,
     emptyMessage = "No records found.",
     pagination = null,
+    
+    
 }) => {
+
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [sortField, setSortField] = useState(null);
+    const [sortDirection, setSortDirection] = useState("asc")
+
+    useEffect(() => {
+        setPage(0);
+    }, [data]);
+
+    const handleSort = (column) => {
+        if(!column.sortable) return;
+
+        setPage(1);
+
+        if(sortField === column.accessor){
+            setSortDirection((previous) => previous === "asc" ? "desc" : "asc");
+        }else{
+            setSortField(column.accessor);
+            setSortDirection("asc");
+        }
+    };
+
+    const sortedData = useMemo(() => {
+        if(!sortField) return data;
+
+        return [...data].sort((a, b) => {
+            const avalue = a[sortField];
+            const bvalue = b[sortField];
+
+            if(avalue < bvalue)
+                return sortDirection === "asc" ? -1 : 1;
+
+            if(avalue > bvalue)
+                return sortDirection === "asc" ? 1 : -1;
+
+            return 0;
+        });
+
+    }, [data, sortField, sortDirection]);
+
+    const paginatedData = useMemo(() => {
+
+        if(rowsPerPage === -1) return sortedData;
+
+        const start = page * rowsPerPage;
+
+        return sortedData.slice(start, start + rowsPerPage);
+    }, [sortedData, page, rowsPerPage]);
 
     if (loading) {
         return <TableLoading />
     }
 
-    if (!loading && data.length === 0) {
-        return (
-            <TableEmpty
-                message={emptyMessage}
-            />
-        )
-    }
+    if (!loading && data.length === 0) 
+        return <TableEmpty message={emptyMessage}/>;
 
     return (
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ overflowX: 'auto', border: "1px solid #DADCE0", borderRadius: 12, overflow: "visible", }}>
             <table
                 style={{
                     width: '100%',
                     borderCollapse: 'separate',
                     borderSpacing: 0,
-                    border: '1px solid #DADCE0',
-                    borderRadius: 12,
-                    overflow: 'hidden',
                 }}
             >
                 <TableHeader
                     columns={columns}
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
                 />
                 <TableBody
                     columns={columns}
-                    data={data}
+                    data={paginatedData}
                 />
             </table>
 
-            {pagination && (
-                <TablePagination
-                    {...pagination}
-                />
-            )}
+            <TablePagination
+                count={sortedData.length}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onPageChange={setPage}
+                onRowsPerPageChange={(rows) => {
+                    setRowsPerPage(rows);
+                    setPage(0);
+                }}
+            />
         </div>
     )
 }

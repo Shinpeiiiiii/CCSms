@@ -1,18 +1,25 @@
+import { PrimaryButton } from "@/components/buttons";
 import ActionButtons from "../../../../../components/actions/ActionButton";
+import ActionMenu from "@/components/actions/ActionMenu";
 
 const SubjectColumns = ({
     openEdit,
     openDelete,
+    openHistory,
+    navigate,
+    sortable,
 }) => [
 
     {
         header: "Code",
         accessor: "subjectCode",
+        sortable: true,
     },
 
     {
         header: "Subject",
         accessor: "subjectName",
+        sortable: true,
     },
 
     {
@@ -42,14 +49,32 @@ const SubjectColumns = ({
 
     {
         header: "Actions",
-        render: (subject) => (
+        render: (subject) => {
+            const actions = [];
 
-            <ActionButtons
-                onEdit={() => openEdit(subject)}
-                onDelete={() => openDelete(subject)}
-            />
+            actions.push({
+                label: "Edit",
+                icon: "edit",
 
-        ),
+                onClick: () => openEdit(subject),
+            });
+
+            actions.push({
+                label: "Delete",
+                icon: "delete",
+
+                onClick: () => openDelete(subject),
+            });
+
+            actions.push({
+                label: "History",
+                icon: "history",
+
+                onClick: () => openHistory(subject),
+            })
+
+            return(<ActionMenu actions={actions}/>);
+        },
     },
 
 ];

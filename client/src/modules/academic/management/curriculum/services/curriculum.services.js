@@ -96,3 +96,14 @@ export const archiveCurriculum = async (id) => {
     return data;
 
 };
+
+export const createCurriculumVersion = async (id,data) => {
+    const response = await api.post(`/curriculum/${id}/version`, data)
+
+    return response.data.curriculum;
+};
+
+export const getCurriculumHistory = async (id) => {
+    const response = await api.get(`/curriculum/${id}/history`);
+    return response.data;
+}

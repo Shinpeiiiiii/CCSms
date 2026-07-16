@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Modal from "./Modal";
+import TrashIcon from "../movingicons/trashIcon";
 
 const ConfirmModal = ({
     isOpen,

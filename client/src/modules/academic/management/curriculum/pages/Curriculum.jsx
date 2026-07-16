@@ -9,6 +9,7 @@ import DataTable from "../../../../../components/table/DataTable";
 import CurriculumToolbar from "../components/CurriculumToolbar";
 import CurriculumModal from "../components/CurriculumModal";
 import CurriculumColumns from "../components/CurriculumColumn";
+import CurriculumHistoryModal from "../components/CurriculumHistoryModal";
 
 import useCrud from "../../../../../hooks/useCrud";
 import useCurriculum from "../hooks/useCurriculum";
@@ -18,6 +19,7 @@ import {
     updateCurriculum,
     publishCurriculum,
     archiveCurriculum,
+    createCurriculumVersion,
 } from "../services/curriculum.services";
 
 const Curriculum = () => {
@@ -27,20 +29,92 @@ const Curriculum = () => {
         curriculum,
         loading,
         refreshCurriculums,
+        publishCurriculum,
+        archiveCurriculum,
+
     } = useCurriculum();
 
     const {
         search,
         setSearch,
         selectedItem,
+        setSelectedItem,
         isModalOpen,
         openCreate,
         openEdit,
         closeModal,
+        
     } = useCrud();
 
     const [saving, setSaving] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isVersionOpen, setIsVersionOpen] = useState(false);
 
+    const openHistory = (curriculum) => {
+
+        setSelectedItem(curriculum);
+        setIsHistoryOpen(true);
+    };
+
+    const closeHistory = () => {
+
+        setSelectedItem(null);
+        setIsHistoryOpen(false);
+    };
+
+    const openVersion = (curriculum) => {
+
+        setSelectedItem(curriculum);
+        setIsHistoryOpen(false);
+        setIsVersionOpen(true);
+    };
+
+    const closeVersion = () => {
+
+        setSelectedItem(null);
+        setIsVersionOpen(false);
+
+    };
+
+    const handleCreateVersion = async (formData) => {
+
+        try {
+
+            setSaving(true);
+
+            await createCurriculumVersion(
+
+                selectedItem._id,
+
+                formData
+
+            );
+
+            closeVersion();
+
+            await refreshCurriculums();
+
+        }
+
+        catch (error) {
+
+            alert(
+
+                error.response?.data?.message ||
+
+                "Failed to create version."
+
+            );
+
+        }
+
+        finally {
+
+            setSaving(false);
+
+        }
+
+    };
     /*
     =====================================
     Search
@@ -135,121 +209,60 @@ const Curriculum = () => {
     =====================================
     */
 
-    const handlePublish = async (curriculum) => {
-
-        try {
-
-            await publishCurriculum(
-                curriculum._id
-            );
-
-            await refreshCurriculums();
-
-        }
-
-        catch (error) {
-
-            alert(
-                error.response?.data?.message
-            );
-
-        }
-
-    };
-
-    /*
-    =====================================
-    Archive
-    =====================================
-    */
-
-    const handleArchive = async (curriculum) => {
-
-        try {
-
-            await archiveCurriculum(
-                curriculum._id
-            );
-
-            await refreshCurriculums();
-
-        }
-
-        catch (error) {
-
-            alert(
-                error.response?.data?.message
-            );
-
-        }
-
-    };
-
     const columns = CurriculumColumns({
 
         openEdit,
-
-        onPublish: handlePublish,
-
-        onArchive: handleArchive,
+        openHistory,
+        onPublish: (curriculum) => publishCurriculum(curriculum._id),
+        onArchive: (curriculum) => archiveCurriculum(curriculum._id),
         navigate,
 
     });
 
     return (
-
         <DashboardLayout>
-
             <Card
-
                 title="Curriculums"
-
                 subtitle="Manage academic curriculums"
-
                 actions={
-
                     <CurriculumToolbar
-
                         search={search}
-
                         setSearch={setSearch}
-
                         onAdd={openCreate}
-
                     />
-
                 }
-
             >
-
                 <DataTable
-
                     columns={columns}
-
                     data={filteredCurriculums}
-
                     loading={loading}
-
                     emptyMessage="No curriculums found."
-
                 />
-
             </Card>
-
             <CurriculumModal
-
                 isOpen={isModalOpen}
-
                 onClose={closeModal}
-
                 onSubmit={handleSave}
-
                 curriculum={selectedItem}
-
                 loading={saving}
-
             />
 
+            {/* VERSION MODAL */}
+            <CurriculumModal
+                isOpen={isVersionOpen}
+                onClose={closeVersion}
+                onSubmit={handleCreateVersion}
+                curriculum={selectedItem}
+                loading={saving}
+                mode="version"
+
+            />
+            <CurriculumHistoryModal
+                isOpen={isHistoryOpen}
+                onClose={closeHistory}
+                curriculum={selectedItem}
+                onCreateVersion={openVersion}
+            />
         </DashboardLayout>
 
     );

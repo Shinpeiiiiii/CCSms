@@ -1,6 +1,13 @@
+import { useState } from "react";
+
 const TableHeader = ({
     columns,
+    sortField,
+    sortDirection,
+    onSort,
 }) => {
+    
+
     return (
         <thead>
             <tr
@@ -11,9 +18,10 @@ const TableHeader = ({
                 {columns.map((column) => (
                     <th
                         key={column.header}
+                        onClick={() => column.sortable && onSort(column)}
                         style={{
                             padding: '14px 24px',
-                            textAlign: 'left',
+                            textAlign: column.align || "left",
                             fontSize: 11,
                             fontWeight: 700,
                             textTransform: 'uppercase',
@@ -21,9 +29,25 @@ const TableHeader = ({
                             color: '#5F6368',
                             borderBottom: '1px solid #DADCE0',
                             whiteSpace: 'nowrap',
-                        }}
+                            cursor: column.sortable ? "pointer" : "default", userSelect: "none",
+                        }} 
+                       
                     >
                         {column.header}
+
+                        {
+                            column.sortable && (
+                                <span style={{marginLeft: 6,}}>
+                                    {
+                                        sortField === column.accessor ? (
+                                            sortDirection === "asc" ? "▲" : "▼"
+                                        )
+
+                                        : "↕"
+                                    }
+                                </span>
+                            )
+                        }
                     </th>
                 ))}
             </tr>

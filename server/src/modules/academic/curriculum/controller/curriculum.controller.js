@@ -137,6 +137,52 @@ const archiveCurriculum = async (req, res) => {
     }
 
 }
+const createNewVersion = async (req, res) => {
+
+    try {
+
+        const curriculum =
+            await curriculumService.createNewVersion(
+                req.params.id,
+                req.body,
+                req.user.id
+            );
+
+        return res.status(201).json({
+            message: "Curriculum version created successfully.",
+            curriculum,
+        });
+
+    } catch (error) {
+
+        return res.status(400).json({
+            message: error.message,
+        });
+
+    }
+
+};
+
+const getVersionHistory = async (req, res) => {
+
+    try {
+
+        const history =
+            await curriculumService.getVersionHistory(
+                req.params.id
+            );
+
+        return res.status(200).json(history);
+
+    } catch (error) {
+
+        return res.status(404).json({
+            message: error.message,
+        });
+
+    }
+
+};
 
 module.exports = {
 
@@ -146,5 +192,7 @@ module.exports = {
     updateCurriculum,
     publishCurriculum,
     archiveCurriculum,
+    createNewVersion,
+    getVersionHistory
 
 }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { getSubject } from "../services/subject.services";
-import api from "@/services/api";
 
 const useSubject = () => {
 

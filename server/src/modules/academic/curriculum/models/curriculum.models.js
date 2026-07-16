@@ -5,7 +5,6 @@ const curriculumSchema = new mongoose.Schema(
         curriculumCode: {
             type: String,
             required: true,
-            unique: true,
             uppercase: true,
             trim: true,
         },
@@ -54,7 +53,22 @@ const curriculumSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
-        }
+        },
+        version: {
+            type: Number,
+            default: 1,
+        },
+
+        parentCurriculum: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Curriculum",
+            default: null,
+        },
+
+        isCurrentVersion: {
+            type: Boolean,
+            default: true,
+        },
 
     },
     {
@@ -62,4 +76,20 @@ const curriculumSchema = new mongoose.Schema(
     }
 )
 
+
+curriculumSchema.index({
+    isCurrentVersion: 1,
+});
+
+curriculumSchema.index({
+    parentCurriculum: 1,
+});
+
+curriculumSchema.index({
+    program: 1,
+});
+
+curriculumSchema.index({
+    academicYear: 1,
+});
 module.exports = mongoose.model('Curriculum', curriculumSchema)

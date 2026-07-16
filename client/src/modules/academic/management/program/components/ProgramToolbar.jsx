@@ -1,6 +1,5 @@
 import PrimaryButton from "../../../../../components/buttons/PrimaryButton";
 import SearchBox from "../../../../../components/search/SearchInput"
-
 const ProgramToolbar = ({
     search,
     setSearch,

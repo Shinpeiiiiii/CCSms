@@ -7,12 +7,14 @@ const AUTH_BROADCAST_CHANNEL = 'auth-sync';
 const useAuthStore = create(
     persist(
         (set) => ({
-            token: null,
+            accessToken: null,
+            refreshToken: null,
             user: null,
 
             login: (data) => {
                 set({
-                    token: data.token,
+                    accessToken: data.accessToken,
+                    refreshToken: data.refreshToken,
                     user: data.user,
                 });
 
@@ -28,7 +30,8 @@ const useAuthStore = create(
 
             logout: () => {
                 set({
-                    token: null,
+                    accessToken: null,
+                    refreshToken: null,
                     user: null,
                 });
 
@@ -75,16 +78,16 @@ We fix this with two complementary mechanisms:
 const readPersistedAuth = () => {
     try {
         const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (!raw) return { token: null, user: null };
+        if (!raw) return { accessToken: null, refreshToken: null, user: null };
 
         const parsed = JSON.parse(raw);
         // Zustand persist stores data under a "state" key
         return {
-            token: parsed?.state?.token ?? null,
+            accessToken: parsed?.state?.accessToken ?? null,
             user: parsed?.state?.user ?? null,
         };
     } catch (_) {
-        return { token: null, user: null };
+        return { accessToken: null, refreshToken: null ,user: null };
     }
 };
 
@@ -94,17 +97,18 @@ const syncFromStorage = () => {
     const current = useAuthStore.getState();
 
     // Only update if the auth identity actually changed
-    const persistedToken = persisted.token;
-    const currentToken = current.token;
+    const persistedToken = persisted.accessToken;
+    const currentToken = current.accessToken;
 
     if (persistedToken !== currentToken) {
         if (persistedToken === null) {
             // Another tab logged out → log out this tab too
-            useAuthStore.setState({ token: null, user: null });
+            useAuthStore.setState({ accessToken: null, refreshToken: null ,user: null });
         } else {
             // Another tab logged in (or switched accounts)
             useAuthStore.setState({
-                token: persisted.token,
+                accessToken: persisted.accessToken,
+                refreshToken: persisted.refreshToken,
                 user: persisted.user,
             });
         }

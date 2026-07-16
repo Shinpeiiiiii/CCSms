@@ -22,6 +22,7 @@ import {
 import ActionButtons from "../../../../../components/actions/ActionButton";
 import ProgramTable from "../components/ProgramTable";
 import DepartmentFilter from "../components/DepartmentFilter";
+import TrashIcon from "@/components/movingicons/trashIcon";
 
 const Program = () => {
 
@@ -219,8 +220,9 @@ const Program = () => {
                 program={selectedItem}
                 departments={departments}
             />
-
+                
             <ConfirmModal
+                
                 isOpen={isDeleteOpen}
                 title="Delete Program"
                 message={

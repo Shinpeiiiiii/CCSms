@@ -2,8 +2,14 @@ const prerequisiteService = require("../services/prerequisites.services")
 
 const createPrerequisite = async (req, res) => {
     try{
-        const prerequisite = prerequisiteService.createPrerequisite(req.body, req.user.id);
-        return res.status(201).json(prerequisite);
+        const prerequisite = await prerequisiteService.createPrerequisite({
+            ...req.body, 
+            createdBy: req.user.id,
+        });
+        return res.status(201).json({
+            message: 'Prerequisite create successfully!',
+            prerequisite,
+        });
     }catch(error){
         res.status(400).json({
             message: error.message
@@ -23,11 +29,22 @@ const getPrerequisite = async (req, res) => {
     }
 
 }
+const getPrerequisiteBySubject = async (req, res) => {
+    try{
+        const prerequisites = await prerequisiteService.getPrerequisiteBySubject(req.params.subjectId)
+
+        return res.status(200).json(prerequisites)
+    }catch(error){
+        res.status(400).json({
+            message: error.message
+        })
+    }
+}
 
 const getPrerequisiteById = async (req, res) => {
     try{
         const data = await prerequisiteService.getPrerequisiteById(req.params.id);
-        res.json(data);
+        return res.json(data);
 
     }catch(error){
         res.status(400).json({
@@ -36,10 +53,23 @@ const getPrerequisiteById = async (req, res) => {
     }
 
 }
+//
+const checkEligibility = async (req, res) => {
+    try{
+        const {academicRecordEntries} = req.body
 
+        const result = await prerequisiteService.checkPrerequisiteMet(req.params.subjectId, academicRecordEntries || [])
+
+        return res.status(200).json(result)
+    }catch(error){
+        return res.status(200).json({
+            message: error.message
+        })
+    }
+}
 const updatePrerequisite = async (req, res) => {
     try{
-        const data = prerequisiteService.updatePrerequisite(req.params.id, req.body, req.user.id);
+        const data = await prerequisiteService.updatePrerequisite(req.params.id, req.body, req.user.id);
 
         res.json(data);
     }catch(error){
@@ -66,5 +96,7 @@ module.exports = {
     getPrerequisite,
     getPrerequisiteById,
     updatePrerequisite,
-    deactivatePrerequisite
+    deactivatePrerequisite,
+    checkEligibility,
+    getPrerequisiteBySubject,
 };

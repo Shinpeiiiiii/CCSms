@@ -2,9 +2,9 @@ import {Navigate} from 'react-router-dom'
 import useAuthStore from '../../state/auth-store'
 
 const ProtectedRoute = ({children}) => {
-    const token = useAuthStore((state) => state.token)
+    const accessToken = useAuthStore((state) => state.accessToken)
 
-    if(!token) {
+    if(!accessToken) {
         return <Navigate to="/" replace/>
     }
 

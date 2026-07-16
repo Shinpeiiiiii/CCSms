@@ -17,24 +17,21 @@ const createEnrollmentPeriod = async (data) => {
         throw new Error('Application start date must be earlier than the application end date.')
     }
 
-    const existingEnrollment = await EnrollmentPeriod.findOne({
-        enrollmentName: data.enrollmentName,
-        academicYear: data.academicYear,
-    })
-
-    if (existingEnrollment) {
-        throw new Error(
-            'An Enrollment Period with this name already exists for the selected Academic Year.'
-        )
-    }
-
-
 
     return await EnrollmentPeriod.create({
         ...data,
-        enrollmentCode,
         status: 'Draft',
     })
+}
+
+const getPublicEnrollmentAnnouncement = async () => {
+    const enrollmentPeriod = await EnrollmentPeriod.findOne({
+        status: {$in: ["Open", "Published"]},
+    })
+    .populate("academicYear", "academicYearName")
+    .sort({createdAt: -1,});
+
+    return enrollmentPeriod;
 }
 
 const getEnrollmentPeriod = async () => {
@@ -208,6 +205,7 @@ const getCurrentEnrollmentPeriod = async () => {
 module.exports = {
     createEnrollmentPeriod,
     getEnrollmentPeriod,
+    getPublicEnrollmentAnnouncement,
     getEnrollmentPeriodById,
     updateEnrollmentPeriod,
     publishEnrollmentPeriod,

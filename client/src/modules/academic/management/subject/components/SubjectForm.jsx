@@ -178,7 +178,11 @@ const SubjectForm = ({
 
             <FormActions
                 loading={loading}
-                submitLabel="Save Subject"
+                submitLabel={
+                    initialValues
+                        ? "Save Changes"
+                        : "Create Subject"
+                }
             />
 
         </form>

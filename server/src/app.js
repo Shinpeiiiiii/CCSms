@@ -1,9 +1,12 @@
+const dotenv = require('dotenv')
 const express = require('express')
 const cors = require('cors')
 const connectDB = require('./database/mongodb')
 const authRoutes = require('./modules/auth/routes/auth.routes')
-const dotenv = require('dotenv')
+const cookieParser = require("cookie-parser")
 dotenv.config()
+console.log('DIRECT CHECK:', process.env.ENABLE_TURNSTILE, process.env.NODE_ENV)
+
 
 const studentRoutes = require('./modules/students/routes/student.routes')
 const enrollmentRoutes = require('./modules/enrollment/routes/enrollment.routes')
@@ -21,14 +24,18 @@ const teacherassignmentRoutes = require('./modules/teacherassignment/routes/teac
 const userRoutes = require('./modules/accounts/routes/account.routes')
 const prerequisiteRoutes = require('./modules/academic/prerequisites/routes/prerequisites.routes')
 
+
+const emailRoutes = require("./modules/email/routes/email.routes")
+
 connectDB()
 const app = express()
-
+app.use(cookieParser());
 app.use(cors({
     origin: [
         "http://localhost:5173",
         "https://college-portal.seddy012345.workers.dev",
-    ]
+    ],
+    credentials: true,
 }));
 app.use(express.json());
 
@@ -47,8 +54,8 @@ app.use('/api/section', sectionRoutes);
 app.use('/api/curriculum', curriculumRoutes);
 app.use('/api', curriculumsubjectRoutes);
 app.use('/api/teacherassignment', teacherassignmentRoutes);
-console.log("Error prere: ",prerequisiteRoutes);
+//console.log("Error prere: ",prerequisiteRoutes);
 app.use('/api/prerequisite', prerequisiteRoutes);
-
+app.use('/api/email', emailRoutes);
 
 module.exports = app;

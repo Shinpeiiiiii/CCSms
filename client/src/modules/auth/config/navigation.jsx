@@ -38,6 +38,12 @@ const NAV_ITEMS = [
     icon: <BookOpen size={18} />
   },
   {
+    label: 'Enrollment Period',
+    to: '/enrollmentperiod',
+    role: ['admin', 'registrar'],
+    icon: <ScrollText size={18} />
+  },
+  {
     label: 'Curriculum',
     to: '/curriculum',
     role: ['admin', 'registrar', 'teacher'],

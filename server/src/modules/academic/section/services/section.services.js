@@ -66,10 +66,14 @@ const createSection = async (data) => {
 const getSection = async () => {
 
     return await Section.find()
-        .populate(
-            'curriculum',
-            'curriculumCode curriculumName'
-        )
+        .populate({
+            path: 'curriculum',
+            select: 'curriculumCode curriclumName program',
+            populate: {
+                path: 'program',
+                select: 'programName programCode',
+            },
+        })
         .populate(
             'academicYear',
             'academicYearName'
