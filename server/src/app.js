@@ -32,11 +32,22 @@ const sectionsubjectModel = require('./modules/sectionsubject/models/sectionsubj
 connectDB()
 const app = express()
 app.use(cookieParser());
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://college-portal.seddy012345.workers.dev",
+    "https://ccsms.seddy012345.workers.dev",
+]
+
 app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        "https://college-portal.seddy012345.workers.dev",
-    ],
+    origin: (origin, callback) => {
+        const allowed = !origin || allowedOrigins.includes(origin)
+        if (allowed) {
+            callback(null, true)
+        } else {
+            console.log('CORS blocked origin:', origin)
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
     credentials: true,
 }));
 
