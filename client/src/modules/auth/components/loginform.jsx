@@ -30,6 +30,12 @@ const LoginForm = () => {
 
   // Helper to render the Cloudflare Turnstile widget
   const renderWidget = () => {
+    console.log('renderWidget called')
+    console.log('window.turnstile:', !!window.turnstile)
+    console.log('turnstileRef:', !!turnstileRef.current)
+    console.log('widgetId:', widgetIdRef.current)
+    console.log('sitekey:', import.meta.env.VITE_TURNSTILE_SITE_KEY)
+    
     if (!window.turnstile || !turnstileRef.current || widgetIdRef.current) return
 
     widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
@@ -55,21 +61,23 @@ const LoginForm = () => {
   useEffect(() => {
     if (!ENABLE_TURNSTILE) return
 
-    let intervalId = null
+    let intervalId = setInterval(() => {
+      if (window.turnstile && turnstileRef.current && !widgetIdRef.current) {
+        renderWidget()
+        clearInterval(intervalId)
+        intervalId = null
+      }
+    }, 100)
 
-    if (window.turnstile) {
-      renderWidget()
-    } else {
-      intervalId = setInterval(() => {
-        if (window.turnstile) {
-          renderWidget()
-          clearInterval(intervalId)
-          intervalId = null
-        }
-      }, 100)
-    }
+    const maxTimeout = setTimeout(() => {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+    }, 15000)
 
     return () => {
+      clearTimeout(maxTimeout)
       if (intervalId) clearInterval(intervalId)
       if (window.turnstile && widgetIdRef.current) {
         try {
