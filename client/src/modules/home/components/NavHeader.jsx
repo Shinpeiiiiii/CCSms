@@ -8,6 +8,7 @@ const TABS = [
   { label: 'About',      to: '/#about'     },
   { label: 'Programs',   to: '/#programs'  },
   { label: 'Enrollment', to: '/#enrollment'},
+  { label: 'Track Status', to: '/track'    },
   { label: 'Login',      to: '/login'      },
 ]
 

@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
 const User = require('../models/User')
+const { changePassword: changePasswordService } = require('../services/changePassword.services')
 
 const Max_Attempts = 5
 const LockDuration = 15 * 60 * 1000 //15 mins
@@ -71,8 +72,11 @@ const login = async (req, res) => {
 
       user: {
         id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
+        mustChangePassword: user.mustChangePassword,
       },
     })
   }catch (error) {
@@ -83,4 +87,37 @@ const login = async (req, res) => {
   }
 }
 
-module.exports = login
+const changePassword = async (req, res) => {
+
+    try{
+
+        await changePasswordService(
+
+            req.user.id,
+
+            req.body.currentPassword,
+
+            req.body.newPassword
+
+        );
+
+        return res.json({
+
+            message:
+                "Password changed successfully.",
+
+        });
+
+    }catch(error){
+
+        return res.status(400).json({
+
+            message:error.message,
+
+        });
+
+    }
+
+};
+
+module.exports = {login, changePassword};

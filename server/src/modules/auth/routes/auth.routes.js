@@ -1,7 +1,8 @@
 const express = require('express')
 
 const register = require('../controllers/register.controller')
-const login = require('../controllers/login.controller')
+const {login, changePassword} = require('../controllers/login.controller')
+const checkEmail = require('../controllers/check-email.controller')
 const loginlimiter = require('../../../middlewares/loginlimiter')
 const verifyTurnstile = require('../../../middlewares/turnstile.middleware')
 const router = express.Router()
@@ -12,6 +13,10 @@ const authenticateToken = require('../../../middlewares/auth.middleware')
 
 router.post('/register', register)
 router.post('/login', loginlimiter, verifyTurnstile, login)
+router.get('/check-email', checkEmail)
 router.post('/logout', authenticateToken,logout)
 router.post('/refresh', refreshController)
+router.patch('/change-password', authenticateToken, changePassword)
+
+
 module.exports = router

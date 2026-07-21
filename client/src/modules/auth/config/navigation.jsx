@@ -1,5 +1,7 @@
+import LayoutDashboardIcon from '@/components/movingicons/layoutDashboardIcon'
+import UserIcon from '@/components/movingicons/userIcon'
+import UsersIcon from '@/components/movingicons/usersIcon'
 import { 
-  LayoutDashboard, 
   Building2, 
   GraduationCap, 
   BookOpen, 
@@ -17,77 +19,83 @@ const NAV_ITEMS = [
     label: 'Dashboard', 
     to: '/dashboard', 
     role: ['admin', 'registrar', 'teacher'],
-    icon: <LayoutDashboard size={18} />
+    icon: LayoutDashboardIcon,
   },
   {
     label: 'Department',
     to: '/department',
     role: ['admin'],
-    icon: <Building2 size={18} />
+    icon: Building2
   },
   {
     label: 'Program',
     to: '/program',
     role: ['admin'],
-    icon: <GraduationCap size={18} />
+    icon: GraduationCap
   },
   {
     label: 'Subject',
     to: '/subject',
     role: ['admin', 'registrar', 'teacher'],
-    icon: <BookOpen size={18} />
+    icon: BookOpen
   },
   {
     label: 'Enrollment Period',
     to: '/enrollmentperiod',
     role: ['admin', 'registrar'],
-    icon: <ScrollText size={18} />
+    icon: ScrollText
   },
   {
     label: 'Curriculum',
     to: '/curriculum',
     role: ['admin', 'registrar', 'teacher'],
-    icon: <ScrollText size={18} />
+    icon: ScrollText
   },
   {
     label: 'Section',
     to: '/section',
     role: ['admin', 'registrar'],
-    icon: <Grid3x3 size={18} />
+    icon: Grid3x3
   },
   {
     label: 'Student', 
     to: '/student',
-    icon: <Users size={18} />
+    role: ['admin','registrar'],
+    icon: UserIcon,
+  },
+  {
+    label: 'Academic Loads',
+    to: '/registrar/academic-loads',
+    role: ['admin', 'registrar'],
   },
   {
     label: 'Prerequisites', 
     to: '/prerequisites', 
     role: 'admin',
-    icon: <Clock size={18} />
+    icon: Clock
   },
   {
     label: 'Attendance', 
     to: '/attendance', 
     role: 'teacher',
-    icon: <Clock size={18} />
+    icon: Clock
   },
   {
     label: 'Grade', 
     to: '/grade',
-    icon: <Star size={18} />
+    icon: Star
   },
   {
     label: 'Application', 
-    to: '/enrollment-review', 
-    role: ['registrar'],
-    icon: <FileText size={18} />
+    to: '/admission', 
+    role: ['registrar','admin'],
+    icon: FileText
   },
   {
     label: 'Account', 
     to: '/account', 
     role: 'admin',
-    icon: <UserCog size={18} />
+    icon: UsersIcon,
   },
 ]
 

@@ -13,7 +13,7 @@ const useEnrollmentAnnouncement = () => {
             }finally{
                 setLoading(false);
             }
-        }
+        };
 
         load();
     }, [])

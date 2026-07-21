@@ -3,15 +3,15 @@ import useAuthStore from '../../modules/auth/state/auth-store'
 
 import Home from '../../modules/home/Home'
 import Login from '../../modules/auth/pages/Login'
+import ChangePassword from '../../modules/auth/pages/ChangePassword'
 import Dashboard from '../../modules/dashboard/pages/Dashboard'
-import Register from '../../modules/auth/pages/Register'
 import Students from '../../modules/students/pages/Students'
 import Enrollmentform from '../../modules/enrollmentform/pages/EnrollmentForm'
 import ProtectedRoute from '../../modules/auth/components/protected-route/Protected-Route'
 import Enrollment from '../../modules/home/components/Enrollment'
 import Accounts from '../../modules/accounts/pages/Accounts'
 import RoleProtectedRoute from '../../shared/components/RoleProtectedRoute'
-import EnrollmentReview from '../../modules/enrollment-review/pages/EnrollmentReview'
+//import EnrollmentReview from '../../modules/enrollment-review/pages/EnrollmentReview'
 import Department from '../../modules/academic/management/department/pages/Department'
 import Program from '../../modules/academic/management/program/pages/Program'
 import Subject from '../../modules/academic/management/subject/pages/Subject'
@@ -20,7 +20,9 @@ import CurriculumSubject from '../../modules/academic/management/curriculumsubje
 import Prerequisites from '@/modules/academic/management/prerequisite/pages/Prerequisite'
 import EnrollmentPeriod from '@/modules/academic/management/enrollmentperiod/pages/EnrollmentPeriod'
 import Section from '@/modules/academic/management/section/pages/Section'
-
+import Admission from "@/modules/admission/pages/PendingApplication"
+import TrackApplication from '@/modules/home/pages/TrackApplication'
+import AcademicLoads from '@/modules/academic/pages/AcademicLoads'
 
 const Router = () => {
     const accessToken = useAuthStore((state) => state.accessToken)
@@ -29,22 +31,29 @@ const Router = () => {
             <Routes>
                 <Route path="/" element={accessToken ? <Navigate to="/dashboard" replace /> : <Home />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                <Route path="/change-password" element={<ChangePassword />} />
                 <Route path="/enrollmentform" element={<Enrollmentform />} />
                 <Route path="/enrollment" element={<Enrollment />} />
+                <Route path="/track" element={<TrackApplication />} />
                 <Route path="/department" element={
                     <RoleProtectedRoute allowedRoles={['admin', 'registarar', 'teacher']}>
                         <Department />
                     </RoleProtectedRoute>
                 } />
+                <Route path='/registrar/academic-loads' element={
+                    <RoleProtectedRoute allowedRoles={['admin', 'registrar']}>
+                        <AcademicLoads/>
+                    </RoleProtectedRoute>
+                }
+                />
                 <Route path="/dashboard" element={
                     <ProtectedRoute allowedRoles={['admin', 'teacher', 'registrar']}>
                         <Dashboard />
                     </ProtectedRoute>
                 }/>
-                <Route path="/enrollment-review" element={
-                    <RoleProtectedRoute allowedRoles={['registrar']}>
-                        <EnrollmentReview />
+                <Route path="/admission" element={
+                    <RoleProtectedRoute allowedRoles={['registrar','admin']}>
+                        <Admission />
                     </RoleProtectedRoute>
                 } />
                 <Route path="/attendance" element={

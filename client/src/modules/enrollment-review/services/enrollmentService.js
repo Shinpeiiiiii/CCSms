@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API =
-  "http://localhost:5173/enrollmentForm";
+  "http://localhost:5173/student-applications";
 
 export const getApplications =
   async () => {

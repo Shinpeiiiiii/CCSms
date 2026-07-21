@@ -3,7 +3,7 @@ import TableBody from "./TableBody";
 import TableLoading from "./TableLoading";
 import TableEmpty from "./TableEmpty";
 import TablePagination from "./TablePagination";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 
 
 const DataTable = ({
@@ -12,12 +12,12 @@ const DataTable = ({
     loading = false,
     emptyMessage = "No records found.",
     pagination = null,
-    
-    
+    rowsPerPage = 5,
+    showPagination = true,
 }) => {
 
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [internalRowsPerPage, setRowsPerPage] = useState(rowsPerPage);
     const [sortField, setSortField] = useState(null);
     const [sortDirection, setSortDirection] = useState("asc")
 
@@ -28,7 +28,7 @@ const DataTable = ({
     const handleSort = (column) => {
         if(!column.sortable) return;
 
-        setPage(1);
+        setPage(0);
 
         if(sortField === column.accessor){
             setSortDirection((previous) => previous === "asc" ? "desc" : "asc");
@@ -58,12 +58,12 @@ const DataTable = ({
 
     const paginatedData = useMemo(() => {
 
-        if(rowsPerPage === -1) return sortedData;
+        if(internalRowsPerPage === -1) return sortedData;
 
-        const start = page * rowsPerPage;
+        const start = page * internalRowsPerPage;
 
-        return sortedData.slice(start, start + rowsPerPage);
-    }, [sortedData, page, rowsPerPage]);
+        return sortedData.slice(start, start + internalRowsPerPage);
+    }, [sortedData, page, internalRowsPerPage]);
 
     if (loading) {
         return <TableLoading />
@@ -73,7 +73,7 @@ const DataTable = ({
         return <TableEmpty message={emptyMessage}/>;
 
     return (
-        <div style={{ overflowX: 'auto', border: "1px solid #DADCE0", borderRadius: 12, overflow: "visible", }}>
+        <div style={{ overflowX: 'auto', border: "1px solid #DADCE0", borderRadius: 12,  }}>
             <table
                 style={{
                     width: '100%',
@@ -93,16 +93,18 @@ const DataTable = ({
                 />
             </table>
 
-            <TablePagination
-                count={sortedData.length}
-                page={page}
-                rowsPerPage={rowsPerPage}
-                onPageChange={setPage}
-                onRowsPerPageChange={(rows) => {
-                    setRowsPerPage(rows);
-                    setPage(0);
-                }}
-            />
+            {showPagination && (
+                <TablePagination
+                    count={sortedData.length}
+                    page={page}
+                    rowsPerPage={internalRowsPerPage}
+                    onPageChange={setPage}
+                    onRowsPerPageChange={(rows) => {
+                        setRowsPerPage(rows);
+                        setPage(0);
+                    }}
+                />
+            )}
         </div>
     )
 }

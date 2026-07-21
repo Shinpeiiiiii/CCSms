@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import DotsVerticalIcon from "../movingicons/dotsVerticalIcon";
+
 import {
     MoreVertical,
     Pencil,
@@ -20,6 +22,7 @@ const ActionMenu = ({ actions = [] }) => {
     const [open, setOpen] = useState(false);
 
     const menuRef = useRef(null);
+    const dotsIconRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -53,6 +56,8 @@ const ActionMenu = ({ actions = [] }) => {
         >
             <button
                 onClick={() => setOpen(!open)}
+                onMouseEnter={() => dotsIconRef.current?.startAnimation?.()}
+                onMouseLeave={() => dotsIconRef.current?.stopAnimation?.()}
                 style={{
                     width: 36,
                     height: 36,
@@ -65,7 +70,7 @@ const ActionMenu = ({ actions = [] }) => {
                     justifyContent: "center",
                 }}
             >
-                <MoreVertical size={18} />
+                <DotsVerticalIcon ref={dotsIconRef}/>
             </button>
 
             {open && (

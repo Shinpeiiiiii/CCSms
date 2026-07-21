@@ -15,6 +15,12 @@ const RoleProtectedRoute = ({
         )
     }
 
+    if (user?.mustChangePassword) {
+        return (
+            <Navigate to="/change-password" replace />
+        )
+    }
+
     if(!allowedRoles.includes(user.role))
     {
         return(

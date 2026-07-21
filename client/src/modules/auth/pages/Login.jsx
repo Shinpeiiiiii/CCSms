@@ -1,396 +1,166 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate, Navigate } from 'react-router-dom'
+import { Navigate, Link } from 'react-router-dom'
 import useAuthStore from '../state/auth-store'
-import { loginUser } from '../services/auth.services'
-import { Layers, AlertCircle, Loader2, ArrowLeft, RefreshCw } from 'lucide-react'
-import ArrowBackUpIcon from '@/components/movingicons/arrowBackIcon'
+import LoginForm from '../components/loginform'
+import { motion } from 'framer-motion'
 
 const Login = () => {
-  const navigate = useNavigate()
-  const login = useAuthStore((state) => state.login)
   const token = useAuthStore((state) => state.token)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const [emailFocused, setEmailFocused] = useState(false)
-  const [passwordFocused, setPasswordFocused] = useState(false)
-  const [submitHovered, setSubmitHovered] = useState(false)
-
-  const [turnstileToken, setTurnstileToken] = useState('')
-  const [turnstileError, setTurnstileError] = useState(false)
-  const turnstileRef = useRef(null)
-  const widgetIdRef = useRef(null)
-  const iconRef = useRef(null)
-  const ENABLE_TURNSTILE = import.meta.env.VITE_ENABLE_TURNSTILE !== 'false'
-
-
-  useEffect(() => {
-    //TURNSTILE
-    if(!ENABLE_TURNSTILE) return
-
-    let intervalId = null
-
-    const renderWidget = () => {
-      if(window.turnstile && turnstileRef.current && !widgetIdRef.current){
-
-        console.log("Site Key:", import.meta.env.VITE_TURNSTILE_SITE_KEY);
-
-        widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
-          sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY,
-          retry: 'auto',
-          'retry-interval': 3000,
-          'refresh-expired': 'auto',
-          theme: 'light',
-
-           callback: (token) => {
-              console.log("✅ Turnstile Success:", token);
-              setTurnstileToken(token);
-              setTurnstileError(false);
-            },
-
-            "expired-callback": () => {
-              console.log("⏰ Turnstile Expired");
-              setTurnstileToken("");
-            },
-
-            "error-callback": (code) => {
-              console.error("❌ Turnstile Error:", code);
-              setTurnstileError(true);
-              // Return true so Turnstile retries automatically
-              return true;
-            },
-        })
-      }
-    }
-
-    //Turnstile script loads async
-    if(window.turnstile){
-      renderWidget()
-    }else{
-      intervalId = setInterval(() => {
-        if(window.turnstile){
-          renderWidget()
-          clearInterval(intervalId)
-          intervalId = null
-        }
-      }, 100)
-    }
-
-    //Cleanup: remove widget on unmount so re-mount can create a fresh one
-    return () => {
-      if(intervalId) clearInterval(intervalId)
-      if(window.turnstile && widgetIdRef.current){
-        try {
-          window.turnstile.remove(widgetIdRef.current)
-        } catch(e) {
-          // Widget may already be gone if the DOM node was removed
-        }
-        widgetIdRef.current = null
-      }
-    }
-  }, [])
-
-  //Manual retry: tear down and re-render a fresh widget
-  const handleRetryTurnstile = () => {
-    if(!window.turnstile || !turnstileRef.current) return
-    setTurnstileError(false)
-    setTurnstileToken('')
-
-    if(widgetIdRef.current){
-      try { window.turnstile.remove(widgetIdRef.current) } catch(e) {}
-      widgetIdRef.current = null
-    }
-
-    widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
-      sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY,
-      retry: 'auto',
-      'retry-interval': 3000,
-      'refresh-expired': 'auto',
-      theme: 'light',
-      callback: (token) => {
-        console.log("✅ Turnstile Success:", token);
-        setTurnstileToken(token);
-        setTurnstileError(false);
-      },
-      "expired-callback": () => {
-        console.log("⏰ Turnstile Expired");
-        setTurnstileToken("");
-      },
-      "error-callback": (code) => {
-        console.error("❌ Turnstile Error:", code);
-        setTurnstileError(true);
-        return true;
-      },
-    })
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    //Turnstile
-    if(ENABLE_TURNSTILE && !turnstileToken){
-      setError('Please complete the verification challenge.')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-
-    try {
-      const data = await loginUser({ 
-        email, password, turnstileToken: ENABLE_TURNSTILE ? turnstileToken : undefined,
-      })
-      login(data)
-      navigate('/dashboard')
-      console.log('login success:', data)
-      console.log("Turnstile response", turnstileToken)
-      
-
-    } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password.')
-
-      //Turnstile tokens are single use, clear token first then reset widget
-      //Reset must happen after clearing so the new callback can set the fresh token
-      setTurnstileToken('')
-
-      if(window.turnstile && widgetIdRef.current){
-        window.turnstile.reset(widgetIdRef.current)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
 
   if (token) return <Navigate to="/dashboard" replace />
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'radial-gradient(ellipse 80% 60% at 50% -20%, rgba(26,115,232,0.08) 0%, transparent 60%), #F8F9FA',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Background decoration */}
-      <div style={{
-        position: 'absolute', top: '20%', right: '10%',
-        width: 400, height: 400,
-        background: 'radial-gradient(circle, rgba(26,115,232,0.03) 0%, transparent 70%)',
-        borderRadius: '50%', pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '15%', left: '8%',
-        width: 280, height: 280,
-        background: 'radial-gradient(circle, rgba(139,92,246,0.02) 0%, transparent 70%)',
-        borderRadius: '50%', pointerEvents: 'none',
-      }} />
-      {/* Grid */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.015) 1px, transparent 1px)',
-        backgroundSize: '60px 60px', pointerEvents: 'none',
-      }} />
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* ── Left branded panel ────────────────────────────────── */}
+      <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden items-center justify-center"
+        style={{
+          background: 'linear-gradient(145deg, #0B1A2E 0%, #0F2442 40%, #132E54 100%)',
+        }}
+      >
+        {/* Decorative gradient orbs */}
+        <div
+          className="absolute"
+          style={{
+            top: '-8%',
+            right: '-12%',
+            width: 560,
+            height: 560,
+            background: 'radial-gradient(circle, rgba(26, 115, 232, 0.18) 0%, transparent 65%)',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          className="absolute"
+          style={{
+            bottom: '-5%',
+            left: '-8%',
+            width: 440,
+            height: 440,
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 65%)',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          className="absolute"
+          style={{
+            top: '40%',
+            left: '30%',
+            width: 300,
+            height: 300,
+            background: 'radial-gradient(circle, rgba(52, 168, 83, 0.06) 0%, transparent 65%)',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+          }}
+        />
 
-      <div style={{ width: '100%', maxWidth: 420, position: 'relative', zIndex: 1 }}>
-        {/* Logo & Brand */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', justifyContent: 'center' }}>
-            <div style={{
-              width: 44, height: 44,
-              background: '#1A73E8',
-              borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 2px 6px rgba(26,115,232,0.2)',
-              color: '#FFFFFF',
-            }}>
-              <Layers size={22} />
+        {/* Subtle grid pattern */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
+            backgroundSize: '48px 48px',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
+          className="relative z-10 px-16 max-w-lg"
+        >
+          {/* Logo / Brand */}
+          <Link to="/" className="no-underline inline-block mb-16">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center font-sora font-extrabold text-white text-lg"
+                style={{
+                  background: 'linear-gradient(135deg, #1A73E8, #5B9CF6)',
+                  boxShadow: '0 4px 16px rgba(26, 115, 232, 0.3)',
+                }}
+              >
+                SMS
+              </div>
+              <span className="text-white/90 font-sora font-bold text-xl tracking-tight">
+                School Management System
+              </span>
             </div>
-            <span style={{ fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: 18, color: '#202124' }}>
-              School Portal Management System
-            </span>
           </Link>
-          <p style={{ color: '#5F6368', fontSize: 13, marginTop: 8 }}>Sign in to your account to continue</p>
-        </div>
 
-        {/* Card */}
-        <div style={{
-          background: '#FFFFFF',
-          border: '1px solid #DADCE0',
-          borderRadius: 24,
-          padding: '40px 36px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
-        }}>
-          <Link 
-            to="/" 
-            style={{ 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              gap: 6, 
-              color: '#1A73E8', 
-              textDecoration: 'none', 
-              fontSize: 13, 
-              fontWeight: 500,
-              marginBottom: 20
-            }}
-            onMouseEnter={() => iconRef.current?.startAnimation()}
-            onMouseLeave={() => iconRef.current?.stopAnimation()}
+          <h2
+            className="font-sora text-white font-extrabold tracking-tight leading-tight mb-5"
+            style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)' }}
           >
-            <ArrowBackUpIcon size={28} color="#185FA5" ref={iconRef}/>
-              Back
-          </Link>
-          <h1 style={{
-            fontFamily: 'Sora, sans-serif',
-            fontWeight: 700,
-            fontSize: '1.375rem',
-            color: '#202124',
-            marginBottom: 6,
-            marginTop: 0,
-          }}>
-            Welcome back
-          </h1>
-          <p style={{ color: '#5F6368', fontSize: 14, marginBottom: 32, marginTop: 0 }}>
-            Enter your credentials to access the portal.
-          </p>
-
-          {/* Error */}
-          {error && (
-            <div style={{
-              background: '#FCE8E6',
-              border: '1px solid #FAD2CF',
-              color: '#C5221F',
-              padding: '12px 16px',
-              borderRadius: 10,
-              fontSize: 13,
-              marginBottom: 20,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}>
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div>
-              <label style={{ display: 'block', color: '#5F6368', fontSize: 12, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 8 }}>
-                Email Address
-              </label>
-              <input
-                type="email" autoComplete="current-email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                className="form-input"
-                onFocus={() => setEmailFocused(true)}
-                onBlur={() => setEmailFocused(false)}
-                style={{
-                  width: '100%', background: '#FFFFFF',
-                  border: emailFocused ? '1px solid #1A73E8' : '1px solid #DADCE0', 
-                  borderRadius: 10,
-                  padding: '12px 14px', color: '#202124', fontSize: 14,
-                  outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box',
-                  boxShadow: emailFocused ? '0 0 0 3px rgba(26,115,232,0.12)' : 'none',
-                  transition: 'all 0.2s',
-                }}
-              />
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <label style={{ color: '#5F6368', fontSize: 12, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                  Password
-                </label>
-                <Link to="/forgot-password" style={{ color: '#1A73E8', fontSize: 12, textDecoration: 'none', fontWeight: 500 }}>
-                  Forgot password?
-                </Link>
-              </div>
-              <input
-                type="password" autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="form-input"
-                onFocus={() => setPasswordFocused(true)}
-                onBlur={() => setPasswordFocused(false)}
-                style={{
-                  width: '100%', background: '#FFFFFF',
-                  border: passwordFocused ? '1px solid #1A73E8' : '1px solid #DADCE0', 
-                  borderRadius: 10,
-                  padding: '12px 14px', color: '#202124', fontSize: 14,
-                  outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box',
-                  boxShadow: passwordFocused ? '0 0 0 3px rgba(26,115,232,0.12)' : 'none',
-                  transition: 'all 0.2s',
-                }}
-              />
-            </div>
-
-            {ENABLE_TURNSTILE && (
-              <div>
-                <div ref={turnstileRef} />
-                {turnstileError && (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    marginTop: 8, padding: '10px 14px',
-                    background: '#FFF8E1', border: '1px solid #FFE082',
-                    borderRadius: 10, fontSize: 13, color: '#F57F17',
-                  }}>
-                    <AlertCircle size={15} style={{ flexShrink: 0 }} />
-                    <span style={{ flex: 1 }}>Verification failed to load.</span>
-                    <button
-                      type="button"
-                      onClick={handleRetryTurnstile}
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 4,
-                        background: 'none', border: '1px solid #FFE082',
-                        borderRadius: 6, padding: '4px 10px',
-                        color: '#F57F17', fontSize: 12, fontWeight: 600,
-                        cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                      }}
-                    >
-                      <RefreshCw size={12} /> Retry
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-            <button
-              type="submit"
-              disabled={loading}
-              onMouseEnter={() => setSubmitHovered(true)}
-              onMouseLeave={() => setSubmitHovered(false)}
+            Manage your academic{' '}
+            <span
               style={{
-                marginTop: 8,
-                background: loading ? '#DADCE0' : submitHovered ? '#1765CC' : '#1A73E8',
-                color: loading ? '#9AA0A6' : 'white',
-                padding: '13px', borderRadius: 12, border: 'none',
-                fontWeight: 600, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow: loading ? 'none' : submitHovered ? '0 2px 6px rgba(26,115,232,0.24)' : 'none',
-                transition: 'all 0.2s ease',
-                fontFamily: 'Inter, sans-serif', width: '100%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                background: 'linear-gradient(135deg, #5B9CF6 0%, #A78BFA 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
               }}
             >
-              {loading ? (
-                <>
-                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                  Signing in...
-                </>
-              ) : 'Sign In'}
-            </button>
-          </form>
-        </div>
+              workspace
+            </span>{' '}
+            effortlessly.
+          </h2>
+
+          <p className="text-white/50 text-base leading-relaxed mb-14 max-w-sm">
+            Enrollment, grades, attendance, and student records — all in one secure portal designed for Cebu's educators.
+          </p>
+
+          {/* Testimonial / trust signal */}
+          <div
+            className="rounded-2xl p-5"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <p className="text-white/60 text-sm leading-relaxed italic mb-4">
+              "TeacherPortal streamlined our enrollment process and saved us countless hours every semester."
+            </p>
+            <div className="flex items-center gap-3">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                style={{ background: 'linear-gradient(135deg, #1A73E8, #8B5CF6)' }}
+              >
+                DR
+              </div>
+              <div>
+                <div className="text-white/80 text-xs font-semibold">Dr. Reyes</div>
+                <div className="text-white/35 text-[11px]">Department Head, CCS</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+
+      {/* ── Right form panel ─────────────────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 lg:py-0 bg-white relative">
+        {/* Mobile-only logo */}
+        <Link to="/" className="no-underline lg:hidden mb-10">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center font-sora font-extrabold text-white text-base"
+              style={{
+                background: 'linear-gradient(135deg, #1A73E8, #5B9CF6)',
+              }}
+            >
+              T
+            </div>
+            <span className="text-slate-900 font-sora font-bold text-lg tracking-tight">
+              TeacherPortal
+            </span>
+          </div>
+        </Link>
+
+        <LoginForm />
+      </div>
     </div>
   )
 }

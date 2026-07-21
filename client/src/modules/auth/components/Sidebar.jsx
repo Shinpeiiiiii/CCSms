@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import useAuthStore from '../state/auth-store'
 import NAV_ITEMS from '../config/navigation'
+import NavItem from './NavItem'
 import { Layers, X, MoreVertical, LogOut, Loader2 } from 'lucide-react'
 
 const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
@@ -212,54 +213,17 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
 
       {/* Nav */}
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-        {visibleNav.map(({ label, to, icon }) => {
-          const isActive = location.pathname === to
-          return (
-            <Link
-              key={label}
-              to={to}
-              onClick={onClose}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '10px 16px',
-                borderRadius: 100,
-                textDecoration: 'none',
-                background: isActive ? '#E8F0FE' : 'transparent',
-                color: isActive ? '#1A73E8' : '#5F6368',
-                fontWeight: isActive ? 600 : 500,
-                fontSize: 14,
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = '#F1F3F4'
-                  e.currentTarget.style.color = '#202124'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = '#5F6368'
-                }
-              }}
-            >
-              <span
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  color: isActive ? '#1A73E8' : '#5F6368',
-                }}
-              >
-                {icon}
-              </span>
-              {label}
-            </Link>
-          )
-        })}
+        {visibleNav.map(({ label, to, icon }) => (
+          <NavItem
+            key={label}
+            label={label}
+            to={to}
+            icon={icon}
+            isActive={location.pathname === to}
+            onClick={onclose}
+          />
+        ))}
       </nav>
-
       {/* User role badge at bottom */}
       <div
         style={{

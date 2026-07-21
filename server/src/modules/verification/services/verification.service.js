@@ -1,67 +1,73 @@
-const Verification = require("../models/verification.model");
-const { sendEmail, } = require("../../email/services/email.service");
-const verificationTemplate = require("../../email/templates/verification.template");
+const Verification = require('../models/verification.model');
+const sendVerificationCode = require('../utils/sendVerificationCode');
 
 
-const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 90000).toString();
-};
+const requestVerificationCode = async ({email, purpose = "Enrollment Application"}) => {
 
-
-const sendVerificationCode = async ({
-    email,
-    purpose,
-}) => {
-
-    // Normalize email
-    email = email.toLowerCase().trim();
-
-    // Check existing verification
-    const existing = await Verification.findOne({
-        email,
-        purpose,
-    });
-
-    if (existing) {
-
-        const secondsPassed = (Date.now() - existing.createdAt.getTime()) / 1000;
-
-        if (secondsPassed < 60) {
-            throw new Error(
-                `Please wait ${Math.ceil(60 - secondsPassed)} seconds before requesting another code.`
-            );
-        }
-
-        await Verification.deleteOne({
-            _id: existing._id,
-        });
-
-    }
-
-    const code = generateOTP();
-
-    const expiresAt = new Date( Date.now() + 5 * 60 * 1000);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    await Verification.deleteMany({
+        email, purpose, verified: false,
+    })
 
     await Verification.create({
+        email, code, purpose, expiresAt: new Date(Date.now() + 10 * 60 * 1000), 
+    });
+
+    await sendVerificationCode(email, code);
+
+    return {message: "Verification code successfully.",}
+
+    console.log("Verification email sent successfully.")
+};
+
+const verifyRequestCode = async ({
+    email,
+    code,
+    purpose = "Enrollment Application"
+}) => {
+
+    const record = await Verification.findOne({
         email,
-        code,
         purpose,
-        expiresAt,
+        verified: false,
     });
 
-    await sendEmail({
-        to: email,
-        subject: "School Enrollment Application Verification Code",
-        html: verificationTemplate(code),
-    });
+    if (!record) {
+        throw new Error(
+            "No verification request found."
+        );
+    }
 
-    return { message: "Verification code sent.", };
+    if (record.expiresAt < new Date()) {
+        throw new Error(
+            "Verification code has expired."
+        );
+    }
 
+    // Limit attempts
+    if (record.attempts >= 5) {
+        throw new Error(
+            "Too many invalid attempts. Request a new code."
+        );
+    }
+
+    if (record.code !== code) {
+
+        record.attempts += 1;
+        await record.save();
+
+        throw new Error(
+            "Invalid verification code."
+        );
+    }
+
+    record.verified = true;
+    await record.save();
+
+    return {
+        verified: true,
+        message: "Email verified successfully.",
+    };
 };
 
-module.exports = {
-    generateOTP,
-    sendVerificationCode,
-};
-
-module.exports = {generateOTP};
+module.exports = {requestVerificationCode, verifyRequestCode};

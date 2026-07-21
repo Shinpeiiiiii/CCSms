@@ -4,8 +4,9 @@ import NavHeader from './components/NavHeader'
 import Footer from '../home/components/Footer'
 import Hero from '../home/components/Hero'
 import About from './components/About'
-import Program from '../home/components/Program'
+import FeatureShowcase from '../auth/components/FeatureShowcase'
 import Enrollment from './components/Enrollment'
+import Program from '../home/components/Program'
 
 
 const Home = () => {
@@ -32,6 +33,7 @@ const Home = () => {
             <NavHeader />
             <Hero />
             <About />
+            <FeatureShowcase />
             <Enrollment />
             <Program />
             <Footer />
@@ -40,3 +42,4 @@ const Home = () => {
 }
 
 export default Home
+

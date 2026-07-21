@@ -3,8 +3,7 @@ import ArrowNarrowRightIcon from "../movingicons/arrowNarrowIcon";
 import ArrowNarrowerRightIcon from "../movingicons/arrowNarrowerIcon";
 import ArrowNarrowLeftIcon from "../movingicons/arrowsNarrowIcon";
 import ArrowNarrowerLeftIcon from "../movingicons/arrowsNarrowerIcon";
-
-
+import arrowDownIcon from "../movingicons/arrowDownIcon"
 
 const TablePagination = ({
     count,
@@ -17,6 +16,7 @@ const TablePagination = ({
     const narrowerRef = useRef(null);
     const narrowLeftRef = useRef(null);
     const narrowerLeftRef = useRef(null);
+    const arrowDownRef = useRef(null);
 
     const totalPages = rowsPerPage === -1 ? 1 : Math.ceil(count / rowsPerPage);
     const from = count === 0 ? 0 : page * rowsPerPage + 1;
@@ -41,6 +41,7 @@ const TablePagination = ({
                 onMouseEnter={() => arrowDownRef.current?.startAnimation()}
                 onMouseLeave={() => arrowDownRef.current?.stopAnimation()}
            >
+                <arrowDownIcon ref={arrowDownRef}/>
                 <option value={5}>5</option>
                 <option value={10}>10</option>
                 <option value={20}>20</option>

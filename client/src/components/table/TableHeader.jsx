@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 const TableHeader = ({
     columns,
     sortField,
@@ -33,10 +31,10 @@ const TableHeader = ({
                         }} 
                        
                     >
-                        {column.header}
+                        {column.renderHeader ? column.renderHeader() : column.header}
 
                         {
-                            column.sortable && (
+                            column.sortable && !column.renderHeader && (
                                 <span style={{marginLeft: 6,}}>
                                     {
                                         sortField === column.accessor ? (

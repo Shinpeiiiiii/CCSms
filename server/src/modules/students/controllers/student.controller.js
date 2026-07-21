@@ -1,4 +1,5 @@
 const Student = require('../models/Student')
+const studentService = require('../services/student.service')
 
 const createStudent = async (req, res) =>{
 
@@ -18,11 +19,17 @@ const createStudent = async (req, res) =>{
 
 const getStudents = async (req,res) => {
     try{
-        const students = await Student.find()
-        return res.status(200).json(students)
+       // const students = await Student.find()
+       //     .populate('program', 'programCode programName')
+       //     .populate('section', 'sectionCode sectionName yearLevel')
+        const students = await studentService.getStudents();
+        return res.status(200).json({
+            success: true,
+            data: students,
+        })
 
     }catch(error){
-        return res.status(500).json({message: error.message})
+        return res.status(500).json({success: false ,message: error.message})
     }
 }
 
@@ -45,10 +52,75 @@ const updateStudent = async (req,res) => {
         res.status(500).json({message: error.message})
     }   
 }
+const getDashboard = async (req, res) => {
+
+    try {
+        const dashboard =
+            await studentService.getDashboard(
+                req.user.id
+            );
+        res.json(dashboard);
+    }
+    catch (error) {
+        res.status(400).json({
+            message: error.message,
+        });
+    }
+};
+
+const getMyProfile = async (req, res) => {
+
+    try {
+        const student =
+            await studentService.getMyProfile(
+                req.user.id
+            );
+        res.json(student);
+    }
+    catch (error) {
+        res.status(400).json({
+            message: error.message,
+        });
+    }
+};
+
+const updateMyProfile = async (req, res) => {
+
+    try {
+        const student =
+            await studentService.updateMyProfile(
+                req.user.id,
+                req.body
+            );
+        res.json(student);
+    }
+    catch (error) {
+        res.status(400).json({
+            message: error.message,
+        });
+    }
+};
+
+const assignSection = async (req, res) => {
+    try{
+        const result = await studentService.assignSection(req.params.id, req.body.sectionId);
+        return res.status(200).json({
+            success: true,
+            message: "Section assigned successfully.",
+            data: result,
+        });
+
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
 
 module.exports = {
     createStudent,
     getStudents,
     deleteStudent,
-    updateStudent
+    updateStudent, getMyProfile, updateMyProfile, getDashboard, assignSection,
 }

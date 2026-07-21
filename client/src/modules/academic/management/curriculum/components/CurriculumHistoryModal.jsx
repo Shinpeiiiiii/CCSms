@@ -38,8 +38,7 @@ const CurriculumHistoryModal = ({
                 isOpen={isOpen}
                 onClose={onClose}
                 title="Curriculum Version History"
-                size="lg"
-            >
+                size="lg">
                 {
                     loading ? (
                         <p>Loading History...</p>
@@ -48,11 +47,10 @@ const CurriculumHistoryModal = ({
                             columns={columns}
                             data={history}
                             loading={loading}
-                            emptyMessage="No curriculum version found."
+                            emptyMessage="No curriculum versions found."
                         />
                     )
                 }
-                
             </Modal>
             <CurriculumVersionDetailsModal
                 isOpen={isDetailsOpen}
@@ -60,8 +58,6 @@ const CurriculumHistoryModal = ({
                 curriculum={selectedVersion}
                 onCreateVersion={onCreateVersion}
             />
-
-
         </>
     )
 }

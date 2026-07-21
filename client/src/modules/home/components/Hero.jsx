@@ -73,10 +73,13 @@ const Hero = () => {
             color: '#1A73E8',
             borderRadius: 100,
             marginBottom: 36,
-            maxWidth: '100%',
-            width: 360,
+            width: '100%',
+            maxWidth: 480,
             overflow: 'hidden',
             padding: '7px 0',
+            position: 'relative',
+            maskImage: 'linear-gradient(to right, transparent, white 15%, white 85%, transparent)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, white 15%, white 85%, transparent)',
           }}
         >
           <div
@@ -85,11 +88,11 @@ const Hero = () => {
               alignItems: 'center',
               gap: 40,
               whiteSpace: 'nowrap',
-              animation: 'hero-marquee 12s linear infinite',
+              animation: 'hero-marquee 16s linear infinite',
               willChange: 'transform',
             }}
           >
-            {[0, 1].map((copy) => (
+            {[0, 1, 2, 3].map((copy) => (
               <span
                 key={copy}
                 style={{
@@ -169,6 +172,7 @@ const Hero = () => {
             marginBottom: 72,
           }}
         >
+          {announcement ? (
           <Link
             to="/enrollmentform"
             className="btn-primary"
@@ -191,6 +195,22 @@ const Hero = () => {
             Enroll Now
             <ArrowRight size={16} />
           </Link>
+          ) : (
+             <button
+                disabled
+                style={{
+                    background: "#E5E7EB",
+                    color: "#6B7280",
+                    padding: "15px 36px",
+                    borderRadius: 100,
+                    border: "none",
+                    cursor: "not-allowed",
+                    fontWeight: 600,
+                }}
+            >
+                Enrollment Closed
+            </button>
+          )}
           <Link
             to="/program"
             className="btn-ghost"
