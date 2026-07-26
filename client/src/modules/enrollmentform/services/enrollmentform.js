@@ -10,6 +10,7 @@ export const sendOtp = async (email) => {
         email,
         purpose: 'Enrollment Application',
     })
+    console.log("response:", response)
     return response.data
 }
 

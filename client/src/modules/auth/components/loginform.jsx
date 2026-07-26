@@ -26,7 +26,7 @@ const LoginForm = () => {
   const turnstileRef = useRef(null)
   const widgetIdRef = useRef(null)
   const iconRef = useRef(null)
-  const ENABLE_TURNSTILE = import.meta.env.VITE_ENABLE_TURNSTILE !== 'false'
+  const ENABLE_TURNSTILE = import.meta.env.VITE_ENABLE_TURNSTILE;
 
   // Helper to render the Cloudflare Turnstile widget
   const renderWidget = () => {
@@ -35,7 +35,7 @@ const LoginForm = () => {
     console.log('turnstileRef:', !!turnstileRef.current)
     console.log('widgetId:', widgetIdRef.current)
     console.log('sitekey:', import.meta.env.VITE_TURNSTILE_SITE_KEY)
-    
+
     if (!window.turnstile || !turnstileRef.current || widgetIdRef.current) return
 
     widgetIdRef.current = window.turnstile.render(turnstileRef.current, {

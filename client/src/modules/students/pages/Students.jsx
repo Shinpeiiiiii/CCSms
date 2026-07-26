@@ -72,7 +72,7 @@ const StudentsContent = () => {
     batchUpdateSections
   } = useStudents();
 
-  const { departments, programs, sections } = useFilterMetadata();
+  const { departments, programs, sections, refreshSections } = useFilterMetadata();
 
   // Filter hooks
   const {
@@ -172,7 +172,8 @@ const StudentsContent = () => {
     setSelectedStudent(student);
     setTargetSectionId(student.section?._id || '');
     setShowAssignModal(true);
-  }, []);
+    refreshSections();
+  }, [refreshSections]);
 
   const handleAssignSection = useCallback(async () => {
     if (!targetSectionId || !selectedStudent) return;
@@ -184,11 +185,12 @@ const StudentsContent = () => {
       addToast('Section assigned successfully', 'success');
       setShowAssignModal(false);
       setTargetSectionId('');
+      refreshSections();
     } else {
       addToast(result.error, 'error');
     }
     setAssigning(false);
-  }, [targetSectionId, selectedStudent, updateStudentSection, addToast]);
+  }, [targetSectionId, selectedStudent, updateStudentSection, addToast, refreshSections]);
 
   const handleBatchAssignSection = useCallback(async () => {
     if (!batchTargetSectionId || selectedIds.length === 0) return;
@@ -201,6 +203,7 @@ const StudentsContent = () => {
       setShowBatchAssignModal(false);
       clearSelection();
       setBatchTargetSectionId('');
+      refreshSections();
     } else {
       addToast(
         `Assigned ${successful.length}, failed ${failed.length}: ${failed[0]?.error}`,
@@ -208,12 +211,13 @@ const StudentsContent = () => {
       );
     }
     setBatchAssigning(false);
-  }, [batchTargetSectionId, selectedIds, batchUpdateSections, addToast, clearSelection]);
+  }, [batchTargetSectionId, selectedIds, batchUpdateSections, addToast, clearSelection, refreshSections]);
 
   const openBatchModal = useCallback(() => {
     setBatchTargetSectionId('');
     setShowBatchAssignModal(true);
-  }, []);
+    refreshSections();
+  }, [refreshSections]);
 
   return (
     <div className="space-y-5 animate-in fade-in duration-500">

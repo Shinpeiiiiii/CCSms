@@ -1,6 +1,7 @@
 // hooks/useFilterMetadata.js
 import { useState, useEffect, useCallback } from 'react';
 import api from '../../../services/api';
+import { getSection } from '../../academic/management/section/services/section.services';
 
 
 
@@ -30,11 +31,23 @@ const useFilterMetadata = () => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    useEffect(() => {
+        fetchAll();
+    }, [fetchAll]);
 
-  return { departments, programs, sections, loading };
+    const refreshSections = useCallback(async () => {
+        setLoading((prev) => ({ ...prev, sections: true }));
+        try {
+            const secRes = await getSection().catch(() => []);
+            setSections(Array.isArray(secRes) ? secRes : secRes?.data ?? []);
+        } catch (err) {
+            console.error('Failed to refresh sections:', err);
+        } finally {
+            setLoading((prev) => ({ ...prev, sections: false }));
+        }
+    }, []);
+
+    return { departments, programs, sections, loading, refreshSections };
 };
 
 export default useFilterMetadata;

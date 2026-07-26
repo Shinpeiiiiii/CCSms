@@ -13,13 +13,10 @@ import useCrud from "../../../../../hooks/useCrud";
 import useSection from "../hooks/useSection";
 
 import {
-
     createSection,
-
     updateSection,
-
-    activateSection,
-
+    openSection,
+    closeSection,
     archiveSection,
 
 } from "../services/section.services";
@@ -27,35 +24,22 @@ import {
 const Section = () => {
 
     const {
-
         sections,
-
         loading,
-
         refreshSections,
-
     } = useSection();
 
     const {
-
         search,
-
         setSearch,
-
         selectedItem,
-
         isModalOpen,
-
         openCreate,
-
         openEdit,
-
         closeModal,
-
     } = useCrud();
 
     const [saving, setSaving] = useState(false);
-
     /*
     =====================================
     Search
@@ -95,7 +79,6 @@ const Section = () => {
             section.academicYear?.academicYearName
                 ?.toLowerCase()
                 .includes(keyword)
-
         );
 
     }, [sections, search]);
@@ -115,49 +98,27 @@ const Section = () => {
             if (selectedItem) {
 
                 await updateSection(
-
                     selectedItem._id,
-
                     formData
-
                 );
-
             }
-
             else {
-
                 await createSection(
-
                     formData
-
                 );
-
             }
-
             closeModal();
-
             await refreshSections();
-
         }
-
         catch (error) {
-
             alert(
-
                 error.response?.data?.message ||
-
                 "Failed to save section."
-
             );
-
         }
-
         finally {
-
             setSaving(false);
-
         }
-
     };
 
     /*
@@ -166,136 +127,91 @@ const Section = () => {
     =====================================
     */
 
-    const handleActivate = async (section) => {
+    const handleOpenSection = async (section) => {
 
         try {
 
-            await activateSection(
-
+            await openSection(
                 section._id
-
             );
-
             await refreshSections();
-
         }
-
         catch (error) {
-
             alert(
-
                 error.response?.data?.message ||
-
-                "Failed to activate section."
-
+                "Failed to open section."
             );
-
         }
-
     };
-
+    const handleCloseSection = async (section) => {
+        try{
+            await closeSection(section._id);
+            await refreshSections();
+        }
+        catch(error){
+            alert(
+                error.response?.data?.message || "Failede to close section."
+            );
+        }
+    };
     /*
     =====================================
     Archive
     =====================================
     */
-
     const handleArchive = async (section) => {
 
         try {
-
             await archiveSection(
-
                 section._id
-
             );
-
             await refreshSections();
-
         }
-
         catch (error) {
-
             alert(
-
                 error.response?.data?.message ||
-
                 "Failed to archive section."
-
             );
-
         }
-
     };
 
     const columns = SectionColumns({
-
         openEdit,
-
-        onActivate: handleActivate,
-
+        onOpen: handleOpenSection,
+        onClose: handleCloseSection,
         onArchive: handleArchive,
-
     });
 
     return (
 
         <DashboardLayout>
-
             <Card
-
                 title="Sections"
-
                 subtitle="Manage class sections"
-
                 actions={
-
                     <SectionToolbar
-
                         search={search}
-
                         setSearch={setSearch}
-
                         onAdd={openCreate}
-
                     />
-
                 }
-
             >
-
                 <DataTable
-
                     columns={columns}
-
                     data={filteredSections}
-
                     loading={loading}
-
                     emptyMessage="No sections found."
-
                 />
-
             </Card>
-
             <SectionModal
-
                 isOpen={isModalOpen}
-
                 onClose={closeModal}
-
                 onSubmit={handleSave}
-
                 section={selectedItem}
-
                 loading={saving}
-
             />
-
         </DashboardLayout>
-
     );
-
 };
 
 export default Section;

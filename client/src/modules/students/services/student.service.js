@@ -29,4 +29,8 @@ export const assignSection = async (studentId, sectionId) => {
         const response = await api.patch(`/students/${studentId}/assign-section`, { sectionId })
         return response.data
 }
+export const studentDashboard = async () => {
+        const response = await api.get('students/dashboard');
+        return response.data;
+}
 

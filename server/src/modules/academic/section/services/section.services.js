@@ -4,6 +4,8 @@ const Curriculum = require('../../curriculum/models/curriculum.models')
 
 const AcademicYear = require('../../academicyear/models/academicyear.model')
 
+const Student = require('../../../students/models/Student')
+
 const createSection = async (data) => {
 
     const existingSection =
@@ -65,7 +67,7 @@ const createSection = async (data) => {
 
 const getSection = async () => {
 
-    return await Section.find()
+    const sections = await Section.find()
         .populate({
             path: 'curriculum',
             select: 'curriculumCode curriclumName program',
@@ -74,17 +76,30 @@ const getSection = async () => {
                 select: 'programName programCode',
             },
         })
-        .populate(
-            'academicYear',
-            'academicYearName'
-        )
-        .populate(
-            'adviser',
-            'firstName lastName email'
-        )
-        .sort({
-            createdAt: -1,
-        })
+        .populate('academicYear', 'academicYearName')
+        .populate('adviser', 'firstName lastName email')
+        .sort({ createdAt: -1 })
+
+    const counts = await Student.aggregate([
+        {
+            $match: {
+                section: { $ne: null },
+            },
+        },
+        {
+            $group: {
+                _id: '$section',
+                enrolledCount: { $sum: 1 },
+            },
+        },
+    ])
+
+    const countMap = new Map(counts.map((c) => [c._id.toString(), c.enrolledCount]))
+
+    return sections.map((section) => ({
+        ...section.toObject(),
+        enrolledCount: countMap.get(section._id.toString()) || 0,
+    }))
 
 }
 
@@ -290,21 +305,12 @@ const deleteSection = async (id) => {
 }
 
 module.exports = {
-
     createSection,
-
     getSection,
-
     getSectionById,
-
     updateSection,
-
     openSection,
-
     closeSection,
-
     archiveSection,
-
-    deleteSection,
-
+    deleteSection
 }

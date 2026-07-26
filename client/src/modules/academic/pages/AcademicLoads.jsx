@@ -213,7 +213,7 @@ const AcademicLoads = () => {
                       </td>
 
                       <td className="px-3 py-2">
-                        {item.subject?.descriptiveTitle}
+                        {item.subject?.subjectName}
                       </td>
 
                       <td className="px-3 py-2 text-center">

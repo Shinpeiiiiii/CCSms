@@ -4,9 +4,15 @@ import LoginForm from '../components/loginform'
 import { motion } from 'framer-motion'
 
 const Login = () => {
-  const token = useAuthStore((state) => state.token)
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const user = useAuthStore((state) => state.user)
 
-  if (token) return <Navigate to="/dashboard" replace />
+  if (accessToken && user) {
+    if (user.role === 'student') {
+      return <Navigate to="/student/dashboard" replace />
+    }
+    return <Navigate to="/dashboard" replace />
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">

@@ -1,5 +1,6 @@
 const Student = require('../models/Student')
 const studentService = require('../services/student.service')
+const StudentSubject = require('../../studentsubject/models/studentsubject.models');
 
 const createStudent = async (req, res) =>{
 
@@ -68,6 +69,26 @@ const getDashboard = async (req, res) => {
     }
 };
 
+
+const getMySubjects = async (req, res) => {
+    try {
+        const student = await Student.findOne({ user: req.user.id });
+        if (!student) {
+            return res.status(404).json({ message: "Student not found." });
+        }
+
+        const subjects = await StudentSubject.find({ student: student._id })
+            .populate("subject", "subjectCode subjectName description units")
+            .populate("section", "sectionCode sectionName")
+            .populate("enrollmentPeriod", "academicYear")
+            .sort({ createdAt: -1 });
+
+        return res.json({ success: true, data: subjects });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 const getMyProfile = async (req, res) => {
 
     try {
@@ -122,5 +143,5 @@ module.exports = {
     createStudent,
     getStudents,
     deleteStudent,
-    updateStudent, getMyProfile, updateMyProfile, getDashboard, assignSection,
+    updateStudent, getMyProfile, updateMyProfile, getDashboard, getMySubjects, assignSection,
 }

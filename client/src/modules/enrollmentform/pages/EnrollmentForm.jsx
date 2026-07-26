@@ -37,6 +37,7 @@ const EnrollmentForm = () => {
   // Error/Success Notification
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
+  const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false)
 
   // Form inputs
   const [formData, setFormData] = useState({
@@ -94,7 +95,13 @@ const EnrollmentForm = () => {
       setSuccessMsg(`A verification code has been sent to ${email}`)
       setStep('otp')
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send verification code. Please try again.')
+      const message = err.response?.data?.message || 'Failed to send verification code. Please try again.'
+      if (message.includes('already registered')) {
+        setIsAlreadyRegistered(true)
+        setError('This email is already registered in the system.')
+      } else {
+        setError(message)
+      }
     } finally {
       setSendingOtp(false)
     }
@@ -149,7 +156,13 @@ const EnrollmentForm = () => {
 
       setStep('form')
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid or expired verification code.')
+      const message = err.response?.data?.message || 'Invalid or expired verification code.'
+      if (message.includes('already registered')) {
+        setIsAlreadyRegistered(true)
+        setError('This email is already registered in the system.')
+      } else {
+        setError(message)
+      }
     } finally {
       setVerifyingOtp(false)
     }
@@ -231,7 +244,7 @@ const EnrollmentForm = () => {
                 CCS
               </div>
               <span className="text-white font-sora font-bold text-xl tracking-tight">
-                Cebu College Portal
+                CCSms
               </span>
             </div>
           </Link>
@@ -383,6 +396,20 @@ const EnrollmentForm = () => {
                         </>
                       )}
                     </button>
+
+                    {isAlreadyRegistered && (
+                      <div className="mt-4 text-center">
+                        <p className="text-slate-400 text-xs mb-3">
+                          This email is already registered.
+                        </p>
+                        <Link
+                          to="/login"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all no-underline"
+                        >
+                          Go to Login
+                        </Link>
+                      </div>
+                    )}
                   </form>
                 </div>
               )}
@@ -461,6 +488,20 @@ const EnrollmentForm = () => {
                     </>
                   )}
                 </button>
+
+                {isAlreadyRegistered && (
+                  <div className="mt-4 text-center">
+                    <p className="text-slate-400 text-xs mb-3">
+                      This email is already registered.
+                    </p>
+                    <Link
+                      to="/login"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all no-underline"
+                    >
+                      Go to Login
+                    </Link>
+                  </div>
+                )}
               </form>
             </motion.div>
           ) : step === 'form' ? (

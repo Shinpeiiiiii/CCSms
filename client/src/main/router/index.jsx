@@ -4,6 +4,8 @@ import useAuthStore from '../../modules/auth/state/auth-store'
 import Home from '../../modules/home/Home'
 import Login from '../../modules/auth/pages/Login'
 import ChangePassword from '../../modules/auth/pages/ChangePassword'
+import ForgotPassword from '../../modules/auth/pages/ForgotPassword'
+import ActivateAccount from '../../modules/auth/pages/ActivateAccount'
 import Dashboard from '../../modules/dashboard/pages/Dashboard'
 import Students from '../../modules/students/pages/Students'
 import Enrollmentform from '../../modules/enrollmentform/pages/EnrollmentForm'
@@ -23,20 +25,37 @@ import Section from '@/modules/academic/management/section/pages/Section'
 import Admission from "@/modules/admission/pages/PendingApplication"
 import TrackApplication from '@/modules/home/pages/TrackApplication'
 import AcademicLoads from '@/modules/academic/pages/AcademicLoads'
+import SectionSubject from '@/modules/academic/management/sectionSubject/pages/SectionSubject'
+
+
+import MySubjects from '@/modules/students/pages/MySubjects'
+import StudentDashboard from '@/modules/students/pages/StudentDashboard'
+import MyProfile from '@/modules/students/pages/MyProfile'
+
+
 
 const Router = () => {
     const accessToken = useAuthStore((state) => state.accessToken)
+    const user = useAuthStore((state) => state.user)
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={accessToken ? <Navigate to="/dashboard" replace /> : <Home />} />
+                <Route path="/" element={
+                    accessToken ? (
+                        user?.role === 'student' ?
+                            <Navigate to="/student/dashboard" replace /> :
+                            <Navigate to="/dashboard" replace />
+                    ) : <Home />
+                } />
                 <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/change-password" element={<ChangePassword />} />
+                <Route path="/activate-account" element={<ActivateAccount />} />
                 <Route path="/enrollmentform" element={<Enrollmentform />} />
                 <Route path="/enrollment" element={<Enrollment />} />
                 <Route path="/track" element={<TrackApplication />} />
                 <Route path="/department" element={
-                    <RoleProtectedRoute allowedRoles={['admin', 'registarar', 'teacher']}>
+                    <RoleProtectedRoute allowedRoles={['admin', 'registrar', 'teacher']}>
                         <Department />
                     </RoleProtectedRoute>
                 } />
@@ -66,7 +85,7 @@ const Router = () => {
                     </RoleProtectedRoute>
                 } />
                 <Route path="/student" element={
-                    <ProtectedRoute allowedRoles={['admin', 'registrar', 'registrar']}>
+                    <ProtectedRoute allowedRoles={['admin', 'registrar', 'teacher']}>
                         <Students />
                     </ProtectedRoute>
                 } />
@@ -84,6 +103,12 @@ const Router = () => {
                 <Route path="/subject" element={
                     <RoleProtectedRoute allowedRoles={['admin','registrar', 'teacher']}>
                         <Subject />
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/section-subject' element={
+                    <RoleProtectedRoute allowedRoles={['admin','registrar']}>
+                        <SectionSubject/>
                     </RoleProtectedRoute>
                 }
                 />
@@ -108,6 +133,24 @@ const Router = () => {
                 <Route path= "/prerequisites" element={
                     <RoleProtectedRoute allowedRoles={['admin']}>
                         <Prerequisites />
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/student/subjects' element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <MySubjects/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/student/dashboard' element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <StudentDashboard/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/student/profile' element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <MyProfile/>
                     </RoleProtectedRoute>
                 }
                 />

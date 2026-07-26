@@ -1,8 +1,13 @@
 const Verification = require('../models/verification.model');
 const sendVerificationCode = require('../utils/sendVerificationCode');
-
+const User = require('../../auth/models/User');
 
 const requestVerificationCode = async ({email, purpose = "Enrollment Application"}) => {
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        throw new Error("This email is already registered. Please login instead.");
+    }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     await Verification.deleteMany({

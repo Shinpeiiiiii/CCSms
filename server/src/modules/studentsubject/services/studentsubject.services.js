@@ -1,8 +1,9 @@
 const Student = require("../../students/models/Student");
 const Section = require("../../academic/section/models/section.models");
-const CurriculumSubject = require("../../academic/curriculum/models/curriculum.subject.models");
 const EnrollmentPeriod = require("../../academic/enrollmentperiod/models/enrollmentperiod.model");
 const StudentSubject = require("../models/studentsubject.models");
+const SectionSubject = require("../../sectionsubject/models/sectionsubject.model");
+
 
 const generateLoad = async (studentID) => {
     const student = await Student.findById(studentID).populate("section");
@@ -16,7 +17,6 @@ const generateLoad = async (studentID) => {
     }
 
     const section = await Section.findById(student.section)
-    .populate("curriculum")
     .populate("academicYear");
 
     if(!section){
@@ -30,15 +30,13 @@ const generateLoad = async (studentID) => {
     if(!enrollmentPeriod){
         throw new Error("Theres no open enrollment period.");
     }
-  
-    const curriculumsubjects = await CurriculumSubject.find({
-        curriculum: section.curriculum._id,
-        yearLevel: section.yearLevel,
-        semester: enrollmentPeriod.semester,
+   
+    const sectionSubjects = await SectionSubject.find({
+        section: section._id,
     }).populate("subject");
 
-    if(!curriculumsubjects.length){
-        throw new Error("No curriculum subjects found.");
+    if(!sectionSubjects.length){
+        throw new Error("No section subjects found for this section.");
     }
 
     const existing = await StudentSubject.find({
@@ -50,15 +48,19 @@ const generateLoad = async (studentID) => {
             "Student already has generated subjects for this semester."
         );
     }
-    const documents = curriculumSubjects.map(item => ({
+
+    const documents = sectionSubjects.map(ss => ({
         student: student._id,
-        section: section._id,
-        subject: item.subject._id,
+        section: ss.section,
+        subject: ss.subject._id,
+        enrollmentPeriod: enrollmentPeriod._id,
         academicYear: enrollmentPeriod.academicYear,
         yearLevel: section.yearLevel,
-        semester: enrollmentPeriod.semester,
-        units: item.subject.units,
+        semester: ss.semester || enrollmentPeriod.semester,
+        units: ss.subject?.units || 0,
+        status: "Loaded",
     }));
+
     await StudentSubject.insertMany(documents);
 
     return await StudentSubject.find({

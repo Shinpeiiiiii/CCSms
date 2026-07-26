@@ -1,6 +1,5 @@
 const Section = require('../../academic/section/models/section.models');
 const Student = require('../models/Student');
-const EnrollmentPeriod = require('../../academic/enrollmentperiod/models/enrollmentperiod.model');
 const StudentSubject = require('../../studentsubject/models/studentsubject.models');
 
 
@@ -9,45 +8,25 @@ const getDashboard = async (userId) => {
         user: userId,
     })
     .populate("program", "programName")
-    .populate("section", "sectionName");
+    .populate("section", "sectionCode sectionName yearLevel");
 
     if (!student) {
         throw new Error("Student not found.");
     }
 
-    const announcement = await EnrollmentPeriod.findOne({
-        status: "Open",
-    })
-    .populate("academicYear", "academicYearName");
+    const enrolledSubjects = await StudentSubject.countDocuments({
+        student: student._id,
+    });
 
-    const studentWithLoadStatus = await Promise.all(
-      student.map((async (students) => {
-        const subjectCount = await StudentSubject.countDocuments({
-          students: students._id,
-        }); 
-
-        return{
-          ...students.toObject(),loadGenerated: subjectCount > 0, subjectCount,
-        };
-      }))
-    )
-
-    return studentWithLoadStatus;
-    /*return {
-        student: {
-            studentNumber: student.studentNumber,
-            fullName: `${student.firstName} ${student.lastName}`,
-            program: student.program?.programName,
-            section: student.section?.sectionName,
-            yearLevel: student.yearLevel,
-            status: student.status,
-        },
-        announcement,
-        quickStats: {
-            subjects: 0,
-            units: 0,
-        },
-    };*/
+    return {
+        studentNumber: student.studentNumber,
+        fullName: `${student.firstName} ${student.lastName}`,
+        program: student.program?.programName || 'N/A',
+        section: student.section?.sectionName || 'Unassigned',
+        yearLevel: student.yearLevel || 'N/A',
+        enrolledSubjects,
+        status: student.status,
+    };
 };  
 
 const getMyProfile = async (id) => {

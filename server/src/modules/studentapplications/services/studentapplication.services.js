@@ -11,7 +11,6 @@ const sendWelcomeEmail = require("../../admission/utils/sendWelcomeEmail");
 
 const startApplication = async (email) => {
 
-    const applicationNumber = await generateApplicationNumber();
     const enrollmentPeriod =
         await EnrollmentPeriod.findOne({
             status: "Open",
@@ -22,6 +21,11 @@ const startApplication = async (email) => {
         throw new Error("Enrollment is currently closed.");
     }
 
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        throw new Error("This email is already registered. Please login instead.");
+    }
+
     const existing = await StudentApplication.findOne({
             email,
             enrollmentPeriod: enrollmentPeriod._id,
@@ -30,6 +34,8 @@ const startApplication = async (email) => {
     if (existing) {
         return existing;
     }
+
+    const applicationNumber = await generateApplicationNumber();
 
     return await StudentApplication.create({
         applicationNumber,

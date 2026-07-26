@@ -1,6 +1,6 @@
 .agent/
 .kilo/
-
+.docs/
 node_modules/
 .env
 .env.local

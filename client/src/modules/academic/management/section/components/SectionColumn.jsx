@@ -1,12 +1,12 @@
 import SectionStatusBadge from "./SectionStatusBadge";
 import ActionMenu from "../../../../../components/actions/ActionMenu";
+import DotsVerticalIcon from "@/components/movingicons/dotsVerticalIcon";
 
 const SectionColumns = ({
 
     openEdit,
-
-    onActivate,
-
+    onOpen,
+    onClose,
     onArchive,
 
 }) => [
@@ -44,7 +44,8 @@ const SectionColumns = ({
     {
         header: "Capacity",
 
-        accessor: "capacity",
+        render: (row) =>
+            `${row.enrolledCount ?? 0} / ${row.capacity}`,
     },
 
     {
@@ -61,60 +62,44 @@ const SectionColumns = ({
 
     {
         header: "Actions",
-
         render: (section) => {
-
             const actions = [];
 
             if (section.status === "Planning") {
-
                 actions.push({
-
                     label: "Edit",
-
                     icon: "edit",
-
                     onClick: () => openEdit(section),
-
                 });
-
                 actions.push({
-
-                    label: "Activate",
-
+                    label: "Open",
                     icon: "publish",
-
-                    onClick: () => onActivate(section),
-
+                    onClick: () => onOpen(section),
                 });
-
             }
-
+            if(section.status === "Open"){
+                actions.push({
+                    label: "Close",
+                    icon: "close",
+                    onClick: () => onClose(section),
+                });
+            }
             if (section.status !== "Archived") {
 
                 actions.push({
-
                     label: "Archive",
-
                     icon: "archive",
-
                     onClick: () => onArchive(section),
-
                 });
-
             }
-
             return (
-
                 <ActionMenu
                     actions={actions}
                 />
-
             );
         },
 
     },
-
 ];
 
 export default SectionColumns;

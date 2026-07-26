@@ -21,6 +21,12 @@ const login = async (req, res) => {
       return invalidCredentialsResponse()
     }
 
+    if (user.isActive === false) {
+      return res.status(403).json({
+        message: 'Your account is not yet activated. Please check your email for the activation link.',
+      })
+    }
+
     if(user.lockUntil && user.lockUntil > Date.now()){
       const minsleft = Math.ceil((user.lockUntil - Date.now()) / 60000)
       return res.status(429).json({

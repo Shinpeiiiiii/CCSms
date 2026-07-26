@@ -13,7 +13,7 @@ const sectionSubjectSchema = new mongoose.Schema({
         required:true,
     },
 
-    faculty:{
+    instructor:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         default:null,
@@ -25,6 +25,12 @@ const sectionSubjectSchema = new mongoose.Schema({
         trim:true,
     },
 
+    semester:{
+        type: Number,
+        enum: [1, 2, 3],
+        required: true,
+    },
+
     day:{
         type:String,
         enum:[
@@ -34,17 +40,17 @@ const sectionSubjectSchema = new mongoose.Schema({
             "Thursday",
             "Friday",
         ],
-        required:true,
+        default:"",
     },
 
     startTime:{
         type:String,
-        required:true,
+        default:"",
     },
 
     endTime:{
         type:String,
-        required:true,
+        default:"",
     },
 
     status:{

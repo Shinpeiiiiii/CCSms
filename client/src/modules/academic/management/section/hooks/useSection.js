@@ -39,6 +39,18 @@ const useSection = () => {
 
         loadSections();
 
+        const handleFocus = () => {
+            loadSections()
+        }
+
+        window.addEventListener('focus', handleFocus)
+
+        return () => {
+
+            window.removeEventListener('focus', handleFocus)
+
+        };
+
     }, []);
 
     return {

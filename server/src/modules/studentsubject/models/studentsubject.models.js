@@ -24,10 +24,27 @@ const studentSubjectSchema = new mongoose.Schema({
         ref: "EnrollmentPeriod",
         required: true,
     },
+
+    academicYear: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "AcademicYear",
+        required: true,
+    },
     
     yearLevel: {
         type: Number,
         required: true,
+    },
+
+    semester: {
+        type: String,
+        required: true,
+    },
+
+    units: {
+        type: Number,
+        required: true,
+        default: 0,
     },
 
     status: {

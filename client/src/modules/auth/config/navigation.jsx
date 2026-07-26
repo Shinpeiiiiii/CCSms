@@ -22,6 +22,21 @@ const NAV_ITEMS = [
     icon: LayoutDashboardIcon,
   },
   {
+    label: 'Dashboard',
+    role: ['student'],
+    to: '/student/dashboard'
+  },
+  {
+    label: 'My Subjects',
+    role: ['student'],
+    to: '/student/subjects'
+  },
+  {
+    label: 'My Profile',
+    role: ['student'],
+    to: '/student/profile'
+  },
+  {
     label: 'Department',
     to: '/department',
     role: ['admin'],
@@ -56,6 +71,11 @@ const NAV_ITEMS = [
     to: '/section',
     role: ['admin', 'registrar'],
     icon: Grid3x3
+  },
+  {
+    label: 'Section Subject',
+    to: '/section-subject',
+    role: ['admin', 'registrar'],
   },
   {
     label: 'Student', 

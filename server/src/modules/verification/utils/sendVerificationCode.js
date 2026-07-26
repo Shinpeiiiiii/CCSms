@@ -3,7 +3,6 @@ const transporter = require("../../../config/mailer");
 const sendVerificationCode = async (email, code) => {
 
     await transporter.sendMail({
-
         from: `CCSms <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "CCSms Email Verification",

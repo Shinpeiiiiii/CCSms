@@ -5,7 +5,7 @@ const {
     createStudent,
     getStudents,
     deleteStudent,
-    updateStudent, getMyProfile, updateMyProfile, getDashboard, assignSection
+    updateStudent, getMyProfile, updateMyProfile, getDashboard, getMySubjects, assignSection
 } = require('../controllers/student.controller')
 
 const router = express.Router()
@@ -20,9 +20,10 @@ router.put('/:id', updateStudent)
 router.patch('/:id/assign-section', authMiddleware, authorizeRoles('admin','registrar'), assignSection)
 
 
-router.get('/me', authMiddleware, authorizeRoles('student'), getMyProfile)
-router.put('/me', authMiddleware, authorizeRoles('student'), updateMyProfile)
+router.get('/profile', authMiddleware, authorizeRoles('student'), getMyProfile)
+router.put('/profile/update', authMiddleware, authorizeRoles('student'), updateMyProfile)
 router.get('/dashboard', authMiddleware, authorizeRoles('student'), getDashboard)
+router.get('/subjects', authMiddleware, authorizeRoles('student'), getMySubjects)
 
 
 module.exports = router
