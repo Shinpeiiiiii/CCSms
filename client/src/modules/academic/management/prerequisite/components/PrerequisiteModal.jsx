@@ -7,6 +7,8 @@ const PrerequisiteModal = ({
     onSubmit,
     prerequisite = null,
     subjects = [],
+    curriculums = [],
+    curriculumSubjectMap = {},
     loading = false,
 }) => {
 
@@ -28,6 +30,8 @@ const PrerequisiteModal = ({
                 kee={prerequisite?.id || "new"}
                 initialValues={prerequisite}
                 subjects={subjects}
+                curriculums={curriculums}
+                curriculumSubjectMap={curriculumSubjectMap}
                 onSubmit={onSubmit}
                 loading={loading}
             />

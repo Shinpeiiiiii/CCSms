@@ -3,13 +3,12 @@ const Card = ({
     subtitle,
     children,
     actions,
+    padding = 0,
 }) => {
     return (
         <div
             style={{
                 background: '#FFFFFF',
-                border: '1px solid #DADCE0',
-                borderRadius: 16,
                 overflow: 'visible',
                 boxShadow: '0 1px 2px 0 rgba(60,64,67,0.05)',
             }}
@@ -68,7 +67,7 @@ const Card = ({
                     )}
                 </div>
             )}
-            <div style={{ padding: 24 }}>
+            <div style={{ padding }}>
                 {children}
             </div>
         </div>

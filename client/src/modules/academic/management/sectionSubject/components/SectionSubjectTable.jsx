@@ -1,24 +1,20 @@
 import SectionSubjectRow from "./SectionSubjectRow";
 
 export default function SectionSubjectTable({
-
     subjects,
-
     teachers,
-
     onSave,
-
     onDelete,
-
+    loading = false,
 }) {
 
-    if (!subjects.length) {
+    if (!Array.isArray(subjects) || subjects.length === 0) {
 
         return (
 
             <div className="border rounded-lg p-8 text-center text-muted-foreground">
 
-                No section subjects found.
+                {loading ? "Loading..." : "No section subjects found."}
 
             </div>
 
@@ -28,57 +24,67 @@ export default function SectionSubjectTable({
 
     return (
 
-        <table className="w-full border rounded-lg">
+        <div style={{ overflowX: "auto" }}>
 
-            <thead>
+            <table className="w-full border rounded-lg">
 
-                <tr>
+                <thead>
 
-                    <th>Code</th>
+                    <tr>
 
-                    <th>Subject</th>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>Code</th>
 
-                    <th>Instructor</th>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>Subject</th>
 
-                    <th>Room</th>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>Semester</th>
 
-                    <th>Day</th>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>Units</th>
 
-                    <th>Start</th>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>Instructor</th>
 
-                    <th>End</th>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>Room</th>
 
-                    <th></th>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>Day</th>
 
-                    <th></th>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>Start</th>
 
-                </tr>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>End</th>
 
-            </thead>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}>Status</th>
 
-            <tbody>
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}></th>
 
-                {subjects.map(subject => (
+                        <th style={{ padding: 12, textAlign: "left", borderBottom: "1px solid #E8EAED" }}></th>
 
-                    <SectionSubjectRow
+                    </tr>
 
-                        key={subject._id}
+                </thead>
 
-                        subject={subject}
+                <tbody>
 
-                        teachers={teachers}
+                    {subjects.map(subject => (
 
-                        onSave={onSave}
+                        <SectionSubjectRow
 
-                        onDelete={onDelete}
+                            key={subject._id}
 
-                    />
+                            subject={subject}
 
-                ))}
+                            teachers={teachers}
 
-            </tbody>
+                            onSave={onSave}
 
-        </table>
+                            onDelete={onDelete}
+
+                        />
+
+                    ))}
+
+                </tbody>
+
+            </table>
+
+        </div>
 
     );
 

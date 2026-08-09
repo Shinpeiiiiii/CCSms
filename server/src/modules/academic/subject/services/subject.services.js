@@ -1,5 +1,5 @@
 const Subject = require('../model/subject.model');
-const { remember } = require('../../../../utils/cache.helper')
+const { remember, clearCache } = require('../../../../utils/cache.helper');
 
 
 const createSubject = async (data, userId) => {
@@ -21,12 +21,14 @@ const createSubject = async (data, userId) => {
         throw new Error('Subject name already exists.')
     }
 
-    return await Subject.create({
+    const subject = await Subject.create({
         ...data,
         subjectCode: data.subjectCode.toUpperCase(),
     })
 
-    await deleteCache("subjects");
+    await clearCache("subjects");
+
+    return subject;
 }
 
 const getSubject = async () => {
@@ -96,7 +98,7 @@ const updateSubject = async (id, data) => {
 
     }
 
-    return await Subject.findByIdAndUpdate(
+    const updatedSubject = await Subject.findByIdAndUpdate(
         id,
         data,
         {
@@ -104,6 +106,10 @@ const updateSubject = async (id, data) => {
             runValidators: true,
         }
     )
+
+    await clearCache("subjects");
+
+    return updatedSubject;
 
 }
 
@@ -129,7 +135,9 @@ const deleteSubject = async (id) => {
         - Used in Student Enrollment
     */
 
-    return await Subject.findByIdAndDelete(id)
+    await Subject.findByIdAndDelete(id)
+
+    await clearCache("subjects");
 
 }
 
@@ -184,6 +192,8 @@ const createNewVersion = async (
         createdBy: userId,
 
     });
+
+    await clearCache("subjects");
 
     return newSubject;
 

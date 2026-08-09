@@ -91,11 +91,8 @@ const updateSection = async (req, res) => {
             )
 
         return res.status(200).json({
-
             message: 'Section updated successfully.',
-
             section,
-
         })
 
     } catch (error) {
@@ -114,17 +111,14 @@ const openSection = async (req, res) => {
 
     try {
 
-        const section =
-            await sectionService.openSection(
-                req.params.id
-            )
+        const result = await sectionService.openSection(
+            req.params.id
+        )
 
         return res.status(200).json({
-
             message: 'Section opened successfully.',
-
-            section,
-
+            section: result.section,
+            generatedSubjects: result.generatedSubjects || 0,
         })
 
     } catch (error) {
@@ -149,11 +143,8 @@ const closeSection = async (req, res) => {
             )
 
         return res.status(200).json({
-
             message: 'Section closed successfully.',
-
             section,
-
         })
 
     } catch (error) {
@@ -178,11 +169,8 @@ const archiveSection = async (req, res) => {
             )
 
         return res.status(200).json({
-
             message: 'Section archived successfully.',
-
             section,
-
         })
 
     } catch (error) {
@@ -206,9 +194,7 @@ const deleteSection = async (req, res) => {
         )
 
         return res.status(200).json({
-
             message: 'Section deleted successfully.',
-
         })
 
     } catch (error) {

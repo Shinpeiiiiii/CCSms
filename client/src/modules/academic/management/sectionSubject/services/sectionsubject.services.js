@@ -2,7 +2,7 @@ import api from "@/services/api";
 
 
 export const getSectionSubjects = async (sectionId) => {
-    const { data } = await api.get(
+    const data  = await api.get(
         `/section-subject/${sectionId}`
     );
     return data;

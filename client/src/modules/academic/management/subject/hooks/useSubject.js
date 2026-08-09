@@ -11,46 +11,29 @@ const useSubject = () => {
     const loadSubjects = async () => {
 
         try {
-
             const data = await getSubject();
-
             setSubjects(data);
-
         }
 
         catch (error) {
-
             console.error(
                 "Failed to load subjects:",
                 error
             );
-
         }
-
         finally {
-
             setLoading(false);
-
         }
-
     };
-
     useEffect(() => {
-
         loadSubjects();
-
     }, []);
 
     return {
-
         subject,
-
         loading,
-
         refreshSubjects: loadSubjects,
-
     };
-
 };
 
 

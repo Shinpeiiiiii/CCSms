@@ -146,65 +146,35 @@ const Department = () => {
     });
 
     return (
-
         <DashboardLayout>
-
             <Card
-
                 title="Departments"
-
                 subtitle="Manage academic departments"
-
                 actions={
-
                     <DepartmentToolbar
-
                         search={search}
-
                         setSearch={setSearch}
-
                         onAdd={openCreate}
-
                     />
-
                 }
-
             >
-
                 <DataTable
-
                     columns={columns}
-
                     data={filteredDepartments}
-
                     loading={loading}
-
                     emptyMessage="No departments found."
-
                 />
-
             </Card>
-
             <DepartmentModal
-
                 isOpen={isModalOpen}
-
                 onClose={closeModal}
-
                 onSubmit={handleSave}
-
                 department={selectedItem}
-
                 loading={
-
                     create.isPending ||
-
                     update.isPending
-
                 }
-
             />
-
             <ConfirmModal
                 isOpen={isDeleteOpen}
                 title="Delete Department"
@@ -212,20 +182,13 @@ const Department = () => {
                 onClose={closeDelete}
                 onConfirm={handleDelete}
                 message={
-
                     selectedItem
-
                         ? `Are you sure you want to delete "${selectedItem.departmentName}"?`
-
                         : ""
                 }
-                
             />
-
         </DashboardLayout>
-
     );
-
 };
 
 export default Department;

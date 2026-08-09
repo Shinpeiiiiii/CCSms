@@ -30,6 +30,8 @@ const prerequisiteValidator = async (curriculumId) => {
 
                 type: "Prerequisite",
 
+                curriculum: curriculumId,
+
             }).populate(
                 "requiredSubject",
                 "subjectCode subjectName"

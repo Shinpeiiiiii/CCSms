@@ -1,0 +1,9 @@
+{
+  "env": {
+    "MODEL": "deepseek-v4-pro",
+    "BASE_URL": "https://api.deepseek.com",
+    "API_KEY": "sk-232cee8699144731bf4bc8acb882878e"
+  },
+  "thinkingEnabled": true,
+  "reasoningEffort": "max"
+}

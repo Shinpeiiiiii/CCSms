@@ -25,7 +25,7 @@ import Section from '@/modules/academic/management/section/pages/Section'
 import Admission from "@/modules/admission/pages/PendingApplication"
 import TrackApplication from '@/modules/home/pages/TrackApplication'
 import AcademicLoads from '@/modules/academic/pages/AcademicLoads'
-import SectionSubject from '@/modules/academic/management/sectionSubject/pages/SectionSubject'
+import SectionSubjects from '@/modules/academic/management/sectionSubject/pages/SectionSubjects'
 
 
 import MySubjects from '@/modules/students/pages/MySubjects'
@@ -108,7 +108,7 @@ const Router = () => {
                 />
                 <Route path='/section-subject' element={
                     <RoleProtectedRoute allowedRoles={['admin','registrar']}>
-                        <SectionSubject/>
+                        <SectionSubjects/>
                     </RoleProtectedRoute>
                 }
                 />

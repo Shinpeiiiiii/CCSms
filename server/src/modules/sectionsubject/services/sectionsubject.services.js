@@ -76,7 +76,12 @@ const generateSectionSubjects = async (sectionId, createdBy) => {
         throw new Error('No curriculum  subjects found.')
     }
 
-    const sectionSubjects = await curriculumSubjects.map(cs => ({
+    const validCurriculumSubjects = curriculumSubjects.filter(cs => cs.subject);
+    if (validCurriculumSubjects.length === 0) {
+        throw new Error('No valid curriculum subjects found.');
+    }
+
+    const sectionSubjects = validCurriculumSubjects.map(cs => ({
         section: section._id,
         subject: cs.subject._id,
         semester: cs.semester,

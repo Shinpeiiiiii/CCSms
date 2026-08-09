@@ -4,7 +4,7 @@ import api from '../../../../../services/api';
  * Get all prerequisites
  */
 export const getPrerequisite = async (params = {}) => {
-    const response = await api.get('/prerequisites', {
+    const response = await api.get('/prerequisite', {
         params
     });
 
@@ -15,7 +15,7 @@ export const getPrerequisite = async (params = {}) => {
  * Get prerequisite by ID
  */
 export const getPrerequisiteById = async (id) => {
-    const response = await api.get(`/prerequisites/${id}`);
+    const response = await api.get(`/prerequisite/${id}`);
 
     return response.data;
 };
@@ -25,7 +25,7 @@ export const getPrerequisiteById = async (id) => {
  */
 export const getPrerequisitesBySubject = async (subjectId) => {
     const response = await api.get(
-        `/prerequisites/subject/${subjectId}`
+        `/prerequisite/subject/${subjectId}`
     );
 
     return response.data;
@@ -36,7 +36,7 @@ export const getPrerequisitesBySubject = async (subjectId) => {
  */
 export const createPrerequisite = async (data) => {
     const response = await api.post(
-        '/prerequisites',
+        '/prerequisite',
         data
     );
 
@@ -51,7 +51,7 @@ export const updatePrerequisite = async (
     data
 ) => {
     const response = await api.put(
-        `/prerequisites/${id}`,
+        `/prerequisite/${id}`,
         data
     );
 
@@ -65,7 +65,7 @@ export const deactivatePrerequisite = async (
     id
 ) => {
     const response = await api.patch(
-        `/prerequisites/${id}/deactivate`
+        `/prerequisite/${id}/deactivate`
     );
 
     return response.data;

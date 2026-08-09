@@ -7,31 +7,19 @@ const ProgramToolbar = ({
 }) => {
 
     return (
-
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 16,
-            }}
-        >
-
+        <div className="flex justify-between gap-4">
             <SearchBox
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search program..."
             />
-
             <PrimaryButton
                 onClick={onAdd}
             >
                 Add Program
             </PrimaryButton>
-
         </div>
-
     );
-
 };
 
 export default ProgramToolbar;

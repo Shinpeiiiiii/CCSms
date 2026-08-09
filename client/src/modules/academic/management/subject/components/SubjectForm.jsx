@@ -17,7 +17,7 @@ const SubjectForm = ({
         subjectCode: initialValues?.subjectCode || "",
         subjectName: initialValues?.subjectName || "",
         units: initialValues?.units || 3,
-        lectureHours: initialValues?.lectureHours || 3,
+        lectureHours: initialValues?.lectureHours || 2,
         laboratoryHours: initialValues?.laboratoryHours || 0,
         subjectCategory:
             initialValues?.subjectCategory || "Core",
@@ -64,11 +64,7 @@ const SubjectForm = ({
 
         <form
             onSubmit={handleSubmit}
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 20,
-            }}
+            className="flex flex-col gap-5"
         >
 
             <TextField

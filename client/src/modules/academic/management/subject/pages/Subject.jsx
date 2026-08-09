@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Navigate ,useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
 
@@ -46,10 +47,10 @@ const Subject = () => {
 
     } = useCrud();
 
-    const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
-    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
     const openHistory = (subject) => {
         setSelectedItem(subject);
@@ -72,15 +73,16 @@ const Subject = () => {
     };
 
     const handleCreateVersion = async (formData) => {
-        try{
+        try {
             setSaving(true);
-
             await createSubjectVersion(selectedItem._id, formData);
             closeVersionModal();
-
             await refreshSubjects();
-        }catch(error){
-            alert(error.response?.data?.message || "Failed to create version.")
+            toast.success("New version created successfully.");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to create version.")
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -121,9 +123,13 @@ const Subject = () => {
                     formData
                 );
 
+                toast.success("Subject updated successfully.");
+
             } else {
 
                 await createSubject(formData);
+
+                toast.success("Subject created successfully.");
 
             }
 
@@ -135,7 +141,7 @@ const Subject = () => {
 
         catch (error) {
 
-            alert(
+            toast.error(
 
                 error.response?.data?.message ||
 
@@ -167,11 +173,13 @@ const Subject = () => {
 
             await refreshSubjects();
 
+            toast.success("Subject deleted successfully.");
+
         }
 
         catch (error) {
 
-            alert(
+            toast.error(
 
                 error.response?.data?.message ||
 
@@ -192,8 +200,11 @@ const Subject = () => {
     const columns = SubjectColumns({
 
         openEdit,
+
         openDelete,
+
         openHistory,
+
         navigate,
 
     });
@@ -225,48 +236,82 @@ const Subject = () => {
             >
 
                 <DataTable
+
                     columns={columns}
+
                     data={filteredSubjects}
+
                     loading={loading}
+
                     emptyMessage="No subjects found."
+
                 />
 
             </Card>
 
             <SubjectModal
+
                 isOpen={isModalOpen}
+
                 onClose={closeModal}
+
                 onSubmit={handleSave}
+
                 subject={selectedItem}
+
                 loading={saving}
+
             />
 
             {/* VERSION MODAL */}
             <SubjectModal
+
                 isOpen={isVersionModalOpen}
+
                 onClose={closeVersionModal}
+
                 onSubmit={handleCreateVersion}
+
                 subject={selectedItem}
+
                 loading={saving}
+
                 mode="version"
+
             />
             <ConfirmModal
+
                 isOpen={isDeleteOpen}
+
                 title="Delete Subject"
+
                 message={
+
                     selectedItem
+
                         ? `Are you sure you want to delete "${selectedItem.subjectName}"?`
+
                         : ""
+
                 }
+
                 onCancel={closeDelete}
+
                 onConfirm={handleDelete}
+
                 loading={deleting}
+
             />
             <SubjectHistoryModal
+
                 isOpen={isHistoryOpen}
+
                 onClose={closeHistory}
+
                 subject={selectedItem}
+
                 onCreateVersion={openVersionModal}
+
             />
 
         </DashboardLayout>

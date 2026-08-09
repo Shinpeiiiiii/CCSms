@@ -1,4 +1,4 @@
-import SearchBox from "../../../../../components/search/SearchInput";
+import SearchInput from "../../../../../components/search/SearchInput";
 import PrimaryButton from "../../../../../components/buttons/PrimaryButton";
 
 const CurriculumToolbar = ({
@@ -17,7 +17,7 @@ const CurriculumToolbar = ({
             }}
         >
 
-            <SearchBox
+            <SearchInput
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search curriculum..."

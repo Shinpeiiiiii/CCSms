@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import PrimaryButton from "../../../../../components/buttons/PrimaryButton";
+import PrimaryButton from "@/components/buttons/PrimaryButton";
 
 const DepartmentToolbar = ({
     search,
@@ -8,16 +8,7 @@ const DepartmentToolbar = ({
 }) => {
 
     return (
-        <div 
-            style={{ 
-                display: 'flex', 
-                flexDirection: 'row', 
-                alignItems: 'center', 
-                justifyContent: 'space-between',
-                gap: 16,
-                flexWrap: 'wrap',
-            }}
-        >
+        <div className="flex justify-between gap-4">
             <div style={{ flex: 1, minWidth: 260 }}>
                 <input
                     type="text"

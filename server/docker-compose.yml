@@ -9,21 +9,25 @@ services:
     env_file:
       - .env
     environment:
-      - MONGO_URI: mongodb://mongo:27017/college-portal
+       PORT: "5000"
+       REDIS_URL: "redis://redis:6379"
+       ENABLE_TURNSTILE: "false"
     depends_on:
-      - mongo
+      redis:
+        condition: service_healthy
     volumes:
       - ./:/app
       - /app/node_modules
     command: npx nodemon server.js
-
-  mongo:
-    image: mongo:7
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-  
+  redis: 
+    image: redis:7-alpine
+    ports: 
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   mongo-data:

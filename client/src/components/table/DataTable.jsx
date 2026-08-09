@@ -12,7 +12,7 @@ const DataTable = ({
     loading = false,
     emptyMessage = "No records found.",
     pagination = null,
-    rowsPerPage = 5,
+    rowsPerPage = 10,
     showPagination = true,
 }) => {
 
@@ -73,12 +73,14 @@ const DataTable = ({
         return <TableEmpty message={emptyMessage}/>;
 
     return (
-        <div style={{ overflowX: 'auto', border: "1px solid #DADCE0", borderRadius: 12,  }}>
+        <div style={{ overflowX: 'auto', padding:0, margin:0,border: '1px solid #DADCE0' }}>
             <table
                 style={{
                     width: '100%',
                     borderCollapse: 'separate',
                     borderSpacing: 0,
+                    margin: 0,
+                    padding: 0,
                 }}
             >
                 <TableHeader

@@ -10,7 +10,8 @@ const {
     publishCurriculum,
     archiveCurriculum,
     createNewVersion,
-    getVersionHistory
+    getVersionHistory,
+    autoStructureCurriculum,
 
 } = require('../controller/curriculum.controller')
 
@@ -21,9 +22,14 @@ router.get('/:id',authMiddleware, authorizeRoles('admin','registrar'), getCurric
 router.get('/', authMiddleware, authorizeRoles('admin','registrar','teacher','student'), getCurriculum)
 router.post('/',authMiddleware, authorizeRoles('admin'), createCurriculum)
 router.post('/:id/version',authMiddleware, authorizeRoles('admin'), createNewVersion)
+router.post('/:id/structure', authMiddleware, authorizeRoles('admin'), autoStructureCurriculum)
 router.get('/:id/history',authMiddleware, authorizeRoles('admin'), getVersionHistory)
 router.put('/:id',authMiddleware, authorizeRoles('admin'), updateCurriculum)
 router.patch('/:id/publish',authMiddleware, authorizeRoles('admin'), publishCurriculum)
 router.patch('/:id/archive', authMiddleware, authorizeRoles('admin'), archiveCurriculum)
 
 module.exports = router
+
+
+    autoStructureCurriculum
+

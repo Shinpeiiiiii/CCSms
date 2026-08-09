@@ -141,9 +141,7 @@ const EnrollmentPeriod = () => {
     });
 
     return (
-
         <DashboardLayout>
-
             <Card
                 title="Enrollment Periods"
                 subtitle="Manage enrollment schedules"

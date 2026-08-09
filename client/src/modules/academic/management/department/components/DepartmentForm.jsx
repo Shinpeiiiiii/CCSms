@@ -44,11 +44,7 @@ const DepartmentForm = ({
 
         <form
             onSubmit={handleSubmit}
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 20,
-            }}
+            className="flex flex-col gap-4"
         >
 
             <TextField

@@ -10,37 +10,36 @@ const TableEmpty = ({
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '80px 24px',
+                padding: '48px 24px',
                 background: '#FFFFFF',
                 border: '1px solid #DADCE0',
-                borderRadius: 16,
-                boxShadow: '0 1px 2px 0 rgba(60,64,67,0.05)',
+                borderTop: 'none',
             }}
         >
             <div
                 style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 16,
+                    width: 48,
+                    height: 48,
+                    borderRadius: 12,
                     background: '#E8F0FE',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: '#1A73E8',
-                    marginBottom: 20,
+                    marginBottom: 16,
                 }}
             >
-                <Inbox size={24} />
+                <Inbox size={22} />
             </div>
 
             <h3
                 style={{
                     fontFamily: 'Sora, sans-serif',
-                    fontSize: '1rem',
+                    fontSize: '0.9375rem',
                     fontWeight: 700,
                     color: '#202124',
-                    marginBottom: 6,
-                    margin: '0 0 6px 0',
+                    marginBottom: 4,
+                    margin: '0 0 4px 0',
                 }}
             >
                 Nothing Found

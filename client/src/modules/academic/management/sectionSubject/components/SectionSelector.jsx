@@ -95,7 +95,7 @@ export default function SectionSelector({
                         }}
                         onFocus={() => setOpen(true)}
                         placeholder="Search section or program..."
-                        className="pr-10"
+                        className="pr-10 text-black"
                     />
 
                     <button

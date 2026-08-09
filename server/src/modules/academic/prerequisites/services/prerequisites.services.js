@@ -1,10 +1,11 @@
 const subjectPrerequisites = require('../models/prerequisites.models')
 const Subject = require('../../subject/model/subject.model')
+const CurriculumSubject = require('../../curriculum/models/curriculum.subject.models')
 const { hasPath } = require('../utils/graph.utils')
 
-const validateSubject = async (subjectId, reqiuredSubjectId) => {
+const validateSubject = async (subjectId, requiredSubjectId, curriculumId) => {
     const subject = await Subject.findById(subjectId)
-    const requiredSubject = await Subject.findById(reqiuredSubjectId)
+    const requiredSubject = await Subject.findById(requiredSubjectId)
 
     if (!subject) {
         throw new Error('Subject not found.')
@@ -25,14 +26,33 @@ const validateSubject = async (subjectId, reqiuredSubjectId) => {
     if (String(subjectId) === String(requiredSubjectId)) {
         throw new Error('A subject cannot be a prerequisite of itself.')
     }
+
+    if (curriculumId) {
+        const subjectInCurriculum = await CurriculumSubject.findOne({
+            curriculum: curriculumId,
+            subject: subjectId,
+        })
+        const requiredInCurriculum = await CurriculumSubject.findOne({
+            curriculum: curriculumId,
+            subject: requiredSubjectId,
+        })
+
+        if (!subjectInCurriculum) {
+            throw new Error('Subject is not part of the selected curriculum.')
+        }
+
+        if (!requiredInCurriculum) {
+            throw new Error('Required subject is not part of the selected curriculum.')
+        }
+    }
 }
 
 
 const createPrerequisite = async (data) => {
-    const { subject, requiredSubject, minimumGrade, type, createdBy } = data
- 
-    await validateSubject(subject, requiredSubject)
- 
+    const { subject, requiredSubject, minimumGrade, type, createdBy, curriculum } = data
+  
+    await validateSubject(subject, requiredSubject, curriculum)
+  
     const existing = await subjectPrerequisites.findOne({
         subject,
         requiredSubject,
@@ -53,6 +73,7 @@ const createPrerequisite = async (data) => {
     return await subjectPrerequisites.create({
         subject,
         requiredSubject,
+        curriculum: curriculum || undefined,
         minimumGrade: minimumGrade ?? null,
         type: type || 'Prerequisite',
         createdBy,
@@ -60,14 +81,19 @@ const createPrerequisite = async (data) => {
 }
 
 
-const getPrerequisite = async () => {
+const getPrerequisite = async (curriculumId) => {
 
-    return await subjectPrerequisites.find({
-        status: "Active"
-    })
+    const query = { status: "Active" }
+
+    if (curriculumId) {
+        query.curriculum = curriculumId
+    }
+
+    return await subjectPrerequisites.find(query)
         .populate('subject','subjectCode subjectName')
         .populate('requiredSubject', 'subjectCode subjectName units version')
         .populate('createdBy', 'firstName lastName')
+        .populate('curriculum', 'curriculumName curriculumCode')
         .sort({
             createdAt: -1
         });

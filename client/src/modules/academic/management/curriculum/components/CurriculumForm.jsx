@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import useProgram from "../../program/hooks/useProgram";
 import useAcademicYear from "../../academicyear/hooks/useAcademicyear";
@@ -44,10 +44,6 @@ const CurriculumForm = ({
 
     const [form, setForm] = useState(getInitialForm);
 
-    useEffect(() => {
-        setForm(getInitialForm());
-    }, [initialValues]);
-
     const handleChange = (e) => {
 
         const { name, value } = e.target;
@@ -62,8 +58,6 @@ const CurriculumForm = ({
     const handleSubmit = (e) => {
 
         e.preventDefault();
-
-        console.log("Submitting Curriculum:", form);
 
         onSubmit({
             ...form,

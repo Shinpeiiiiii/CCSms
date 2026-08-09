@@ -4,6 +4,25 @@ const CurriculumSubject = require('../models/curriculum.subject.models')
 const Program = require('../../programs/model/Program')
 const AcademicYear = require('../../academicyear/models/academicyear.model')
 const Subject = require('../../subject/model/subject.model')
+const { clearCache } = require('../../../../utils/cache.helper')
+const validateCurriculum = require('../validators/curriculum.validator')
+
+const enforceLock = async (curriculumId, userId) => {
+    const curriculum = await Curriculum.findById(curriculumId);
+    if (!curriculum) return;
+    if (!curriculum.lock?.lockedBy) return;
+    if (curriculum.lock.lockedAt && Date.now() - curriculum.lock.lockedAt > 4 * 60 * 60 * 1000) {
+        await Curriculum.findByIdAndUpdate(curriculumId, { lock: { lockedBy: null, lockedAt: null } });
+        return;
+    }
+    if (String(curriculum.lock.lockedBy) !== String(userId)) {
+        throw new Error('This curriculum is locked by another user.');
+    }
+};
+
+const releaseLock = async (curriculumId) => {
+    await Curriculum.findByIdAndUpdate(curriculumId, { lock: { lockedBy: null, lockedAt: null } });
+};
 
 const createCurriculum = async (data) => {
 
@@ -28,12 +47,16 @@ const createCurriculum = async (data) => {
     if (!academicYear) {
         throw new Error('Academic Year not found.')
     }
-    console.log(data);
-    return await Curriculum.create({
+
+    const curriculum = await Curriculum.create({
         ...data,
         curriculumCode:
             data.curriculumCode.toUpperCase(),
     })
+
+    await clearCache('curriculums');
+
+    return curriculum
 
 }
 
@@ -133,7 +156,7 @@ const updateCurriculum = async (id, data) => {
 
     }
 
-    return await Curriculum.findByIdAndUpdate(
+    const updated = await Curriculum.findByIdAndUpdate(
         id,
         data,
         {
@@ -141,6 +164,10 @@ const updateCurriculum = async (id, data) => {
             runValidators: true,
         }
     )
+
+    await clearCache('curriculums', `curriculum:${id}`)
+
+    return updated
 
 }
 
@@ -158,18 +185,16 @@ const publishCurriculum = async (id) => {
         )
     }
     if (!curriculum.isCurrentVersion) {
-        throw new Error("Only the current curriculum version can be published."
-        );
+        throw new Error("Only the current curriculum version can be published.");
+    }
 
-     // 👇 Validate the curriculum before publishing
     const validation = await validateCurriculum(id);
 
     if (!validation.valid) {
-        throw new Error({
-            message: "Curriculum validation failed.",
-            errors: validation.errors,
-            warnings: validation.warnings,
-        });
+        const err = new Error("Curriculum validation failed.")
+        err.errors = validation.errors
+        err.warnings = validation.warnings
+        throw err
     }
 
     const totalSubjects =
@@ -183,11 +208,11 @@ const publishCurriculum = async (id) => {
         )
     }
 
-  
-}
     curriculum.status = 'Published'
 
     await curriculum.save()
+
+    await clearCache('curriculums', `curriculum:${id}`)
 
     return curriculum
 
@@ -215,6 +240,8 @@ const archiveCurriculum = async (id) => {
     curriculum.status = 'Archived'
 
     await curriculum.save()
+
+    await clearCache('curriculums', `curriculum:${id}`)
 
     return curriculum
 
@@ -296,9 +323,11 @@ const createNewVersion = async (
             curriculum: curriculumId,
         });
 
+    const oldIdToNewId = new Map();
+
     for (const item of curriculumSubjects) {
 
-        await CurriculumSubject.create({
+        const created = await CurriculumSubject.create({
 
             curriculum:
                 newCurriculum._id,
@@ -312,8 +341,7 @@ const createNewVersion = async (
             semester:
                 item.semester,
 
-            prerequisites:
-                item.prerequisites,
+            prerequisites: [],
 
             isRequired:
                 item.isRequired,
@@ -323,7 +351,28 @@ const createNewVersion = async (
 
         });
 
+        oldIdToNewId.set(String(item._id), String(created._id));
+
     }
+
+    for (const item of curriculumSubjects) {
+
+        if (!item.prerequisites?.length) continue;
+
+        const newId = oldIdToNewId.get(String(item._id));
+        if (!newId) continue;
+
+        const mapped = item.prerequisites
+            .map(oldPrereqId => oldIdToNewId.get(String(oldPrereqId)))
+            .filter(Boolean);
+
+        await CurriculumSubject.findByIdAndUpdate(newId, {
+            prerequisites: mapped,
+        });
+
+    }
+
+    await clearCache('curriculums', `curriculum:${curriculumId}`);
 
     return newCurriculum;
 
@@ -394,4 +443,76 @@ module.exports = {
     archiveCurriculum,
     createNewVersion,
     getVersionHistory,
+}
+const autoStructureCurriculum = async (curriculumId, subjectGroups) => {
+    const curriculum = await Curriculum.findById(curriculumId);
+    if (!curriculum) {
+        throw new Error('Curriculum not found.');
+    }
+
+    if (curriculum.status !== 'Draft') {
+        throw new Error('Only draft curriculums can be modified.');
+    }
+
+    const createdSubjects = [];
+
+    for (const group of subjectGroups) {
+        const { yearLevel, semester, subjects } = group;
+
+        if (!yearLevel || !semester || !subjects?.length) {
+            continue;
+        }
+
+        for (let i = 0; i < subjects.length; i++) {
+            const subject = await Subject.findById(subjects[i].subjectId || subjects[i]);
+            if (!subject) {
+                throw new Error('Subject not found: ' + (subjects[i].subjectId || subjects[i]));
+            }
+
+            const existing = await CurriculumSubject.findOne({
+                curriculum: curriculumId,
+                subject: subject._id,
+            });
+
+            if (existing) {
+                continue;
+            }
+
+            const maxOrder = await CurriculumSubject
+                .find({ curriculum: curriculumId, yearLevel, semester })
+                .sort({ displayOrder: -1 })
+                .limit(1)
+                .select('displayOrder');
+
+            const displayOrder = (maxOrder[0]?.displayOrder || 0) + 1;
+
+            const created = await CurriculumSubject.create({
+                curriculum: curriculumId,
+                subject: subject._id,
+                yearLevel,
+                semester,
+                displayOrder,
+                isRequired: subjects[i].isRequired ?? true,
+                prerequisites: subjects[i].prerequisites || [],
+            });
+
+            createdSubjects.push(created);
+        }
+    }
+
+    await clearCache('curriculums', 'curriculum:' + curriculumId);
+
+    return createdSubjects;
+};
+
+module.exports = {
+    createCurriculum,
+    getCurriculum,
+    getCurriculumById,
+    updateCurriculum,
+    publishCurriculum,
+    archiveCurriculum,
+    createNewVersion,
+    getVersionHistory,
+    autoStructureCurriculum,
 }

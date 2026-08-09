@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState,useEffect } from "react";
 
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
 
@@ -19,6 +19,8 @@ import {
     updatePrerequisite,
     deactivatePrerequisite,
 } from "../services/prerequisite.services";
+import { getCurriculum } from "../../curriculum/services/curriculum.services";
+import { getCurriculumSubject } from "../../curriculumsubject/services/curriculumsubject.services";
 
 const Prerequisite = () => {
 
@@ -30,7 +32,11 @@ const Prerequisite = () => {
 
     const {
         subject,
+        loading: subjectLoading
     } = useSubject();
+
+    const [curriculums, setCurriculums] = useState([])
+    const [curriculumSubjectMap, setCurriculumSubjectMap] = useState({})
 
     const {search,setSearch,selectedItem,isModalOpen,
         isDeleteOpen,openCreate,openEdit,openDelete,closeModal,closeDelete,
@@ -38,6 +44,30 @@ const Prerequisite = () => {
 
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+
+    useEffect(() => {
+        const loadCurriculums = async () => {
+            try {
+                const data = await getCurriculum()
+                setCurriculums(data)
+                const entries = await Promise.all(
+                    data.map(async (c) => {
+                        const subjects = await getCurriculumSubject(c._id)
+                        const subjectIds = new Set(
+                            (Array.isArray(subjects) ? subjects : []).map(
+                                item => String(item.subject?._id || item.subject)
+                            )
+                        )
+                        return [c._id, subjectIds]
+                    })
+                )
+                setCurriculumSubjectMap(Object.fromEntries(entries))
+            } catch (error) {
+                console.error("Failed to load curriculums for prerequisite:", error)
+            }
+        }
+        loadCurriculums()
+    }, [])
     const filteredPrerequisites = useMemo(() => {
 
         const keyword = search.toLowerCase();
@@ -134,6 +164,8 @@ const Prerequisite = () => {
                 onSubmit={handleSave}
                 prerequisite={selectedItem}
                 subjects={subject}
+                curriculums={curriculums}
+                curriculumSubjectMap={curriculumSubjectMap}
                 loading={saving}
             />
             <ConfirmModal

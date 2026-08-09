@@ -12,7 +12,6 @@ export const createStudent = async (studentData) => {
         console.log("full response:", response)        // ← add this
         console.log("response.data:", response.data)   // ← and this
         return response.data
-    
 }
 
 export const deleteStudent = async (studentId) => {

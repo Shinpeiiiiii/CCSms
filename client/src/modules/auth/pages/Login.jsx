@@ -128,7 +128,7 @@ const Login = () => {
             }}
           >
             <p className="text-white/60 text-sm leading-relaxed italic mb-4">
-              "TeacherPortal streamlined our enrollment process and saved us countless hours every semester."
+              "CCSms streamlined our enrollment process and saved us countless hours every semester."
             </p>
             <div className="flex items-center gap-3">
               <div

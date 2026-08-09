@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { toast } from "react-toastify";
 
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
 
@@ -101,17 +102,17 @@ const Section = () => {
                     selectedItem._id,
                     formData
                 );
+                toast.success("Section updated successfully.");
             }
             else {
-                await createSection(
-                    formData
-                );
+                await createSection(formData);
+                toast.success("Section created successfully.");
             }
             closeModal();
             await refreshSections();
         }
         catch (error) {
-            alert(
+            toast.error(
                 error.response?.data?.message ||
                 "Failed to save section."
             );
@@ -131,13 +132,19 @@ const Section = () => {
 
         try {
 
-            await openSection(
-                section._id
-            );
+            const result = await openSection(section._id);
             await refreshSections();
+
+            if (result?.generatedSubjects > 0) {
+                toast.success(
+                    `Section opened and ${result.generatedSubjects} subject(s) generated.`
+                );
+            } else {
+                toast.success("Section opened successfully.");
+            }
         }
         catch (error) {
-            alert(
+            toast.error(
                 error.response?.data?.message ||
                 "Failed to open section."
             );
@@ -147,10 +154,11 @@ const Section = () => {
         try{
             await closeSection(section._id);
             await refreshSections();
+            toast.success("Section closed successfully.");
         }
         catch(error){
-            alert(
-                error.response?.data?.message || "Failede to close section."
+            toast.error(
+                error.response?.data?.message || "Failed to close section."
             );
         }
     };
@@ -162,13 +170,12 @@ const Section = () => {
     const handleArchive = async (section) => {
 
         try {
-            await archiveSection(
-                section._id
-            );
+            await archiveSection(section._id);
             await refreshSections();
+            toast.success("Section archived successfully.");
         }
         catch (error) {
-            alert(
+            toast.error(
                 error.response?.data?.message ||
                 "Failed to archive section."
             );

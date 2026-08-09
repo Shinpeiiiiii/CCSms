@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 
 const MultiSelectCheckbox = ({
     label,
@@ -9,6 +9,8 @@ const MultiSelectCheckbox = ({
     labelField = "name",
     placeholder = "Search...",
 }) => {
+
+    const [search, setSearch] = useState("");
 
     const handleToggle = (optionValue) => {
 
@@ -39,6 +41,20 @@ const MultiSelectCheckbox = ({
 
     }, [options, value, valueField]);
 
+    const filteredOptions = useMemo(() => {
+
+        if (!search.trim()) return options;
+
+        const keyword = search.toLowerCase();
+
+        return options.filter(option => {
+            const labelText = option[labelField]?.toLowerCase() || "";
+            const codeText = option.subjectCode?.toLowerCase() || "";
+            return labelText.includes(keyword) || codeText.includes(keyword);
+        });
+
+    }, [options, search, labelField]);
+
     return (
 
         <div
@@ -61,6 +77,26 @@ const MultiSelectCheckbox = ({
 
             )}
 
+            <input
+
+                type="text"
+
+                value={search}
+
+                onChange={(e) => setSearch(e.target.value)}
+
+                placeholder={placeholder}
+
+                style={{
+                    padding: "8px 12px",
+                    border: "1px solid #ddd",
+                    borderRadius: 8,
+                    fontSize: 14,
+                    outline: "none",
+                }}
+
+            />
+
             <div
 
                 style={{
@@ -73,7 +109,13 @@ const MultiSelectCheckbox = ({
 
             >
 
-                {options.map(option => {
+                {filteredOptions.length === 0 && (
+                    <div style={{ padding: "12px 0", color: "#888", fontSize: 13 }}>
+                        No subjects found.
+                    </div>
+                )}
+
+                {filteredOptions.map(option => {
 
                     const optionValue =
                         option[valueField];
@@ -133,17 +175,11 @@ const MultiSelectCheckbox = ({
                 selectedItems.length > 0 && (
 
                     <div
-
                         style={{
-
                             display: "flex",
-
                             flexWrap: "wrap",
-
                             gap: 8,
-
                         }}
-
                     >
 
                         {
@@ -151,67 +187,37 @@ const MultiSelectCheckbox = ({
                             selectedItems.map(item => (
 
                                 <span
-
                                     key={item[valueField]}
-
                                     style={{
-
                                         padding: "5px 10px",
-
                                         borderRadius: 20,
-
                                         background: "#f1f5f9",
-
                                         fontSize: 13,
-
                                         display: "flex",
-
                                         alignItems: "center",
-
                                         gap: 6,
-
                                     }}
-
                                 >
-
-                                    {
-
-                                        item.subjectCode
-
-                                            ? `${item.subjectCode}`
-
-                                            : item[labelField]
-
+                                    {item.subjectCode
+                                        ? `${item.subjectCode}`
+                                        : item[labelField]
                                     }
-
                                     <button
-
                                         type="button"
-
                                         onClick={() =>
                                             handleToggle(
                                                 item[valueField]
                                             )
                                         }
-
                                         style={{
-
                                             border: "none",
-
                                             background: "transparent",
-
                                             cursor: "pointer",
-
                                             fontWeight: "bold",
-
                                         }}
-
                                     >
-
                                         ✕
-
                                     </button>
-
                                 </span>
 
                             ))

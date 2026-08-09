@@ -28,10 +28,12 @@ const TablePagination = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "flex-end",
-                gap: 20,
-                padding: "16px 8px",
-                fontSize: 14,
-                color: "black"
+                gap: 16,
+                padding: "12px 16px",
+                fontSize: 13,
+                color: "#5F6368",
+                borderTop: "1px solid #E8EAED",
+                background: "#FAFAFA",
             }}
         >
            <span>Rows per page</span>
@@ -40,6 +42,15 @@ const TablePagination = ({
                 onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
                 onMouseEnter={() => arrowDownRef.current?.startAnimation()}
                 onMouseLeave={() => arrowDownRef.current?.stopAnimation()}
+                style={{
+                    padding: "4px 8px",
+                    border: "1px solid #DADCE0",
+                    borderRadius: 4,
+                    fontSize: 13,
+                    color: "#3C4043",
+                    background: "#FFFFFF",
+                    outline: "none",
+                }}
            >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -49,45 +60,77 @@ const TablePagination = ({
            </select>
            <span>{from} - {to} of {count}</span>
            <button
-                disabled= {page === 0}
+                disabled={page === 0}
                 onClick={() => onPageChange(0)}
                 onMouseEnter={() => narrowerLeftRef.current?.startAnimation()}
                 onMouseLeave={() => narrowLeftRef.current?.stopAnimation()}
+                style={{
+                    padding: "4px 8px",
+                    border: "1px solid #DADCE0",
+                    borderRadius: 4,
+                    background: "#FFFFFF",
+                    cursor: page === 0 ? "default" : "pointer",
+                    color: "#3C4043",
+                    fontSize: 13,
+                }}
            >
-                <ArrowNarrowerLeftIcon ref={narrowerLeftRef} size={18}/>
+                <ArrowNarrowerLeftIcon ref={narrowerLeftRef} size={16}/>
            </button>
            <button
-                disabled = {page >= totalPages - 1}
-                onClick={() => onPageChange(page + 1)}
+                disabled={page === 0}
+                onClick={() => onPageChange(page - 1)}
                 onMouseEnter={() => narrowLeftRef.current?.startAnimation()}
                 onMouseLeave={() => narrowerLeftRef.current?.stopAnimation()}
+                style={{
+                    padding: "4px 8px",
+                    border: "1px solid #DADCE0",
+                    borderRadius: 4,
+                    background: "#FFFFFF",
+                    cursor: page === 0 ? "default" : "pointer",
+                    color: "#3C4043",
+                    fontSize: 13,
+                }}
            >
-                <ArrowNarrowLeftIcon ref={narrowLeftRef} size={18}/>
+                <ArrowNarrowLeftIcon ref={narrowLeftRef} size={16}/>
            </button>
 
-            <button
+           <button
                 disabled={page >= totalPages - 1}
-                onClick={() =>
-                    onPageChange(page + 1)
-                }
+                onClick={() => onPageChange(page + 1)}
                 onMouseEnter={() => narrowRef.current?.startAnimation()}
                 onMouseLeave={() => narrowRef.current?.stopAnimation()}
-            >
-                <ArrowNarrowRightIcon ref={narrowRef} size={18} />
-            </button>
+                style={{
+                    padding: "4px 8px",
+                    border: "1px solid #DADCE0",
+                    borderRadius: 4,
+                    background: "#FFFFFF",
+                    cursor: page >= totalPages - 1 ? "default" : "pointer",
+                    color: "#3C4043",
+                    fontSize: 13,
+                }}
+           >
+                <ArrowNarrowRightIcon ref={narrowRef} size={16} />
+           </button>
 
-            <button
+           <button
                 disabled={page >= totalPages - 1}
-                onClick={() =>
-                    onPageChange(totalPages - 1)
-                }
+                onClick={() => onPageChange(totalPages - 1)}
                 onMouseEnter={() => narrowerRef.current?.startAnimation()}
                 onMouseLeave={() => narrowerRef.current?.stopAnimation()}
-            >
-                <ArrowNarrowerRightIcon size={18} ref={narrowerRef}/>
-            </button>
+                style={{
+                    padding: "4px 8px",
+                    border: "1px solid #DADCE0",
+                    borderRadius: 4,
+                    background: "#FFFFFF",
+                    cursor: page >= totalPages - 1 ? "default" : "pointer",
+                    color: "#3C4043",
+                    fontSize: 13,
+                }}
+           >
+                <ArrowNarrowerRightIcon size={16} ref={narrowerRef}/>
+           </button>
         </div>
     );
 };
 
-export default TablePagination;
+export default TablePagination

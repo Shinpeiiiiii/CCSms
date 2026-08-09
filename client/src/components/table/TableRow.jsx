@@ -10,9 +10,9 @@ const TableRow = ({
     return (
         <tr
             style={{
-                background: hovered ? '#F8F9FA' : 'transparent',
+                background: hovered ? '#F1F3F4' : 'transparent',
                 borderBottom: '1px solid #E8EAED',
-                transition: 'background 0.2s ease',
+                transition: 'background 0.15s ease',
             }}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}

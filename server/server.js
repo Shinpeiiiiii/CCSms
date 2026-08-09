@@ -12,8 +12,6 @@ const limiter = rateLimit({
     legacyHeaders: false,
 })
 app.use(limiter)
-const accountRoutes = require('./src/modules/accounts/routes/account.routes')
-app.use('/api/accounts',accountRoutes)
 
 const start = async () => {
     try{

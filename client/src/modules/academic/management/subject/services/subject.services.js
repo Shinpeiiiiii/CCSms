@@ -56,7 +56,7 @@ export const updateSubject = async (
     formData
 ) => {
 
-    const { data } = await api.put(
+    const { data } = await api.patch(
         `/subject/${id}`,
         formData
     );

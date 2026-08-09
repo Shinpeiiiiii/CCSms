@@ -1,5 +1,5 @@
 import SearchField from "../../../../../components/search/SearchInput";
-import { PrimaryButton } from "../../../../../components/buttons";
+import PrimaryButton from "@/components/buttons/PrimaryButton";
 
 const EnrollmentPeriodToolbar = ({
     search,
@@ -7,33 +7,15 @@ const EnrollmentPeriodToolbar = ({
     onAdd,
 }) => {
     return (
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 16,
-                width: "100%",
-                flexWrap: "wrap",
-            }}
-        >
-            <div
-                style={{
-                    flex: 1,
-                    minWidth: 260,
-                    maxWidth: 400,
-                }}
-            >
+        <div className="flex justify-between gap-4">
                 <SearchField
                     placeholder="Search enrollment period..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
-            </div>
-
-            <PrimaryButton onClick={onAdd}>
-                + New Enrollment Period
-            </PrimaryButton>
+                 <PrimaryButton onClick={onAdd}>
+                    New Enrollment Period
+                </PrimaryButton>
         </div>
     );
 };

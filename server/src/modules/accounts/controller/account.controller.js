@@ -3,11 +3,15 @@ const accountService = require('../services/account.services')
 const getTeachers = async (req, res) => {
     try{
         const teachers = await accountService.getTeachers();
-        return res.json(teachers)
+        return res.status(200).json({
+            success: true,
+            message: teachers,
+        });
     }catch(error){
-        return res.status(401).json({
+        console.error('get teachers error', error);
+        return res.status(500).json({
             success: false,
-            message: 'Failed getting teachers'
+            message: error.message,
         })
     }
 }

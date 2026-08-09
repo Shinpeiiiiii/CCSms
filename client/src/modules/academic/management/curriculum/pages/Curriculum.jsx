@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
 
@@ -29,9 +30,6 @@ const Curriculum = () => {
         curriculum,
         loading,
         refreshCurriculums,
-        publishCurriculum,
-        archiveCurriculum,
-
     } = useCurriculum();
 
     const {
@@ -43,7 +41,6 @@ const Curriculum = () => {
         openCreate,
         openEdit,
         closeModal,
-        
     } = useCrud();
 
     const [saving, setSaving] = useState(false);
@@ -51,172 +48,142 @@ const Curriculum = () => {
     const [isVersionOpen, setIsVersionOpen] = useState(false);
 
     const openHistory = (curriculum) => {
-
         setSelectedItem(curriculum);
         setIsHistoryOpen(true);
     };
 
     const closeHistory = () => {
-
         setSelectedItem(null);
         setIsHistoryOpen(false);
     };
 
     const openVersion = (curriculum) => {
-
         setSelectedItem(curriculum);
         setIsHistoryOpen(false);
         setIsVersionOpen(true);
     };
 
     const closeVersion = () => {
-
         setSelectedItem(null);
         setIsVersionOpen(false);
-
     };
 
     const handleCreateVersion = async (formData) => {
-
         try {
-
             setSaving(true);
-
             await createCurriculumVersion(
-
                 selectedItem._id,
-
                 formData
-
             );
-
             closeVersion();
-
             await refreshCurriculums();
-
-        }
-
-        catch (error) {
-
-            alert(
-
+            toast.success("New version created successfully.");
+        } catch (error) {
+            toast.error(
                 error.response?.data?.message ||
-
                 "Failed to create version."
-
             );
-
-        }
-
-        finally {
-
+        } finally {
             setSaving(false);
-
         }
-
     };
-    /*
-    =====================================
-    Search
-    =====================================
-    */
 
     const filteredCurriculums = useMemo(() => {
-
         const keyword = search.toLowerCase();
-
         return curriculum.filter((item) =>
-
-            item.curriculumCode
-                ?.toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            item.curriculumName
-                ?.toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            item.program?.programName
-                ?.toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            item.academicYear?.academicYearName
-                ?.toLowerCase()
-                .includes(keyword)
-
+            item.curriculumCode?.toLowerCase().includes(keyword) ||
+            item.curriculumName?.toLowerCase().includes(keyword) ||
+            item.program?.programName?.toLowerCase().includes(keyword) ||
+            item.academicYear?.academicYearName?.toLowerCase().includes(keyword)
         );
-
     }, [curriculum, search]);
 
-    /*
-    =====================================
-    Save
-    =====================================
-    */
-
     const handleSave = async (formData) => {
-
         try {
-
             setSaving(true);
-
             if (selectedItem) {
-
                 await updateCurriculum(
                     selectedItem._id,
                     formData
                 );
-
+                toast.success("Curriculum updated successfully.");
             } else {
-
-                await createCurriculum(
-                    formData
-                );
-
+                await createCurriculum(formData);
+                toast.success("Curriculum created successfully.");
             }
-
             closeModal();
-
             await refreshCurriculums();
-
-        }
-
-        catch (error) {
-
-            alert(
+        } catch (error) {
+            toast.error(
                 error.response?.data?.message ||
                 "Failed to save curriculum."
             );
-
-        }
-
-        finally {
-
+        } finally {
             setSaving(false);
-
         }
-
     };
 
-    /*
-    =====================================
-    Publish
-    =====================================
-    */
+    const handlePublish = async (curriculum) => {
+        console.log('data',curriculum);
+        console.log('curriculum id:',curriculum._id);
+        try {
+            const result = await publishCurriculum(curriculum._id);
+            if (result?.errors?.length) {
+                toast.error(
+                    <div>
+                        <strong>Validation failed</strong>
+                        <ul style={{ marginTop: 8, paddingLeft: 16 }}>
+                            {result.errors.map((err, idx) => (
+                                <li key={idx}>{err}</li>
+                            ))}
+                        </ul>
+                    </div>,
+                    { autoClose: 10000 }
+                );
+            } else {
+                toast.success("Curriculum published successfully.");
+            }
+            await refreshCurriculums();
+        } catch (error) {
+            const message = error.response?.data?.message || "Failed to publish curriculum";
+            const errors = error.response?.data?.errors;
+            if (errors?.length) {
+                toast.error(
+                    <div>
+                        <strong>{message}</strong>
+                        <ul style={{ marginTop: 8, paddingLeft: 16 }}>
+                            {errors.map((err, idx) => (
+                                <li key={idx}>{err}</li>
+                            ))}
+                        </ul>
+                    </div>,
+                    { autoClose: 10000 }
+                );
+            } else {
+                toast.error(message);
+            }
+        }
+    };
+
+    const handleArchive = async (id) => {
+        try {
+            await archiveCurriculum(id);
+            toast.success("Curriculum archived successfully.");
+            await refreshCurriculums();
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message ||
+                "Failed to archive curriculum."
+            );
+        }
+    };
 
     const columns = CurriculumColumns({
-
         openEdit,
         openHistory,
-        onPublish: (curriculum) => publishCurriculum(curriculum._id),
-        onArchive: (curriculum) => archiveCurriculum(curriculum._id),
+        onPublish: handlePublish,
+        onArchive: handleArchive,
         navigate,
-
     });
 
     return (
@@ -246,8 +213,6 @@ const Curriculum = () => {
                 curriculum={selectedItem}
                 loading={saving}
             />
-
-            {/* VERSION MODAL */}
             <CurriculumModal
                 isOpen={isVersionOpen}
                 onClose={closeVersion}
@@ -255,7 +220,6 @@ const Curriculum = () => {
                 curriculum={selectedItem}
                 loading={saving}
                 mode="version"
-
             />
             <CurriculumHistoryModal
                 isOpen={isHistoryOpen}
@@ -264,9 +228,7 @@ const Curriculum = () => {
                 onCreateVersion={openVersion}
             />
         </DashboardLayout>
-
     );
-
 };
 
 export default Curriculum;

@@ -20,7 +20,7 @@ router.get("/:id",authMiddleware,authorizeRoles('admin','registrar','teacher'), 
 router.post("/",authMiddleware,authorizeRoles('admin'), createSubject);
 router.post("/:id/version",authMiddleware,authorizeRoles('admin'), createNewVersion);
 router.get("/:id/history",authMiddleware,authorizeRoles('admin','registrar'), getVersionHistory);
-router.put("/:id",authMiddleware,authorizeRoles('admin'), updateSubject);
+router.patch("/:id",authMiddleware,authorizeRoles('admin'), updateSubject);
 router.delete("/:id",authMiddleware,authorizeRoles('admin'), deleteSubject);
 
 module.exports = router;

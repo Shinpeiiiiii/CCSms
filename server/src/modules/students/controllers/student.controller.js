@@ -1,6 +1,8 @@
 const Student = require('../models/Student')
 const studentService = require('../services/student.service')
 const StudentSubject = require('../../studentsubject/models/studentsubject.models');
+const CurriculumSubject = require('../../academic/curriculum/models/curriculum.subject.models');
+const EnrollmentPeriod = require('../../academic/enrollmentperiod/models/enrollmentperiod.model');
 
 const createStudent = async (req, res) =>{
 
@@ -72,20 +74,48 @@ const getDashboard = async (req, res) => {
 
 const getMySubjects = async (req, res) => {
     try {
-        const student = await Student.findOne({ user: req.user.id });
+        const student = await Student.findOne({ user: req.user.id })
+            .populate("program", "programName")
+            .populate({
+                path: "section",
+                populate: {
+                    path: "curriculum",
+                },
+            });
+
         if (!student) {
             return res.status(404).json({ message: "Student not found." });
         }
 
-        const subjects = await StudentSubject.find({ student: student._id })
-            .populate("subject", "subjectCode subjectName description units")
-            .populate("section", "sectionCode sectionName")
-            .populate("enrollmentPeriod", "academicYear")
-            .sort({ createdAt: -1 });
+        let subjects = [];
+
+        if (student.section) {
+            const section = student.section;
+
+            const curriculumSubjects = await CurriculumSubject.find({
+                curriculum: section.curriculum?._id,
+                yearLevel: section.yearLevel,
+            }).populate("subject", "subjectCode subjectName description units");
+
+            const enrollmentPeriod = await EnrollmentPeriod.findOne({
+                status: "Open",
+            });
+
+            subjects = curriculumSubjects.map((cs) => ({
+                _id: cs._id,
+                subject: cs.subject,
+                section: section,
+                enrollmentPeriod: enrollmentPeriod?._id || null,
+                yearLevel: section.yearLevel,
+                units: cs.subject?.units || 0,
+                status: "Loaded",
+                createdAt: new Date(),
+            }));
+        }
 
         return res.json({ success: true, data: subjects });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ sucess: false, message: error.message });
     }
 };
 
@@ -99,7 +129,7 @@ const getMyProfile = async (req, res) => {
         res.json(student);
     }
     catch (error) {
-        res.status(400).json({
+        res.status(400).json({success: false,
             message: error.message,
         });
     }

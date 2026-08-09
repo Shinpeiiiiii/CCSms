@@ -23,70 +23,54 @@ const CurriculumVersionDetailsModal = ({
                     gap: 12,
                 }}
             >
-
                 <div>
                     <strong>Curriculum Code:</strong>{" "}
                     {curriculum.curriculumCode}
                 </div>
-
                 <div>
                     <strong>Curriculum Name:</strong>{" "}
                     {curriculum.curriculumName}
                 </div>
-
                 <div>
                     <strong>Program:</strong>{" "}
                     {curriculum.program?.programName}
                 </div>
-
                 <div>
                     <strong>Academic Year:</strong>{" "}
                     {curriculum.academicYear?.academicYearName}
                 </div>
-
                 <div>
                     <strong>Total Years:</strong>{" "}
                     {curriculum.totalYears}
                 </div>
-
                 <div>
                     <strong>Version:</strong>{" "}
                     {curriculum.version}
                 </div>
-
                 <div>
                     <strong>Status:</strong>{" "}
                     {curriculum.status}
                 </div>
-
                 <div>
                     <strong>Remarks:</strong>{" "}
                     {curriculum.remarks || "-"}
                 </div>
-
                 <div>
                     <strong>Created By:</strong>{" "}
                     {curriculum.createdBy
                         ? `${curriculum.createdBy.firstName} ${curriculum.createdBy.lastName}`
                         : "-"}
                 </div>
-
                 {curriculum.isCurrentVersion && (
-
                     <PrimaryButton
                         onClick={() => {
-
                             onClose();
-
                             onCreateVersion(curriculum);
-
                         }}
                     >
                         Create New Version
                     </PrimaryButton>
-
                 )}
-
             </div>
         </Modal>
     )

@@ -2,7 +2,17 @@ const mongoose = require('mongoose')
 const Curriculum = require('../models/curriculum.models')
 const CurriculumSubject = require('../models/curriculum.subject.models')
 const Subject = require('../../subject/model/subject.model')
+const { clearCache } = require('../../../../utils/cache.helper')
 
+const getNextDisplayOrder = async (curriculumId, yearLevel, semester) => {
+    const maxOrder = await CurriculumSubject
+        .find({ curriculum: curriculumId, yearLevel, semester })
+        .sort({ displayOrder: -1 })
+        .limit(1)
+        .select('displayOrder');
+
+    return (maxOrder[0]?.displayOrder || 0) + 1;
+};
 
 const addSubjectToCurriculum = async (curriculumId, data) => {
     const resolvedCurriculumId = curriculumId || data?.curriculumId || data?.curriculum;
@@ -41,12 +51,53 @@ const addSubjectToCurriculum = async (curriculumId, data) => {
         )
     }
 
-    return await CurriculumSubject.create({
+    const displayOrder = data.displayOrder || await getNextDisplayOrder(resolvedCurriculumId, data.yearLevel, data.semester);
+
+    const created = await CurriculumSubject.create({
         curriculum: resolvedCurriculumId,
         ...data,
+        displayOrder,
     })
 
+    await clearCache('curriculumSubjects', `curriculum:${resolvedCurriculumId}`)
+
+    return created
+
 }
+
+const getCurriculumStructure = async (curriculumId) => {
+    const subjects = await CurriculumSubject.find({
+        curriculum: curriculumId,
+    })
+        .populate('subject', 'subjectCode subjectName units lectureHours laboratoryHours subjectCategory')
+        .sort({ yearLevel: 1, semester: 1, displayOrder: 1 });
+
+    const structure = {};
+
+    for (const item of subjects) {
+        const yearKey = `Year ${item.yearLevel}`;
+        const semKey = `Semester ${item.semester}`;
+
+        if (!structure[yearKey]) {
+            structure[yearKey] = {};
+        }
+        if (!structure[yearKey][semKey]) {
+            structure[yearKey][semKey] = [];
+        }
+
+        structure[yearKey][semKey].push({
+            _id: item._id,
+            subject: item.subject,
+            yearLevel: item.yearLevel,
+            semester: item.semester,
+            displayOrder: item.displayOrder,
+            isRequired: item.isRequired,
+            prerequisites: item.prerequisites,
+        });
+    }
+
+    return structure;
+};
 
 const getCurriculumSubject = async (curriculumId) => {
 
@@ -93,7 +144,7 @@ const updateCurriculumSubject = async (
         )
     }
 
-    return await CurriculumSubject.findByIdAndUpdate(
+    const updated = await CurriculumSubject.findByIdAndUpdate(
         id,
         data,
         {
@@ -101,6 +152,10 @@ const updateCurriculumSubject = async (
             runValidators: true,
         }
     )
+
+    await clearCache('curriculumSubjects', `curriculum:${updated.curriculum}`)
+
+    return updated
 
 }
 
@@ -127,6 +182,8 @@ async (id) => {
     }
 
     await CurriculumSubject.findByIdAndDelete(id)
+
+    await clearCache('curriculumSubjects', `curriculum:${curriculumSubject.curriculum}`)
 
 }
 
@@ -171,16 +228,23 @@ const bulkAddSubjectToCurriculum = async (
             )
         }
 
+        const displayOrder = item.displayOrder || await getNextDisplayOrder(curriculumId, item.yearLevel, item.semester);
+
         documents.push({
             curriculum: curriculumId,
             ...item,
+            displayOrder,
         })
 
     }
 
-    return await CurriculumSubject.insertMany(
+    const result = await CurriculumSubject.insertMany(
         documents
     )
+
+    await clearCache('curriculumSubjects', `curriculum:${curriculumId}`)
+
+    return result
 
 }
 
@@ -190,4 +254,5 @@ module.exports = {
     updateCurriculumSubject,
     removeCurriculumSubject,
     bulkAddSubjectToCurriculum,
+    getNextDisplayOrder,
 }

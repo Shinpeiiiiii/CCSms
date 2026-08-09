@@ -4,7 +4,7 @@ const TableCell = ({
     return (
         <td
             style={{
-                padding: '14px 24px',
+                padding: '10px 16px',
                 fontSize: '0.875rem',
                 color: '#3C4043',
                 whiteSpace: 'nowrap',

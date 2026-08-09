@@ -36,23 +36,12 @@ const DashboardLayout = ({
   }, [isMobile, isSidebarOpen])
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F9FA' }}>
+    <div className="flex min-h-screen bg-slate-50">
       {/* Dark semi-transparent overlay visible only on mobile when sidebar is open */}
       {isMobile && isSidebarOpen && (
         <div
           onClick={() => setIsSidebarOpen(false)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(0, 0, 0, 0.24)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)',
-            zIndex: 999,
-            animation: 'fadeIn 0.2s ease-out',
-          }}
+          className="fixed inset-0 z-[999] bg-slate-950/55 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"
         />
       )}
 
@@ -62,18 +51,13 @@ const DashboardLayout = ({
         isMobile={isMobile} 
       />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div className="flex flex-1 min-w-0 flex-col">
         <Topbar 
           onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} 
           isMobile={isMobile} 
         />
 
-        <main style={{
-          flex: 1,
-          padding: isMobile ? 16 : 24,
-          overflowY: 'auto',
-          background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(26,115,232,0.03) 0%, transparent 60%), #F8F9FA',
-        }}>
+        <main className="flex-1 overflow-y-auto bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(99,102,241,0.08),transparent_60%),#f8fafc]">
           {children}
         </main>
       </div>

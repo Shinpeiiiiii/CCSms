@@ -12,28 +12,19 @@ const SubjectModal = ({
     const isEdit = Boolean(subject);
 
     return (
-
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={
-                isEdit
-                    ? "Edit Subject"
-                    : "Add Subject"
-            }
+            title={isEdit ? "Edit Subject" : "Add Subject"}
             size="md"
         >
-
             <SubjectForm
                 initialValues={subject}
                 loading={loading}
                 onSubmit={onSubmit}
             />
-
         </Modal>
-
     );
-
 };
 
 export default SubjectModal;

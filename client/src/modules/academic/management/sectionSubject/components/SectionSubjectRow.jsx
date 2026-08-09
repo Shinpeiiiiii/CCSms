@@ -19,6 +19,11 @@ const DAYS = [
     "Friday",
 ];
 
+const STATUSES = [
+    "Scheduled",
+    "Cancelled",
+];
+
 export default function SectionSubjectRow({
     subject,
     teachers,
@@ -32,6 +37,7 @@ export default function SectionSubjectRow({
         day: subject.day || "",
         startTime: subject.startTime || "",
         endTime: subject.endTime || "",
+        status: subject.status || "Scheduled",
     });
 
     useEffect(() => {
@@ -41,6 +47,7 @@ export default function SectionSubjectRow({
             day: subject.day || "",
             startTime: subject.startTime || "",
             endTime: subject.endTime || "",
+            status: subject.status || "Scheduled",
         });
     }, [subject]);
 
@@ -60,6 +67,14 @@ export default function SectionSubjectRow({
 
             <td className="p-2">
                 {subject.subject?.subjectName}
+            </td>
+
+            <td className="p-2">
+                {subject.semester ?? "-"}
+            </td>
+
+            <td className="p-2">
+                {subject.subject?.totalUnits || subject.subject?.lectureUnits || subject.subject?.laboratoryUnits || "-"}
             </td>
 
             <td className="p-2 w-56">
@@ -157,6 +172,38 @@ export default function SectionSubjectRow({
                         handleChange("endTime", e.target.value)
                     }
                 />
+
+            </td>
+
+            <td className="p-2">
+
+                <Select
+                    value={form.status}
+                    onValueChange={(value) =>
+                        handleChange("status", value)
+                    }
+                >
+
+                    <SelectTrigger>
+                        <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+
+                        {STATUSES.map((status) => (
+
+                            <SelectItem
+                                key={status}
+                                value={status}
+                            >
+                                {status}
+                            </SelectItem>
+
+                        ))}
+
+                    </SelectContent>
+
+                </Select>
 
             </td>
 

@@ -72,6 +72,27 @@ const getCurriculumSubject = async (req, res) => {
 
 }
 
+const getCurriculumStructure = async (req, res) => {
+
+    try {
+
+        const structure =
+            await curriculumSubjectService.getCurriculumStructure(
+                req.params.curriculumId
+            )
+
+        return res.status(200).json(structure)
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: error.message,
+        })
+
+    }
+
+}
+
 const updateCurriculumSubject = async (req, res) => {
 
     try {
@@ -122,9 +143,15 @@ const removeCurriculumSubject = async (req, res) => {
 module.exports = {
 
     addSubjectToCurriculum,
+
     bulkAddSubjectToCurriculum,
+
     getCurriculumSubject,
+
+    getCurriculumStructure,
+
     updateCurriculumSubject,
+
     removeCurriculumSubject,
 
 }

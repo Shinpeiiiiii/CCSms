@@ -36,18 +36,21 @@ const Accounts = () => {
 
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [selectedRole, setSelectedRole] = useState("");
 
     const filteredAccounts = useMemo(() => {
         const keyword = search.toLowerCase();
         return accounts.filter((account) => {
             const fullName = `${account.firstName || ""} ${account.lastName || ""}`.toLowerCase();
-            return (
+            const matchesSearch =
                 fullName.includes(keyword) ||
                 account.email?.toLowerCase().includes(keyword) ||
-                account.role?.toLowerCase().includes(keyword)
-            );
+                account.role?.toLowerCase().includes(keyword);
+            const matchesRole = selectedRole ? account.role === selectedRole : true;
+
+            return matchesSearch && matchesRole;
         });
-    }, [accounts, search]);
+    }, [accounts, search, selectedRole]);
 
     const handleSave = async (formData) => {
         try {
@@ -100,6 +103,8 @@ const Accounts = () => {
                         search={search}
                         setSearch={setSearch}
                         onAdd={openCreate}
+                        selectedRole={selectedRole}
+                        onRoleChange={(e) => setSelectedRole(e.target.value)}
                     />
                 }
             >

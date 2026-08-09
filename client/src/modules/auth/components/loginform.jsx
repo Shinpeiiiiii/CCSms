@@ -20,7 +20,14 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [welcomeMessage, setWelcomeMessage] = useState('')
 
+  const isLastLoginOld = (lastLogin) => {
+    if (!lastLogin) return true
+    const last = new Date(lastLogin)
+    const now = new Date()
+    return last.toDateString() !== now.toDateString()
+  }
   const [turnstileToken, setTurnstileToken] = useState('')
   const [turnstileError, setTurnstileError] = useState(false)
   const turnstileRef = useRef(null)
@@ -126,7 +133,15 @@ const LoginForm = () => {
         turnstileToken: ENABLE_TURNSTILE ? turnstileToken : undefined,
       })
       login(data)
-      navigate('/dashboard')
+
+      if (isLastLoginOld(data.user?.lastLogin)) {
+        setWelcomeMessage(`Welcome back, ${data.user?.firstName || 'user'}! It's great to see you again.`)
+        setTimeout(() => {
+          navigate('/dashboard')
+        }, 3000)
+      } else {
+        navigate('/dashboard')
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password.')
 
@@ -165,6 +180,23 @@ const LoginForm = () => {
       <p className="text-slate-400 text-[14px] mt-0 mb-8 leading-relaxed">
         Enter your credentials to access your portal.
       </p>
+
+      {/* Welcome Message */}
+      <AnimatePresence mode="wait">
+        {welcomeMessage && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: -8 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="mb-6 overflow-hidden"
+          >
+            <div className="bg-green-50 border border-green-100 text-green-700 py-3 px-4 rounded-xl text-[13px] flex items-center gap-2.5">
+              <span className="font-medium">{welcomeMessage}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Error Message */}
       <AnimatePresence mode="wait">

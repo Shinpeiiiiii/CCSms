@@ -19,7 +19,8 @@ const createPrerequisite = async (req, res) => {
 
 const getPrerequisite = async (req, res) => {
     try{
-        const data = await prerequisiteService.getPrerequisite();
+        const { curriculum } = req.query
+        const data = await prerequisiteService.getPrerequisite(curriculum)
         res.json(data);
 
     }catch(error){

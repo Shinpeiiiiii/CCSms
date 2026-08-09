@@ -20,7 +20,6 @@ const sectionRoutes = require('./modules/academic/section/routes/section.routes'
 const curriculumRoutes = require('./modules/academic/curriculum/routes/curriculum.routes')
 const curriculumsubjectRoutes = require('./modules/academic/curriculum/routes/curriculum.subject.routes')
 const teacherassignmentRoutes = require('./modules/teacherassignment/routes/teacherassignment.routes')
-const userRoutes = require('./modules/accounts/routes/account.routes')
 const prerequisiteRoutes = require('./modules/academic/prerequisites/routes/prerequisites.routes')
 const studentSubjectRoutes = require('./modules/studentsubject/routes/studentsubject.route')
 const sectionSubjectRoutes = require('./modules/sectionsubject/routes/sectionsubject.routes')
@@ -69,7 +68,6 @@ app.use('/api/subjectassignment', subjectAssignmentRoutes);
 app.use('/api/section', sectionRoutes);
 app.use('/api', curriculumsubjectRoutes);
 app.use('/api/teacherassignment', teacherassignmentRoutes);
-//console.log("Error prere: ",prerequisiteRoutes);
 app.use('/api/prerequisite', prerequisiteRoutes);
 app.use('/api/verification',verificationRoutes);
 app.use('/api/student-applications', studentApplicationRoutes);

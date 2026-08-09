@@ -1,6 +1,5 @@
 import SectionStatusBadge from "./SectionStatusBadge";
 import ActionMenu from "../../../../../components/actions/ActionMenu";
-import DotsVerticalIcon from "@/components/movingicons/dotsVerticalIcon";
 
 const SectionColumns = ({
 
@@ -25,27 +24,31 @@ const SectionColumns = ({
         header: "Program",
 
         render: (row) =>
-            row.curriculum?.program?.programName || "yawa",
-    },  
+            row.curriculum?.program?.programName || "-",
+    },
 
     {
         header: "Curriculum",
-
         render: (row) =>
-            row.curriculum?.curriculumName || "yawa",
+            row.curriculum?.curriculumName || "-",
     },
 
     {
         header: "Year Level",
-
         accessor: "yearLevel",
     },
 
     {
         header: "Capacity",
-
         render: (row) =>
             `${row.enrolledCount ?? 0} / ${row.capacity}`,
+    },
+
+    {
+        header: "Subjects",
+
+        render: (row) =>
+            `${row.generatedSubjectCount ?? 0} generated`,
     },
 
     {

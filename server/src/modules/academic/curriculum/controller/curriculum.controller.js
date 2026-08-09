@@ -35,11 +35,11 @@ const getCurriculum = async (req, res) => {
         return res.status(200).json(curriculums)
 
     } catch (error) {
-
-        return res.status(500).json({
+        return res.status(400).json({
             message: error.message,
+            errors: error.errors,
+            warnings: error.warnings,
         })
-
     }
 
 }
@@ -56,11 +56,11 @@ const getCurriculumById = async (req, res) => {
         return res.status(200).json(curriculum)
 
     } catch (error) {
-
-        return res.status(404).json({
+        return res.status(400).json({
             message: error.message,
+            errors: error.errors,
+            warnings: error.warnings,
         })
-
     }
 
 }
@@ -105,11 +105,11 @@ const publishCurriculum = async (req, res) => {
         })
 
     } catch (error) {
-
         return res.status(400).json({
             message: error.message,
+            errors: error.errors,
+            warnings: error.warnings,
         })
-
     }
 
 }
@@ -184,8 +184,22 @@ const getVersionHistory = async (req, res) => {
 
 };
 
-module.exports = {
+const autoStructureCurriculum = async (req, res) => {
+    try {
+        const { subjectGroups } = req.body;
+        const result = await curriculumService.autoStructureCurriculum(req.params.id, subjectGroups);
+        return res.status(201).json({
+            message: 'Curriculum structured successfully.',
+            subjects: result,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        });
+    }
+};
 
+module.exports = {
     createCurriculum,
     getCurriculum,
     getCurriculumById,
@@ -193,6 +207,6 @@ module.exports = {
     publishCurriculum,
     archiveCurriculum,
     createNewVersion,
-    getVersionHistory
-
+    getVersionHistory,
+    autoStructureCurriculum,
 }

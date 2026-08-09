@@ -13,7 +13,6 @@ const CurriculumSubjectForm = ({
     loading = false,
     isEdit = false,
 }) => {
-
     const getInitialForm = () => ({
         subject: initialValues?.subject?._id || initialValues?.subject || "",
         yearLevel: initialValues?.yearLevel || 1,
@@ -67,38 +66,50 @@ const CurriculumSubjectForm = ({
             )}
 
             {isEdit && (
-                <TextField
-                    label="Subject"
-                    name="subjectReadOnly"
-                    value={initialValues?.subject?.subjectCode || initialValues?.subject?.subjectName || ""}
-                    onChange={() => {}}
-                    required
-                />
+                <div style={{
+                    padding: "10px 14px",
+                    background: "rgba(255,255,255,0.03)",
+                    borderRadius: 10,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#F1F5F9",
+                    fontSize: 14,
+                }}>
+                    {initialValues?.subject?.subjectCode} - {initialValues?.subject?.subjectName}
+                </div>
             )}
 
-            <TextField
-                label="Year Level"
-                name="yearLevel"
-                type="number"
-                value={form.yearLevel}
-                onChange={handleChange}
-                required
-            />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <SelectField
+                    label="Year Level"
+                    name="yearLevel"
+                    value={form.yearLevel}
+                    onChange={handleChange}
+                    options={[
+                        { value: 1, label: "1st Year" },
+                        { value: 2, label: "2nd Year" },
+                        { value: 3, label: "3rd Year" },
+                        { value: 4, label: "4th Year" },
+                    ]}
+                    valueField="value"
+                    labelField="label"
+                    required
+                />
 
-            <SelectField
-                label="Semester"
-                name="semester"
-                value={form.semester}
-                onChange={handleChange}
-                options={[
-                    { value: 1, label: "1" },
-                    { value: 2, label: "2" },
-                    { value: 3, label: "3" },
-                ]}
-                valueField="value"
-                labelField="label"
-                required
-            />
+                <SelectField
+                    label="Semester"
+                    name="semester"
+                    value={form.semester}
+                    onChange={handleChange}
+                    options={[
+                        { value: 1, label: "1st Semester" },
+                        { value: 2, label: "2nd Semester" },
+                        { value: 3, label: "Summer" },
+                    ]}
+                    valueField="value"
+                    labelField="label"
+                    required
+                />
+            </div>
 
             <TextField
                 label="Display Order"
@@ -106,11 +117,12 @@ const CurriculumSubjectForm = ({
                 type="number"
                 value={form.displayOrder}
                 onChange={handleChange}
+                helperText="Order within this year/semester (1 = first)"
                 required
             />
 
             <SelectField
-                label="Required / Elective"
+                label="Type"
                 name="isRequired"
                 value={String(form.isRequired)}
                 onChange={handleChange}

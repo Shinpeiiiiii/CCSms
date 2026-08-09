@@ -8,6 +8,7 @@ const CurriculumModal = ({
     onSubmit,
     curriculum = null,
     loading = false,
+    mode = "create",
 }) => {
 
     if (!isOpen) return null;
@@ -25,6 +26,7 @@ const CurriculumModal = ({
         >
 
             <CurriculumForm
+                key={curriculum?._id || mode}
                 initialValues={curriculum}
                 onSubmit={onSubmit}
                 loading={loading}

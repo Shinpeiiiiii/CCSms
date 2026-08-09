@@ -8,6 +8,7 @@ const useAccounts = () => {
     const loadAccounts = async () => {
         try {
             const data = await getAccounts();
+            console.log('data:', data);
             setAccounts(data);
         } catch (error) {
             console.error("Failed to load accounts:", error);

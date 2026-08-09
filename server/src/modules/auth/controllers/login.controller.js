@@ -53,6 +53,8 @@ const login = async (req, res) => {
     user.failedLoginAttempts = 0
     user.lockUntil = null
     user.tokenVersion += 1;
+    const previousLogin = user.lastLogin;
+    user.lastLogin = new Date();
     await user.save();
 
     console.log('PASSWORD MATCH',isMatch)
@@ -83,6 +85,7 @@ const login = async (req, res) => {
         email: user.email,
         role: user.role,
         mustChangePassword: user.mustChangePassword,
+        lastLogin: previousLogin,
       },
     })
   }catch (error) {

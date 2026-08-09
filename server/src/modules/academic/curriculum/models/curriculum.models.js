@@ -70,6 +70,18 @@ const curriculumSchema = new mongoose.Schema(
             default: true,
         },
 
+        lock: {
+            lockedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                default: null,
+            },
+            lockedAt: {
+                type: Date,
+                default: null,
+            },
+        },
+
     },
     {
         timestamps: true,

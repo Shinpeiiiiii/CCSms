@@ -1,121 +1,133 @@
 import LayoutDashboardIcon from '@/components/movingicons/layoutDashboardIcon'
+import LayersIcon from '@/components/movingicons/layersIcon'
 import UserIcon from '@/components/movingicons/userIcon'
 import UsersIcon from '@/components/movingicons/usersIcon'
-import { 
-  Building2, 
-  GraduationCap, 
-  BookOpen, 
-  ScrollText, 
-  Grid3x3, 
-  Users, 
-  Clock, 
-  Star, 
-  FileText, 
-  UserCog 
+import {
+  GraduationCap,
+  BookOpen,
+  ScrollText,
+  Grid3x3,
+  Clock,
+  Star,
+  FileText,
+  Building2,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
   {
-    label: 'Dashboard', 
-    to: '/dashboard', 
+    label: 'Dashboard',
+    to: '/dashboard',
     role: ['admin', 'registrar', 'teacher'],
     icon: LayoutDashboardIcon,
   },
   {
     label: 'Dashboard',
     role: ['student'],
-    to: '/student/dashboard'
+    to: '/student/dashboard',
   },
   {
     label: 'My Subjects',
     role: ['student'],
-    to: '/student/subjects'
+    to: '/student/subjects',
   },
   {
     label: 'My Profile',
     role: ['student'],
-    to: '/student/profile'
+    to: '/student/profile',
   },
   {
     label: 'Department',
     to: '/department',
     role: ['admin'],
-    icon: Building2
+    icon: LayersIcon,
+    group: 'Administration',
+  },
+  {
+    label: 'Account',
+    to: '/account',
+    role: 'admin',
+    icon: UsersIcon,
+    group: 'Administration',
   },
   {
     label: 'Program',
     to: '/program',
     role: ['admin'],
-    icon: GraduationCap
+    icon: GraduationCap,
+    group: 'Academic',
   },
   {
     label: 'Subject',
     to: '/subject',
     role: ['admin', 'registrar', 'teacher'],
-    icon: BookOpen
+    icon: BookOpen,
+    group: 'Academic',
   },
   {
     label: 'Enrollment Period',
     to: '/enrollmentperiod',
     role: ['admin', 'registrar'],
-    icon: ScrollText
+    icon: ScrollText,
+    group: 'Academic',
   },
   {
     label: 'Curriculum',
     to: '/curriculum',
     role: ['admin', 'registrar', 'teacher'],
-    icon: ScrollText
+    icon: ScrollText,
+    group: 'Academic',
   },
   {
-    label: 'Section',
+    label: 'Sections',
     to: '/section',
     role: ['admin', 'registrar'],
-    icon: Grid3x3
+    icon: Grid3x3,
+    group: 'Academic',
   },
   {
-    label: 'Section Subject',
+    label: 'Section Subjects',
     to: '/section-subject',
     role: ['admin', 'registrar'],
-  },
-  {
-    label: 'Student', 
-    to: '/student',
-    role: ['admin','registrar'],
-    icon: UserIcon,
+    group: 'Academic',
   },
   {
     label: 'Academic Loads',
     to: '/registrar/academic-loads',
     role: ['admin', 'registrar'],
+    group: 'Academic',
   },
   {
-    label: 'Prerequisites', 
-    to: '/prerequisites', 
+    label: 'Prerequisites',
+    to: '/prerequisites',
     role: 'admin',
-    icon: Clock
+    icon: Clock,
+    group: 'Academic',
   },
   {
-    label: 'Attendance', 
-    to: '/attendance', 
-    role: 'teacher',
-    icon: Clock
+    label: 'Students',
+    to: '/student',
+    role: ['admin', 'registrar'],
+    icon: UserIcon,
+    group: 'Students',
   },
   {
-    label: 'Grade', 
+    label: 'Grades',
     to: '/grade',
-    icon: Star
+    icon: Star,
+    group: 'Students',
   },
   {
-    label: 'Application', 
-    to: '/admission', 
-    role: ['registrar','admin'],
-    icon: FileText
+    label: 'Applications',
+    to: '/admission',
+    role: ['registrar', 'admin'],
+    icon: FileText,
+    group: 'Students',
   },
   {
-    label: 'Account', 
-    to: '/account', 
-    role: 'admin',
-    icon: UsersIcon,
+    label: 'Attendance',
+    to: '/attendance',
+    role: 'teacher',
+    icon: Clock,
   },
 ]
 

@@ -9,13 +9,7 @@ const SubjectToolbar = ({
 
     return (
 
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 16,
-            }}
-        >
+        <div className="flex justifyy-between gap-4">
 
             <SearchBox
                 value={search}

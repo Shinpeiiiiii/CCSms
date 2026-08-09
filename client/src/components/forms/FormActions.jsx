@@ -1,5 +1,5 @@
 import { useState } from "react";
-import PrimaryButton from "../buttons/PrimaryButton";
+import PrimaryButton from "@/components/buttons/PrimaryButton";
 
 const FormActions = ({
     loading = false,
@@ -10,14 +10,7 @@ const FormActions = ({
     const [cancelHovered, setCancelHovered] = useState(false);
 
     return (
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 12,
-                marginTop: 24,
-            }}
-        >
+        <div className="flex justify-between gap-4">
             {onCancel && (
                 <button
                     type="button"

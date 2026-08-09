@@ -10,25 +10,41 @@ import MultiSelectCheckbox from "@/components/forms/MultiSelectCheckbox";
 const PrerequisiteForm = ({
     initialValues = null,
     subjects = [],
+    curriculums = [],
+    curriculumSubjectMap = {},
     onSubmit,
     loading = false,
 }) => {
 
-    const getInitialForm = () => ({
+    const getInitialForm = () => {
 
-        subject:
-            initialValues?.subject?._id || "",
+        const curriculum = initialValues?.curriculum?._id || initialValues?.curriculum || ""
 
-        requiredSubject:
-            initialValues?.requiredSubject?._id || [],
+        const subject = initialValues?.subject?._id || initialValues?.subject || ""
 
-        type:
-            initialValues?.type || "Prerequisite",
+        const requiredSubject = initialValues?.requiredSubject?._id
+            ? [initialValues.requiredSubject._id]
+            : Array.isArray(initialValues?.requiredSubject)
+                ? initialValues.requiredSubject
+                : []
 
-        minimumGrade:
-            initialValues?.minimumGrade || 75,
+        return {
 
-    });
+            curriculum,
+
+            subject,
+
+            requiredSubject,
+
+            type:
+                initialValues?.type || "Prerequisite",
+
+            minimumGrade:
+                initialValues?.minimumGrade || 75,
+
+        };
+
+    };
 
     const [form, setForm] = useState(
         getInitialForm
@@ -51,17 +67,40 @@ const PrerequisiteForm = ({
 
     };
 
+    const subjectInCurriculum = (subjectId, curriculumId) => {
+        if (!curriculumId || !curriculumSubjectMap[curriculumId]) return true
+        return curriculumSubjectMap[curriculumId].has(String(subjectId))
+    }
+
+    const filteredSubjects = form.curriculum
+        ? subjects.filter(item => subjectInCurriculum(item._id, form.curriculum))
+        : subjects
+
+    const filteredRequiredSubjects = form.curriculum
+        ? subjects.filter(item =>
+            item._id !== form.subject && subjectInCurriculum(item._id, form.curriculum)
+        )
+        : subjects.filter(item => item._id !== form.subject)
+
     const handleSubmit = (e) => {
 
         e.preventDefault();
 
-        onSubmit({
+        const payload = {
 
             ...form,
 
             minimumGrade: Number(form.minimumGrade),
 
-        });
+        };
+
+        if (payload.curriculum) {
+            payload.curriculum = payload.curriculum
+        } else {
+            delete payload.curriculum
+        }
+
+        onSubmit(payload);
 
     };
 
@@ -85,6 +124,26 @@ const PrerequisiteForm = ({
 
             <SelectField
 
+                label="Curriculum"
+
+                name="curriculum"
+
+                value={form.curriculum}
+
+                onChange={handleChange}
+
+                options={curriculums}
+
+                valueField="_id"
+
+                labelField="curriculumName"
+
+                required={false}
+
+            />
+
+            <SelectField
+
                 label="Subject"
 
                 name="subject"
@@ -93,7 +152,7 @@ const PrerequisiteForm = ({
 
                 onChange={handleChange}
 
-                options={subjects}
+                options={filteredSubjects}
 
                 valueField="_id"
 
@@ -105,12 +164,7 @@ const PrerequisiteForm = ({
 
             <MultiSelectCheckbox
                 label="Required Subjects"
-                options={
-                    subjects.filter(
-                        item=> item._id !== form.subject
-                    )
-                }
-
+                options={filteredRequiredSubjects}
                 value={form.requiredSubject}
                 onChange={(selected) => setForm(previous => ({
                     ...previous, requiredSubject: selected,

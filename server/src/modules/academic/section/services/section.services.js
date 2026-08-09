@@ -6,6 +6,10 @@ const AcademicYear = require('../../academicyear/models/academicyear.model')
 
 const Student = require('../../../students/models/Student')
 
+const SectionSubject = require('../../../sectionsubject/models/sectionsubject.model')
+
+const { generateSectionSubjects } = require('../../../sectionsubject/services/generate-section-subjects')
+
 const createSection = async (data) => {
 
     const existingSection =
@@ -94,11 +98,23 @@ const getSection = async () => {
         },
     ])
 
+    const sectionSubjectCounts = await SectionSubject.aggregate([
+        {
+            $group: {
+                _id: '$section',
+                generatedSubjectCount: { $sum: 1 },
+            },
+        },
+    ])
+
+    const sectionSubjectMap = new Map(sectionSubjectCounts.map((c) => [c._id.toString(), c.generatedSubjectCount]))
+
     const countMap = new Map(counts.map((c) => [c._id.toString(), c.enrolledCount]))
 
     return sections.map((section) => ({
         ...section.toObject(),
         enrolledCount: countMap.get(section._id.toString()) || 0,
+        generatedSubjectCount: sectionSubjectMap.get(section._id.toString()) || 0,
     }))
 
 }
@@ -232,7 +248,17 @@ const openSection = async (id) => {
 
     await section.save()
 
-    return section
+    let generatedSubjects = 0
+
+    if (section.curriculum) {
+        const generated = await generateSectionSubjects(id)
+        generatedSubjects = generated.length
+    }
+
+    return {
+        section,
+        generatedSubjects,
+    }
 
 }
 

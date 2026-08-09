@@ -1,11 +1,8 @@
-import { PrimaryButton } from "@/components/buttons";
-import ActionButtons from "../../../../../components/actions/ActionButton";
+import ActionMenu from "../../../../../components/actions/ActionMenu";
 import CurriculumStatusBadge from "./CurriculumStatusBadge";
 import {
-    Pencil, History, Upload, Archive, BookOpen
+    Lock
 } from "lucide-react"
-
-import ActionMenu from "../../../../../components/actions/ActionMenu";
 const CurriculumColumn = ({
     openEdit,
     onPublish,
@@ -52,6 +49,31 @@ const CurriculumColumn = ({
         ),
     },
 
+    {
+        header: "Lock",
+        render: (curriculum) => {
+            if (curriculum.lock?.lockedBy) {
+                return (
+                    <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: "2px 8px",
+                        borderRadius: 100,
+                        fontSize: "0.7rem",
+                        fontWeight: 600,
+                        background: "#FEF3C7",
+                        color: "#92400E",
+                    }}>
+                        <Lock size={10} />
+                        Locked
+                    </span>
+                );
+            }
+            return <span style={{ color: "#9CA3AF", fontSize: "0.75rem" }}>—</span>;
+        },
+    },
+
    {
         header: "Actions",
 
@@ -74,7 +96,7 @@ const CurriculumColumn = ({
                     ),
             });
 
-            if (curriculum.status === "Draft") {
+            if (curriculum.status === "Draft" && !curriculum.lock?.lockedBy) {
 
                 actions.push({
                     label: "Edit",
@@ -107,7 +129,7 @@ const CurriculumColumn = ({
             );
        
         },
-   }
+    }
 ];
 
 export default CurriculumColumn;

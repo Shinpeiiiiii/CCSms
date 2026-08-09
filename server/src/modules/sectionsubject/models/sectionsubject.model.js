@@ -68,20 +68,25 @@ const sectionSubjectSchema = new mongoose.Schema({
         required:true,
     },
 
+    updatedBy:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        default:null,
+    },
+
 },
 {
     timestamps:true,
 });
 
-// Prevent duplicate schedule
-sectionSubjectSchema.index({
-    section:1,
-    subject:1,
-    day:1,
-    startTime:1,
-    endTime:1,
-},{
-    unique:true,
-});
+sectionSubjectSchema.index(
+    {
+        section:1,
+        subject:1,
+    },
+    {
+        unique:true,
+    }
+);
 
 module.exports = mongoose.model("SectionSubject", sectionSubjectSchema);

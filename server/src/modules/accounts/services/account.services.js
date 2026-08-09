@@ -4,14 +4,14 @@ const { generateActivationToken, sendAccountActivationEmail } = require('../util
 
 
 const getTeachers = async () => {
-    return await User.find({
+    const teacher = await User.find({
         role: 'teacher',
-    }, {
-        password: 0,
-        refreshToken: 0,
-    }).sort({
-        firstName: 1,
+        isActive: true,
+    }).select('firstName lastName email employeeId').sort({
+        firstName: 1, lastName: 1,
     });
+
+    return teacher;
 }
 const getUserById = async (id) => {
     try{
@@ -90,17 +90,6 @@ const activateAccount = async (token, newPassword) => {
     return user
 }
 
-const getAccountTeachers = async () => {
-    return await User.find({
-        role: 'teacher',
-        isActive: true,
-    }, {
-        password: 0,
-        refreshToken: 0,
-    }).sort({
-        firstName: 1,
-    });
-}
 
 const getAccount = async () => {
 
@@ -116,7 +105,7 @@ const getAccountById = async (id) => {
 
     const account = await User.findById(id)
         .select('-password -refreshToken -activationToken')
-
+    console.log('data:', account);
     if (!account) {
         throw new Error('Account not found.')
     }
@@ -148,4 +137,4 @@ const deleteAccount = async (id) => {
     await User.findByIdAndDelete(id);
 };
 
-module.exports = {getTeachers, createAccount, activateAccount, getAccountTeachers, updateAccount, deleteAccount, getAccount, getAccountById}
+module.exports = {getTeachers, createAccount, activateAccount, updateAccount, deleteAccount, getAccount, getAccountById, getUserById}
