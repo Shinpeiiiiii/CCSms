@@ -61,14 +61,17 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0A0F1E;
+  background: #FFFFFF;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #6366F1, #8B5CF6);
-  border-radius: 10px;
+  background: #18181B;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3F3F46;
 }
 
 /* Form inputs dark mode */

@@ -1,18 +1,26 @@
 import ActionButtons from "../../../../../components/actions/ActionButton";
 
-const PrerequisiteColumn = (
-    handleEdit,
-    handleDeactivate
-) => [
+const PrerequisiteColumn = ({
+    openEdit,
+    openDelete,
+}) => [
     {
         header: "Subject",
-        accessor: (row) =>
+        render: (row) =>
             `${row.subject?.subjectCode} - ${row.subject?.subjectName}`,
     },
     {
         header: "Required Subject",
-        accessor: (row) =>
+        render: (row) =>
             `${row.requiredSubject?.subjectCode} - ${row.requiredSubject?.subjectName}`,
+    },
+    {
+        header: "Year Level",
+        render: (row) => (row.yearLevel ? `Year ${row.yearLevel}` : "—"),
+    },
+    {
+        header: "Semester",
+        render: (row) => (row.semester ? `Semester ${row.semester}` : "—"),
     },
     {
         header: "Type",
@@ -20,18 +28,18 @@ const PrerequisiteColumn = (
     },
     {
         header: "Minimum Grade",
-        accessor: (row) => `${row.minimumGrade}%`,
+        render: (row) => `${row.minimumGrade}%`,
     },
     {
         header: "Status",
-        accessor: (row) => row.status,
+        accessor: "status",
     },
     {
         header: "Actions",
-        accessor: (row) => (
+        render: (row) => (
             <ActionButtons
-                onEdit={() => handleEdit(row)}
-                onDelete={() => handleDeactivate(row._id)}
+                onEdit={() => openEdit(row)}
+                onDelete={() => openDelete(row)}
             />
         ),
     },

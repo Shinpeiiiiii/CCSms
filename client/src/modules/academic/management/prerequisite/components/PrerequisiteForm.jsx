@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 
-import {
-    SelectField,
-    TextField,
-    FormActions,
-} from "../../../../../components/forms";
-import MultiSelectCheckbox from "@/components/forms/MultiSelectCheckbox";
+import PrerequisiteCurriculumSection from "./PrerequisiteCurriculumSection";
+import PrerequisiteSubjectSection from "./PrerequisiteSubjectSection";
+import PrerequisiteRuleSection from "./PrerequisiteRuleSection";
 
 const PrerequisiteForm = ({
     initialValues = null,
@@ -14,11 +11,22 @@ const PrerequisiteForm = ({
     curriculumSubjectMap = {},
     onSubmit,
     loading = false,
+    defaultCurriculumId = "",
+    hideCurriculum = false,
 }) => {
+
+    const getSubjectYearLevelSemester = (subjectId, curriculumId) => {
+        if (!curriculumId || !subjectId || !curriculumSubjectMap[curriculumId]) return null
+        const curriculumSubjects = curriculumSubjectMap[curriculumId]
+        if (!Array.isArray(curriculumSubjects)) return null
+        const match = curriculumSubjects.find(cs => String(cs.subjectId) === String(subjectId))
+        if (!match) return null
+        return { yearLevel: String(match.yearLevel), semester: String(match.semester) }
+    }
 
     const getInitialForm = () => {
 
-        const curriculum = initialValues?.curriculum?._id || initialValues?.curriculum || ""
+        const curriculum = initialValues?.curriculum?._id || initialValues?.curriculum || defaultCurriculumId || ""
 
         const subject = initialValues?.subject?._id || initialValues?.subject || ""
 
@@ -27,6 +35,20 @@ const PrerequisiteForm = ({
             : Array.isArray(initialValues?.requiredSubject)
                 ? initialValues.requiredSubject
                 : []
+
+        let yearLevel = initialValues?.yearLevel || ""
+
+        let semester = initialValues?.semester || ""
+
+        if (initialValues && subject && curriculum) {
+            const derived = getSubjectYearLevelSemester(subject, curriculum)
+
+            if (derived) {
+                yearLevel = derived.yearLevel
+
+                semester = derived.semester
+            }
+        }
 
         return {
 
@@ -42,6 +64,10 @@ const PrerequisiteForm = ({
             minimumGrade:
                 initialValues?.minimumGrade || 75,
 
+            yearLevel,
+
+            semester,
+
         };
 
     };
@@ -56,6 +82,20 @@ const PrerequisiteForm = ({
 
     }, [initialValues]);
 
+    useEffect(() => {
+        if (!form.subject || !form.curriculum) return;
+
+        const derived = getSubjectYearLevelSemester(form.subject, form.curriculum);
+
+        if (!derived) return;
+
+        setForm((prev) => ({
+            ...prev,
+            yearLevel: derived.yearLevel,
+            semester: derived.semester,
+        }));
+    }, [form.subject, form.curriculum, curriculumSubjectMap]);
+
     const handleChange = (e) => {
 
         const { name, value } = e.target;
@@ -67,13 +107,20 @@ const PrerequisiteForm = ({
 
     };
 
-    const subjectInCurriculum = (subjectId, curriculumId) => {
+    const subjectInCurriculum = (subjectId, curriculumId, yearLevel = null, semester = null) => {
         if (!curriculumId || !curriculumSubjectMap[curriculumId]) return true
-        return curriculumSubjectMap[curriculumId].has(String(subjectId))
+        const curriculumSubjects = curriculumSubjectMap[curriculumId]
+        if (!Array.isArray(curriculumSubjects)) return true
+        return curriculumSubjects.some(cs => {
+            if (String(cs.subjectId) !== String(subjectId)) return false
+            if (yearLevel && cs.yearLevel !== yearLevel) return false
+            if (semester && cs.semester !== semester) return false
+            return true
+        })
     }
 
     const filteredSubjects = form.curriculum
-        ? subjects.filter(item => subjectInCurriculum(item._id, form.curriculum))
+        ? subjects.filter(item => subjectInCurriculum(item._id, form.curriculum, form.yearLevel ? Number(form.yearLevel) : null, form.semester ? Number(form.semester) : null))
         : subjects
 
     const filteredRequiredSubjects = form.curriculum
@@ -86,9 +133,11 @@ const PrerequisiteForm = ({
 
         e.preventDefault();
 
+        const { yearLevel, semester, ...rest } = form;
+
         const payload = {
 
-            ...form,
+            ...rest,
 
             minimumGrade: Number(form.minimumGrade),
 
@@ -105,136 +154,32 @@ const PrerequisiteForm = ({
     };
 
     return (
-
         <form
-
             onSubmit={handleSubmit}
-
-            style={{
-
-                display: "flex",
-
-                flexDirection: "column",
-
-                gap: 20,
-
-            }}
-
+            className="flex flex-col gap-5"
         >
-
-            <SelectField
-
-                label="Curriculum"
-
-                name="curriculum"
-
-                value={form.curriculum}
-
-                onChange={handleChange}
-
-                options={curriculums}
-
-                valueField="_id"
-
-                labelField="curriculumName"
-
-                required={false}
-
+            <PrerequisiteCurriculumSection
+                hideCurriculum={hideCurriculum}
+                form={form}
+                curriculums={curriculums}
+                handleChange={handleChange}
+                initialValues={initialValues}
             />
 
-            <SelectField
-
-                label="Subject"
-
-                name="subject"
-
-                value={form.subject}
-
-                onChange={handleChange}
-
-                options={filteredSubjects}
-
-                valueField="_id"
-
-                labelField="subjectName"
-
-                required
-
+            <PrerequisiteSubjectSection
+                form={form}
+                setForm={setForm}
+                filteredSubjects={filteredSubjects}
+                filteredRequiredSubjects={filteredRequiredSubjects}
+                handleChange={handleChange}
             />
 
-            <MultiSelectCheckbox
-                label="Required Subjects"
-                options={filteredRequiredSubjects}
-                value={form.requiredSubject}
-                onChange={(selected) => setForm(previous => ({
-                    ...previous, requiredSubject: selected,
-                }))}
-                valueField="_id"
-                labelField="subjectName"
-            />
-
-            <SelectField
-
-                label="Relationship"
-
-                name="type"
-
-                value={form.type}
-
-                onChange={handleChange}
-
-                options={[
-
-                    {
-
-                        value: "Prerequisite",
-
-                        label: "Prerequisite",
-
-                    },
-
-                    {
-
-                        value: "Corequisite",
-
-                        label: "Corequisite",
-
-                    },
-
-                ]}
-
-                valueField="value"
-
-                labelField="label"
-
-            />
-
-            <TextField
-
-                label="Minimum Grade"
-
-                name="minimumGrade"
-
-                type="number"
-
-                value={form.minimumGrade}
-
-                onChange={handleChange}
-
-                required
-
-            />
-
-            <FormActions
-
+            <PrerequisiteRuleSection
+                form={form}
+                handleChange={handleChange}
                 loading={loading}
-
-                submitLabel="Save Prerequisite"
-
             />
-
         </form>
-
     );
 
 };

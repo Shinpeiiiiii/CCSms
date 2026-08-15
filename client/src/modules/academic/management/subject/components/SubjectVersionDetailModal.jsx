@@ -19,13 +19,7 @@ const SubjectVersionDetailsModal = ({
             size="md"
         >
 
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 12,
-                }}
-            >
+            <div className="flex flex-col gap-3">
 
                 <p>
                     <strong>Subject Code:</strong> {subject.subjectCode}

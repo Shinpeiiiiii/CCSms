@@ -1,0 +1,59 @@
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: ../Dockerfile
+      target: development
+
+    ports:
+      - "5000:5000"
+
+    env_file:
+      - ./server/.env
+
+    environment:
+      PORT: "5000"
+      REDIS_URL: "redis://redis:6379"
+      ENABLE_TURNSTILE: "false"
+
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+
+    ports:
+      - "5173:5173"
+
+    environment:
+      VITE_API_URL: "http://localhost:5000/api"
+
+    depends_on:
+      - backend
+
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+    command: npm run dev -- --host 0.0.0.0
+
+
+  redis:
+    image: redis:7-alpine
+
+    ports:
+      - "6379:6379"
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10

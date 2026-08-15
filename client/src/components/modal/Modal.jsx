@@ -33,107 +33,40 @@ const Modal = ({
 
     if (!isOpen) return null;
 
-    const sizes = {
-        sm: "440px",
-        md: "680px",
-        lg: "900px",
-        xl: "1140px",
+    const sizeClasses = {
+        sm: "max-w-[440px]",
+        md: "max-w-[680px]",
+        lg: "max-w-[900px]",
+        xl: "max-w-[1140px]",
     };
 
     return (
-        <div
-            style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 1000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0, 0, 0, 0.32)',
-                backdropFilter: 'blur(4px)',
-                padding: 16,
-            }}
-        >
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/32 backdrop-blur-sm p-4">
             <div
-                style={{
-                    width: '100%',
-                    maxWidth: sizes[size] || sizes.md,
-                    background: '#FFFFFF',
-                    border: '1px solid #DADCE0',
-                    borderRadius: 16,
-                    boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    animation: 'fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                }}
+                className={`w-full bg-white border border-zinc-200 rounded-2xl shadow-lg overflow-hidden flex flex-col ${sizeClasses[size] || sizeClasses.md}`}
             >
                 {/* Header */}
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        borderBottom: '1px solid #E8EAED',
-                        padding: '18px 24px',
-                    }}
-                >
-                    <h2
-                        style={{
-                            fontFamily: 'Sora, sans-serif',
-                            fontSize: '1.2rem',
-                            fontWeight: 700,
-                            color: '#202124',
-                            margin: 0,
-                        }}
-                    >
+                <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-[18px]">
+                    <h2 className="font-sora text-xl font-bold text-zinc-900 m-0">
                         {title}
                     </h2>
 
                     <button
                         onClick={handleClose}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#5F6368',
-                            width: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#F1F3F4';
-                            e.currentTarget.style.color = '#202124';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = '#5F6368';
-                        }}
+                        className="bg-transparent border-none text-zinc-500 w-8 h-8 rounded-full inline-flex items-center justify-center cursor-pointer transition-all hover:bg-zinc-100 hover:text-zinc-900"
                     >
                         <X size={18} />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div style={{ padding: 24, overflowY: 'auto', maxHeight: 'calc(100vh - 200px)', color: '#3C4043' }}>
+                <div className="px-6 py-6 overflow-y-auto max-h-[calc(100vh-200px)] text-zinc-700">
                     {children}
                 </div>
 
                 {/* Footer */}
                 {footer && (
-                    <div
-                        style={{
-                            borderTop: '1px solid #E8EAED',
-                            padding: '16px 24px',
-                            display: 'flex',
-                            justifyContent: 'end',
-                            gap: 12,
-                        }}
-                    >
+                    <div className="border-t border-zinc-200 px-6 py-4 flex justify-end gap-3">
                         {footer}
                     </div>
                 )}

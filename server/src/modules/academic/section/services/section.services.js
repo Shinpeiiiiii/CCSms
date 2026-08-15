@@ -22,14 +22,9 @@ const createSection = async (data) => {
             'Section code already exists.'
         )
     }
-
-    const curriculum =
-        await Curriculum.findById(data.curriculum)
-
+    const curriculum = await Curriculum.findById(data.curriculum)
     if (!curriculum) {
-        throw new Error(
-            'Curriculum not found.'
-        )
+        throw new Error('Curriculum not found.')
     }
 
     if (curriculum.status !== 'Published') {
@@ -49,22 +44,14 @@ const createSection = async (data) => {
         )
     }
 
-    if (
-        curriculum.academicYear.toString() !==
-        academicYear._id.toString()
-    ) {
-        throw new Error(
-            'Curriculum and Academic Year do not match.'
-        )
+    if (!curriculum.academicYear.equals(academicYear._id)) 
+    {
+        throw new Error('Curriculum and Academic Year do not match.')
     }
 
     return await Section.create({
-
         ...data,
-
-        sectionCode:
-            data.sectionCode.toUpperCase(),
-
+        sectionCode: data.sectionCode.toUpperCase(),
     })
 
 }
@@ -74,7 +61,7 @@ const getSection = async () => {
     const sections = await Section.find()
         .populate({
             path: 'curriculum',
-            select: 'curriculumCode curriclumName program',
+            select: 'curriculumCode curriculumName program',
             populate: {
                 path: 'program',
                 select: 'programName programCode',

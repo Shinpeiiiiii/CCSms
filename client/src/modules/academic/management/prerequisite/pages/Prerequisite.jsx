@@ -1,14 +1,16 @@
-import { useMemo, useState,useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
-
 import Card from "../../../../../components/cards/Cards";
-import DataTable from "../../../../../components/table/DataTable";
 import ConfirmModal from "../../../../../components/modal/ConfirmModal";
 
-import PrerequisiteToolbar from "../components/PrerequisiteToolbar";
+import PrerequisiteHeader from "../components/PrerequisiteHeader";
+import PrerequisiteFilterBar from "../components/PrerequisiteFilterBar";
+import PrerequisiteLoadingSkeleton from "../components/PrerequisiteLoadingSkeleton";
+import PrerequisiteEmptyState from "../components/PrerequisiteEmptyState";
+import PrerequisiteCurriculumCard from "../components/PrerequisiteCurriculumCard";
 import PrerequisiteModal from "../components/PrerequisiteModal";
-import PrerequisiteColumns from "../components/PrerequisiteColumn";
+import PrerequisiteSplitModal from "../components/PrerequisiteSplitModal";
 
 import useCrud from "../../../../../hooks/useCrud";
 import usePrerequisite from "../hooks/usePrerequisite";
@@ -23,7 +25,6 @@ import { getCurriculum } from "../../curriculum/services/curriculum.services";
 import { getCurriculumSubject } from "../../curriculumsubject/services/curriculumsubject.services";
 
 const Prerequisite = () => {
-
     const {
         prerequisites,
         loading,
@@ -35,83 +36,159 @@ const Prerequisite = () => {
         loading: subjectLoading
     } = useSubject();
 
-    const [curriculums, setCurriculums] = useState([])
-    const [curriculumSubjectMap, setCurriculumSubjectMap] = useState({})
+    const [curriculums, setCurriculums] = useState([]);
+    const [curriculumSubjectMap, setCurriculumSubjectMap] = useState({});
+    const [selectedCurriculumId, setSelectedCurriculumId] = useState("");
 
-    const {search,setSearch,selectedItem,isModalOpen,
-        isDeleteOpen,openCreate,openEdit,openDelete,closeModal,closeDelete,
+    const {
+        search,
+        setSearch,
+        selectedItem,
+        isModalOpen,
+        isDeleteOpen,
+        openCreate,
+        openEdit,
+        openDelete,
+        closeModal,
+        closeDelete,
     } = useCrud();
 
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [activeCurriculumId, setActiveCurriculumId] = useState("");
+    const [useSplitModal, setUseSplitModal] = useState(false);
 
     useEffect(() => {
         const loadCurriculums = async () => {
             try {
-                const data = await getCurriculum()
-                setCurriculums(data)
+                const data = await getCurriculum();
+                setCurriculums(data);
                 const entries = await Promise.all(
                     data.map(async (c) => {
-                        const subjects = await getCurriculumSubject(c._id)
-                        const subjectIds = new Set(
-                            (Array.isArray(subjects) ? subjects : []).map(
-                                item => String(item.subject?._id || item.subject)
-                            )
-                        )
-                        return [c._id, subjectIds]
+                        const curriculumSubjects = await getCurriculumSubject(c._id);
+                        const subjectData = (Array.isArray(curriculumSubjects) ? curriculumSubjects : []).map(item => ({
+                            subjectId: String(item.subject?._id || item.subject),
+                            yearLevel: item.yearLevel,
+                            semester: item.semester,
+                        }));
+                        return [c._id, subjectData];
                     })
-                )
-                setCurriculumSubjectMap(Object.fromEntries(entries))
+                );
+                setCurriculumSubjectMap(Object.fromEntries(entries));
             } catch (error) {
-                console.error("Failed to load curriculums for prerequisite:", error)
+                console.error("Failed to load curriculums for prerequisite:", error);
             }
-        }
-        loadCurriculums()
-    }, [])
-    const filteredPrerequisites = useMemo(() => {
+        };
+        loadCurriculums();
+    }, []);
 
+    const groupedPrerequisites = useMemo(() => {
         const keyword = search.toLowerCase();
 
-        return prerequisites.filter((item) =>
+        const filtered = prerequisites.filter((item) => {
+            if (!keyword) return true;
+            return (
+                item.subject?.subjectName?.toLowerCase().includes(keyword) ||
+                item.subject?.subjectCode?.toLowerCase().includes(keyword) ||
+                item.requiredSubject?.subjectName?.toLowerCase().includes(keyword) ||
+                item.requiredSubject?.subjectCode?.toLowerCase().includes(keyword) ||
+                item.type?.toLowerCase().includes(keyword)
+            );
+        });
 
-            item.subject?.subjectName
-                ?.toLowerCase()
-                .includes(keyword)
-            ||
-            item.requiredSubject?.subjectName
-                ?.toLowerCase()
-                .includes(keyword)
-            ||
-            item.type
-                ?.toLowerCase()
-                .includes(keyword)
-        );
-    }, [prerequisites, search]);
+        const groups = {};
+
+        filtered.forEach((item) => {
+            const rawCurriculumId = item.curriculum?._id || item.curriculum;
+            const rawSubjectId = item.subject?._id || item.subject;
+
+            if (!rawCurriculumId || !rawSubjectId) return;
+
+            const curriculumId = String(rawCurriculumId);
+            const subjectId = String(rawSubjectId);
+            const curriculumSubjects = curriculumSubjectMap[curriculumId];
+
+            let yearLevel = null;
+            let semester = null;
+
+            if (Array.isArray(curriculumSubjects)) {
+                const match = curriculumSubjects.find(
+                    (cs) => cs.subjectId === subjectId
+                );
+                if (match) {
+                    yearLevel = match.yearLevel;
+                    semester = match.semester;
+                }
+            }
+
+            if (selectedCurriculumId && curriculumId !== selectedCurriculumId) {
+                return;
+            }
+
+            if (!groups[curriculumId]) {
+                groups[curriculumId] = {
+                    curriculum: item.curriculum,
+                    years: {},
+                };
+            }
+
+            const yearKey = yearLevel ? `Year ${yearLevel}` : "Unassigned Year";
+            if (!groups[curriculumId].years[yearKey]) {
+                groups[curriculumId].years[yearKey] = {
+                    semester: {},
+                };
+            }
+
+            const semKey = semester
+                ? (semester === 1 ? "1st Semester" : semester === 2 ? "2nd Semester" : "Summer Semester")
+                : "Unassigned Semester";
+
+            if (!groups[curriculumId].years[yearKey].semester[semKey]) {
+                groups[curriculumId].years[yearKey].semester[semKey] = [];
+            }
+
+            groups[curriculumId].years[yearKey].semester[semKey].push(item);
+        });
+
+        return groups;
+    }, [prerequisites, curriculumSubjectMap, search, selectedCurriculumId]);
 
     const handleSave = async (formData) => {
-
         try {
             setSaving(true);
             if (selectedItem) {
+                const updateData = {
+                    ...formData,
+                    requiredSubject: Array.isArray(formData.requiredSubject)
+                        ? formData.requiredSubject[0]
+                        : formData.requiredSubject,
+                };
                 await updatePrerequisite(
                     selectedItem._id,
-                    formData
+                    updateData
                 );
             } else {
-                await createPrerequisite(
-                    formData
-                );
+                const requiredSubjects = Array.isArray(formData.requiredSubject)
+                    ? formData.requiredSubject
+                    : [formData.requiredSubject];
+
+                for (const reqSubId of requiredSubjects) {
+                    await createPrerequisite({
+                        ...formData,
+                        requiredSubject: reqSubId,
+                    });
+                }
             }
-            closeModal();
+            if (!useSplitModal) {
+                closeModal();
+            }
             await refreshPrerequisites();
-        }
-        catch (error) {
+        } catch (error) {
             alert(
                 error.response?.data?.message ||
                 "Failed to save prerequisite."
             );
-        }
-        finally {
+        } finally {
             setSaving(false);
         }
     };
@@ -124,56 +201,118 @@ const Prerequisite = () => {
             );
             closeDelete();
             await refreshPrerequisites();
-        }
-        catch (error) {
+        } catch (error) {
             alert(
                 error.response?.data?.message ||
                 "Failed to delete prerequisite."
             );
-        }
-        finally {
+        } finally {
             setDeleting(false);
         }
     };
 
-    const columns = PrerequisiteColumns({openEdit,openDelete,});
+    const handleOpenCreateForCurriculum = (curriculumId) => {
+        setActiveCurriculumId(curriculumId);
+        setUseSplitModal(true);
+        openCreate();
+    };
+
+    const handleCloseModal = () => {
+        closeModal();
+        setActiveCurriculumId("");
+        setUseSplitModal(false);
+    };
+
+    const handleEditFromSplitList = (item) => {
+        setUseSplitModal(false);
+        openEdit(item);
+    };
+
+    const handleDeleteFromSplitList = (item) => {
+        setUseSplitModal(false);
+        openDelete(item);
+    };
+
+    const curriculumPrerequisitesForActiveCurriculum = useMemo(() => {
+        if (!activeCurriculumId) return [];
+        return prerequisites.filter((item) => {
+            const rawCurriculumId = item.curriculum?._id || item.curriculum;
+            return String(rawCurriculumId) === String(activeCurriculumId);
+        });
+    }, [prerequisites, activeCurriculumId]);
+
+    const curriculumEntries = Object.entries(groupedPrerequisites);
 
     return (
         <DashboardLayout>
-            <Card
-                title="Subject Prerequisites"
-                subtitle="Manage prerequisite relationships"
-                actions={
-                    <PrerequisiteToolbar
-                        search={search}
-                        setSearch={setSearch}
-                        onAdd={openCreate}
-                    />
-                }
-            >
-                <DataTable
-                    columns={columns}
-                    data={filteredPrerequisites}
-                    loading={loading}
-                    emptyMessage="No prerequisites found."
+            <PrerequisiteHeader />
+
+            <Card padding={0} className="mb-6">
+                <PrerequisiteFilterBar
+                    curriculums={curriculums}
+                    selectedCurriculumId={selectedCurriculumId}
+                    onCurriculumChange={setSelectedCurriculumId}
+                    search={search}
+                    onSearchChange={setSearch}
+                    onAdd={openCreate}
                 />
             </Card>
-            <PrerequisiteModal
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                onSubmit={handleSave}
-                prerequisite={selectedItem}
-                subjects={subject}
-                curriculums={curriculums}
-                curriculumSubjectMap={curriculumSubjectMap}
-                loading={saving}
-            />
+
+            {loading ? (
+                <PrerequisiteLoadingSkeleton />
+            ) : curriculumEntries.length === 0 ? (
+                <PrerequisiteEmptyState search={search} onAdd={openCreate} />
+            ) : (
+                <div className="flex flex-col gap-6">
+                    {curriculumEntries.map(([curriculumId, curriculumGroup]) => (
+                        <PrerequisiteCurriculumCard
+                            key={curriculumId}
+                            curriculumId={curriculumId}
+                            curriculumGroup={curriculumGroup}
+                            onOpenCreateForCurriculum={handleOpenCreateForCurriculum}
+                            onEditItem={openEdit}
+                            onDeleteItem={openDelete}
+                        />
+                    ))}
+                </div>
+            )}
+
+            {/* Modals */}
+            {useSplitModal ? (
+                <PrerequisiteSplitModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onSubmit={handleSave}
+                    prerequisite={selectedItem}
+                    subjects={subject}
+                    curriculums={curriculums}
+                    curriculumSubjectMap={curriculumSubjectMap}
+                    loading={saving}
+                    defaultCurriculumId={activeCurriculumId}
+                    curriculumPrerequisites={curriculumPrerequisitesForActiveCurriculum}
+                    onEditFromList={handleEditFromSplitList}
+                    onDeleteFromSplitList={handleDeleteFromSplitList}
+                    refreshAfterAction={refreshPrerequisites}
+                />
+            ) : (
+                <PrerequisiteModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onSubmit={handleSave}
+                    prerequisite={selectedItem}
+                    subjects={subject}
+                    curriculums={curriculums}
+                    curriculumSubjectMap={curriculumSubjectMap}
+                    loading={saving}
+                    defaultCurriculumId={activeCurriculumId}
+                />
+            )}
             <ConfirmModal
                 isOpen={isDeleteOpen}
                 title="Delete Prerequisite"
                 message={
                     selectedItem
-                        ? `Remove prerequisite "${selectedItem.subject?.subjectName}"?`
+                        ? `Are you sure you want to remove the prerequisite requirement for "${selectedItem.subject?.subjectName}"?`
                         : ""
                 }
                 onCancel={closeDelete}

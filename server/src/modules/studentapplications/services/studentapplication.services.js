@@ -150,49 +150,60 @@ const approveApplication = async (id, reviewedBy) => {
         mustChangePassword: true,
     });
 
-    // Create Student second, passing the user ID
-    const student = await Student.create({
-        application: application._id,
-        user: user._id,
-        studentNumber,
-        firstName: application.firstName,
-        middleName: application.middleName,
-        lastName: application.lastName,
-        sex: application.sex,
-        birthDate: application.birthDate,
-        civilStatus: application.civilStatus,
-        nationality: application.nationality,
-        email: application.email,
-        contactNumber: application.contactNumber,
-        address: application.address,
-        program: application.program?._id || application.program,
-        section: application.section,
-        yearLevel: application.yearLevel,
-        studentType: application.studentType,
-        status: "Active", // Default status for new students is Active
-        academicYear: application.academicYear?._id || application.academicYear,
-        admittedAt: new Date(),
-    });
-
-    // Send Welcome Email (wrapped in try-catch so it won't block approval on SMTP failures)
     try {
-        await sendWelcomeEmail({
-            to: application.email,
-            fullName: `${application.firstName} ${application.lastName}`,
+        // Create Student second, passing the user ID
+        const student = await Student.create({
+            application: application._id,
+            user: user._id,
             studentNumber,
-            temporaryPassword,
+            firstName: application.firstName,
+            middleName: application.middleName,
+            lastName: application.lastName,
+            sex: application.sex,
+            birthDate: application.birthDate,
+            civilStatus: application.civilStatus,
+            nationality: application.nationality,
+            email: application.email,
+            contactNumber: application.contactNumber,
+            address: application.address,
+            program: application.program?._id || application.program,
+            section: application.section,
+            yearLevel: application.yearLevel,
+            studentType: application.studentType,
+            status: "Active", // Default status for new students is Active
+            academicYear: application.academicYear?._id || application.academicYear,
+            admittedAt: new Date(),
         });
-    } catch (emailError) {
-        console.error("Welcome email failed to send, but proceeding with approval:", emailError);
-    }
 
-    //Save application status
-    application.student = student._id;
-    application.status = "Approved";
-    application.reviewedBy = reviewedBy;
-    application.reviewedAt = new Date();
-    await application.save();
-    return {application, student, temporaryPassword};
+        // Send Welcome Email (wrapped in try-catch so it won't block approval on SMTP failures)
+        try {
+            await sendWelcomeEmail({
+                to: application.email,
+                fullName: `${application.firstName} ${application.lastName}`,
+                studentNumber,
+                temporaryPassword,
+            });
+        } catch (emailError) {
+            console.error("Welcome email failed to send, but proceeding with approval:", emailError);
+        }
+
+        //Save application status
+        application.student = student._id;
+        application.status = "Approved";
+        application.reviewedBy = reviewedBy;
+        application.reviewedAt = new Date();
+        await application.save();
+        return {application, student, temporaryPassword};
+    } catch (error) {
+        // Compensating transaction: remove the user we just created
+        // so we don't leave an orphan record if anything fails after it.
+        try {
+            await User.deleteOne({ _id: user._id });
+        } catch (cleanupError) {
+            console.error("Failed to cleanup orphan user after approval failure:", cleanupError);
+        }
+        throw error;
+    }
 }
 
 const rejectApplication = async(id, remarks, reviewedBy) => {

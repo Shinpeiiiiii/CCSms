@@ -68,137 +68,100 @@ const CurriculumSubjectBatchModal = ({
             title="Batch Add Subjects"
             size="lg"
         >
-            <form onSubmit={handleSubmit}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                    <div style={{
-                        padding: "12px 16px",
-                        background: "#EFF6FF",
-                        borderRadius: 10,
-                        border: "1px solid #BFDBFE",
-                        color: "#1E40AF",
-                        fontSize: 13,
-                        fontWeight: 500,
-                    }}>
-                        Select multiple subjects to add to this curriculum in one batch.
-                        Year level, semester, and type will apply to all selected subjects.
-                    </div>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                <div className="p-3 bg-blue-50 border border-blue-200 text-blue-900 rounded-[10px] text-sm font-medium">
+                    Select multiple subjects to add to this curriculum in one batch.
+                    Year level, semester, and type will apply to all selected subjects.
+                </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-                        <SelectField
-                            label="Year Level"
-                            name="yearLevel"
-                            value={yearLevel}
-                            onChange={(e) => setYearLevel(Number(e.target.value))}
-                            options={[
-                                { value: 1, label: "1st Year" },
-                                { value: 2, label: "2nd Year" },
-                                { value: 3, label: "3rd Year" },
-                                { value: 4, label: "4th Year" },
-                            ]}
-                            valueField="value"
-                            labelField="label"
-                            required
-                        />
-
-                        <SelectField
-                            label="Semester"
-                            name="semester"
-                            value={semester}
-                            onChange={(e) => setSemester(Number(e.target.value))}
-                            options={[
-                                { value: 1, label: "1st Semester" },
-                                { value: 2, label: "2nd Semester" },
-                                { value: 3, label: "Summer" },
-                            ]}
-                            valueField="value"
-                            labelField="label"
-                            required
-                        />
-
-                        <SelectField
-                            label="Type"
-                            name="isRequired"
-                            value={String(isRequired)}
-                            onChange={(e) => setIsRequired(e.target.value === "true")}
-                            options={[
-                                { value: "true", label: "Required" },
-                                { value: "false", label: "Elective" },
-                            ]}
-                            valueField="value"
-                            labelField="label"
-                            required
-                        />
-                    </div>
-
-                    {selectedSubjects.length > 0 && (
-                        <div style={{
-                            padding: "12px 16px",
-                            background: "rgba(255,255,255,0.03)",
-                            borderRadius: 10,
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 10,
-                        }}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: 0.5 }}>
-                                Selected Subjects ({selectedCount})
-                            </div>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                                {selectedSubjects.map(item => (
-                                    <span
-                                        key={item._id}
-                                        style={{
-                                            padding: "6px 12px",
-                                            borderRadius: 20,
-                                            background: "rgba(99,102,241,0.1)",
-                                            color: "#818CF8",
-                                            fontSize: 13,
-                                            fontWeight: 600,
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 8,
-                                            border: "1px solid rgba(99,102,241,0.2)",
-                                        }}
-                                    >
-                                        {item.subjectCode} - {item.subjectName}
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveSelected(item._id)}
-                                            style={{
-                                                border: "none",
-                                                background: "transparent",
-                                                cursor: "pointer",
-                                                fontWeight: "bold",
-                                                color: "#818CF8",
-                                                fontSize: 14,
-                                                lineHeight: 1,
-                                            }}
-                                        >
-                                            ✕
-                                        </button>
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    <MultiSelectCheckbox
-                        label="Available Subjects"
-                        options={availableOptions}
-                        value={selectedSubjectIds}
-                        onChange={setSelectedSubjectIds}
-                        valueField="_id"
-                        labelField="subjectName"
-                        placeholder="Search subjects..."
+                <div className="grid grid-cols-3 gap-4">
+                    <SelectField
+                        label="Year Level"
+                        name="yearLevel"
+                        value={yearLevel}
+                        onChange={(e) => setYearLevel(Number(e.target.value))}
+                        options={[
+                            { value: 1, label: "1st Year" },
+                            { value: 2, label: "2nd Year" },
+                            { value: 3, label: "3rd Year" },
+                            { value: 4, label: "4th Year" },
+                        ]}
+                        valueField="value"
+                        labelField="label"
+                        required
                     />
 
-                    <FormActions
-                        loading={loading}
-                        submitLabel={`Add ${selectedCount} Subject${selectedCount !== 1 ? 's' : ''}`}
-                        cancelLabel="Cancel"
-                        onCancel={handleClose}
+                    <SelectField
+                        label="Semester"
+                        name="semester"
+                        value={semester}
+                        onChange={(e) => setSemester(Number(e.target.value))}
+                        options={[
+                            { value: 1, label: "1st Semester" },
+                            { value: 2, label: "2nd Semester" },
+                            { value: 3, label: "Summer" },
+                        ]}
+                        valueField="value"
+                        labelField="label"
+                        required
+                    />
+
+                    <SelectField
+                        label="Type"
+                        name="isRequired"
+                        value={String(isRequired)}
+                        onChange={(e) => setIsRequired(e.target.value === "true")}
+                        options={[
+                            { value: "true", label: "Required" },
+                            { value: "false", label: "Elective" },
+                        ]}
+                        valueField="value"
+                        labelField="label"
+                        required
                     />
                 </div>
+
+                {selectedSubjects.length > 0 && (
+                    <div className="p-3 bg-white/[0.03] border border-white/10 rounded-[10px] flex flex-col gap-2.5">
+                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                            Selected Subjects ({selectedCount})
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {selectedSubjects.map(item => (
+                                <span
+                                    key={item._id}
+                                    className="px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 text-sm font-semibold border border-indigo-500/20 flex items-center gap-2"
+                                >
+                                    {item.subjectCode} - {item.subjectName}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveSelected(item._id)}
+                                        className="border-none bg-transparent cursor-pointer font-bold text-indigo-400 text-base leading-none"
+                                    >
+                                        ✕
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <MultiSelectCheckbox
+                    label="Available Subjects"
+                    options={availableOptions}
+                    value={selectedSubjectIds}
+                    onChange={setSelectedSubjectIds}
+                    valueField="_id"
+                    labelField="subjectName"
+                    placeholder="Search subjects..."
+                />
+
+                <FormActions
+                    loading={loading}
+                    submitLabel={`Add ${selectedCount} Subject${selectedCount !== 1 ? 's' : ''}`}
+                    cancelLabel="Cancel"
+                    onCancel={handleClose}
+                />
             </form>
         </Modal>
     );

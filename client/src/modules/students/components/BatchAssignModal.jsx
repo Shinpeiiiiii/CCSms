@@ -1,18 +1,5 @@
 import React from 'react'
 
-const inputStyle = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.09)',
-  borderRadius: 10,
-  padding: '10px 14px',
-  color: '#F1F5F9',
-  fontSize: 14,
-  outline: 'none',
-  fontFamily: 'Inter, sans-serif',
-  width: '100%',
-  boxSizing: 'border-box',
-}
-
 const BatchAssignModal = ({
   showBatchAssignModal,
   onClose,
@@ -28,7 +15,6 @@ const BatchAssignModal = ({
 }) => {
   if (!showBatchAssignModal) return null
 
-  // Find unique program IDs / Names from selected students to assist section filtering
   const programIds = Array.from(
     new Set(
       selectedStudentsList
@@ -37,7 +23,6 @@ const BatchAssignModal = ({
     )
   )
 
-  // Filter sections if all selected students share the same program
   const filteredBatchSections = sections.filter(sec => {
     if (programIds.length === 1) {
       const targetProg = programIds[0]
@@ -51,77 +36,50 @@ const BatchAssignModal = ({
   })
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.75)',
-      backdropFilter: 'blur(8px)',
-      display: 'flex',
-      alignItems: 'center',
-      justify: 'center',
-      zIndex: 1000,
-      padding: 20
-    }}>
-      <div style={{
-        background: 'rgba(10, 15, 30, 0.95)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderRadius: 20,
-        padding: 30,
-        width: '100%',
-        maxWidth: 520,
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
-        fontFamily: 'Inter, sans-serif'
-      }}>
-        <h3 style={{ fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: 18, color: '#F1F5F9', marginBottom: 12 }}>
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 backdrop-blur-md p-5">
+      <div className="w-full max-w-[520px] bg-[rgba(10,15,30,0.95)] border border-white/10 rounded-[20px] p-7 shadow-2xl font-['Inter']">
+        <h3 className="font-['Sora'] font-bold text-lg text-slate-100 mb-3">
           Batch Section Assignment
         </h3>
 
-        {/* Selected Students Preview */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: 14, marginBottom: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <p style={{ color: '#94A3B8', fontSize: 11, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', margin: 0 }}>
+        <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3.5 mb-5">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-wider m-0">
               Selected Students ({selectedStudentsList.length})
             </p>
             {programIds.length > 1 && (
-              <span style={{ color: '#F59E0B', fontSize: 11, fontWeight: 600 }}>
+              <span className="text-amber-400 text-xs font-semibold">
                 ⚠️ Multiple programs selected
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 110, overflowY: 'auto', paddingRight: 4 }}>
+          <div className="flex flex-wrap gap-1.5 max-h-[110px] overflow-y-auto pr-1">
             {selectedStudentsList.map(st => (
-              <span key={st._id} style={{
-                background: 'rgba(99,102,241,0.12)',
-                color: '#A5B4FC',
-                border: '1px solid rgba(99,102,241,0.2)',
-                padding: '3px 9px',
-                borderRadius: 100,
-                fontSize: 12,
-                fontWeight: 500
-              }}>
+              <span key={st._id} className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2.5 py-1 rounded-full text-sm font-medium">
                 {[st.firstName, st.lastName].filter(Boolean).join(' ')}
-                {st.program?.programCode && <span style={{ opacity: 0.7, marginLeft: 4 }}>({st.program.programCode})</span>}
+                {st.program?.programCode && <span className="opacity-70 ml-1">({st.program.programCode})</span>}
               </span>
             ))}
           </div>
         </div>
 
         {loadingSections ? (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: '#64748B' }}>
+          <div className="py-6 text-center text-slate-500">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.5"
+              className="animate-spin block mx-auto mb-3">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
             Fetching available sections...
           </div>
         ) : (
           <div>
-            <label style={{ display: 'block', color: '#64748B', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 8 }}>
+            <label className="block text-slate-400 text-xs font-semibold tracking-wider uppercase mb-2">
               Target Section
             </label>
             <select
               value={batchTargetSectionId}
               onChange={e => setBatchTargetSectionId(e.target.value)}
-              style={inputStyle}
+              className="w-full bg-white/[0.04] border border-white/10 rounded-[10px] px-3.5 py-2.5 text-slate-100 text-sm font-['Inter'] outline-none"
             >
               <option value="" disabled>-- Select Section for Batch Assignment --</option>
               {(filteredBatchSections.length > 0 ? filteredBatchSections : sections).map(sec => (
@@ -132,33 +90,23 @@ const BatchAssignModal = ({
             </select>
 
             {batchSuccessMsg && (
-              <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 10, padding: '10px 14px', marginTop: 14 }}>
-                <p style={{ color: '#34D399', fontSize: 13, margin: 0, fontWeight: 600 }}>✓ {batchSuccessMsg}</p>
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-[10px] px-3.5 py-2.5 mt-3.5">
+                <p className="text-emerald-400 text-sm font-semibold m-0">✓ {batchSuccessMsg}</p>
               </div>
             )}
 
             {batchErrorMsg && (
-              <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', marginTop: 14 }}>
-                <p style={{ color: '#FCA5A5', fontSize: 12, margin: 0 }}>{batchErrorMsg}</p>
+              <div className="bg-red-500/08 border border-red-500/20 rounded-[10px] px-3.5 py-2.5 mt-3.5">
+                <p className="text-red-300 text-xs m-0">{batchErrorMsg}</p>
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 26 }}>
+            <div className="flex justify-end gap-2.5 mt-7">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={batchAssigning}
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  color: '#94A3B8',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  padding: '9px 18px',
-                  borderRadius: 10,
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: 'pointer',
-                  fontFamily: 'Inter, sans-serif'
-                }}
+                className="bg-white/5 text-slate-400 border border-white/10 px-[18px] py-2 rounded-[10px] font-semibold text-sm cursor-pointer transition-all hover:bg-white/10 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -166,19 +114,7 @@ const BatchAssignModal = ({
                 type="button"
                 onClick={handleBatchAssignSection}
                 disabled={!batchTargetSectionId || batchAssigning}
-                style={{
-                  background: 'linear-gradient(135deg, #10B981, #059669)',
-                  color: 'white',
-                  border: 'none',
-                  padding: '9px 24px',
-                  borderRadius: 10,
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: (!batchTargetSectionId || batchAssigning) ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 0 18px rgba(16,185,129,0.25)',
-                  fontFamily: 'Inter, sans-serif',
-                  opacity: (!batchTargetSectionId || batchAssigning) ? 0.55 : 1
-                }}
+                className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white border-none px-6 py-2 rounded-[10px] font-semibold text-sm cursor-pointer shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-50"
               >
                 {batchAssigning ? 'Assigning...' : `Assign Section to ${selectedStudentsList.length} Student(s)`}
               </button>

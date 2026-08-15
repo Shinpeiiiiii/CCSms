@@ -6,6 +6,25 @@ Status: Findings only — no code changes applied
 
 ---
 
+## Table of Contents
+
+1. [Project Structure & Architecture Consistency](#1-project-structure--architecture-consistency)
+2. [Backend — Controllers, Services, Models, Routes, Middlewares](#2-backend--controllers-services-models-routes-middlewares)
+3. [Frontend — Pages, Components, Services, State Management](#3-frontend--pages-components-services-state-management)
+4. [Auth & Security Patterns](#4-auth--security-patterns)
+5. [Error Handling & Validation](#5-error-handling--validation)
+6. [Database Schema & Data Access Patterns](#6-database-schema--data-access-patterns)
+7. [API Design & Consistency](#7-api-design--consistency)
+8. [Frontend Routing & Protected Routes](#8-frontend-routing--protected-routes)
+9. [State Management & Cross-Tab Sync](#9-state-management--cross-tab-sync)
+10. [Performance & Rendering Concerns](#10-performance--rendering-concerns)
+11. [Missing Tests & Type Safety](#11-missing-tests--type-safety)
+12. [Environment & Config Management](#12-environment--config-management)
+13. [Existing Docs & Known TODOs/FIXMEs](#13-existing-docs--known-todosfixmes)
+14. [Cross-Cutting / Additional Findings](#14-cross-cutting--additional-findings)
+
+---
+
 ## Summary
 
 - **4 critical bugs** require immediate attention

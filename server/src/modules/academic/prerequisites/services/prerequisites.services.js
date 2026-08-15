@@ -50,34 +50,46 @@ const validateSubject = async (subjectId, requiredSubjectId, curriculumId) => {
 
 const createPrerequisite = async (data) => {
     const { subject, requiredSubject, minimumGrade, type, createdBy, curriculum } = data
-  
-    await validateSubject(subject, requiredSubject, curriculum)
-  
-    const existing = await subjectPrerequisites.findOne({
-        subject,
-        requiredSubject,
-    })
- 
-    if (existing) {
-        throw new Error('This prerequisite relationship already exists.')
+
+    const requiredSubjectArray = Array.isArray(requiredSubject)
+        ? requiredSubject
+        : [requiredSubject]
+
+    const created = []
+
+    for (const reqSub of requiredSubjectArray) {
+        await validateSubject(subject, reqSub, curriculum)
+
+        const existing = await subjectPrerequisites.findOne({
+            subject,
+            requiredSubject: reqSub,
+        })
+
+        if (existing) {
+            throw new Error('This prerequisite relationship already exists.')
+        }
+
+        const isCyclic = await hasPath(subject, reqSub)
+
+        if (isCyclic) {
+            throw new Error(
+                'This would create a circular prerequisite chain (e.g., A requires B, B requires A).'
+            )
+        }
+
+        const prerequisite = await subjectPrerequisites.create({
+            subject,
+            requiredSubject: reqSub,
+            curriculum: curriculum || undefined,
+            minimumGrade: minimumGrade ?? null,
+            type: type || 'Prerequisite',
+            createdBy,
+        })
+
+        created.push(prerequisite)
     }
- 
-    const isCyclic = await hasPath(subject, requiredSubject)
- 
-    if (isCyclic) {
-        throw new Error(
-            'This would create a circular prerequisite chain (e.g., A requires B, B requires A).'
-        )
-    }
- 
-    return await subjectPrerequisites.create({
-        subject,
-        requiredSubject,
-        curriculum: curriculum || undefined,
-        minimumGrade: minimumGrade ?? null,
-        type: type || 'Prerequisite',
-        createdBy,
-    })
+
+    return created.length === 1 ? created[0] : created
 }
 
 

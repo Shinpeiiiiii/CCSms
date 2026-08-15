@@ -16,13 +16,7 @@ const CurriculumVersionDetailsModal = ({
             title={`Curriculum Version ${curriculum.version}`}
             size="md"
         >
-             <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 12,
-                }}
-            >
+             <div className="flex flex-col gap-3">
                 <div>
                     <strong>Curriculum Code:</strong>{" "}
                     {curriculum.curriculumCode}

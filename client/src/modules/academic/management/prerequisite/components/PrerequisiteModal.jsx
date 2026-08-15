@@ -10,6 +10,7 @@ const PrerequisiteModal = ({
     curriculums = [],
     curriculumSubjectMap = {},
     loading = false,
+    defaultCurriculumId = "",
 }) => {
 
     const isEdit = Boolean(prerequisite);
@@ -34,6 +35,7 @@ const PrerequisiteModal = ({
                 curriculumSubjectMap={curriculumSubjectMap}
                 onSubmit={onSubmit}
                 loading={loading}
+                defaultCurriculumId={defaultCurriculumId}
             />
         </Modal>
     );

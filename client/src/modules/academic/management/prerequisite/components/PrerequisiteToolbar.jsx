@@ -1,22 +1,22 @@
 import { SearchInput } from "@/components/search";
-import { PrimaryButton } from "@/components/buttons";
 
 const PrerequisiteToolbar = ({
-    search, setSearch, onAdd,
+    search, setSearch,
 }) => {
-    return(
-        <div>
+    return (
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
             <SearchInput
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search prerequisites..."
+                placeholder="Search by subject, code, or type..."
+                style={{
+                    borderRadius: "10px",
+                    borderColor: "#E4E4E7",
+                }}
             />
-
-            <PrimaryButton onClick={onAdd}>
-                Add Prerequisite
-            </PrimaryButton>
+           
         </div>
-    )
-}
+    );
+};
 
 export default PrerequisiteToolbar;
