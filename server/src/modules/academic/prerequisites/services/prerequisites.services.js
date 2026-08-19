@@ -63,6 +63,7 @@ const createPrerequisite = async (data) => {
         const existing = await subjectPrerequisites.findOne({
             subject,
             requiredSubject: reqSub,
+            curriculum: curriculum || undefined,
         })
 
         if (existing) {
@@ -80,7 +81,7 @@ const createPrerequisite = async (data) => {
         const prerequisite = await subjectPrerequisites.create({
             subject,
             requiredSubject: reqSub,
-            curriculum: curriculum || undefined,
+            curriculum: curriculum || null,
             minimumGrade: minimumGrade ?? null,
             type: type || 'Prerequisite',
             createdBy,
@@ -150,6 +151,26 @@ const updatePrerequisite = async (
 
     if (!prerequisite) {
         throw new Error("Prerequisite not found.");
+    }
+
+    const needsValidation =
+        data.subject ||
+        data.requiredSubject ||
+        data.curriculum;
+
+    if (needsValidation) {
+        const subjectId = data.subject || prerequisite.subject;
+        const requiredSubjectId = data.requiredSubject || prerequisite.requiredSubject;
+        const curriculumId = data.curriculum || prerequisite.curriculum;
+
+        await validateSubject(subjectId, requiredSubjectId, curriculumId);
+
+        const isCyclic = await hasPath(subjectId, requiredSubjectId);
+        if (isCyclic) {
+            throw new Error(
+                "This would create a circular prerequisite chain (e.g., A requires B, B requires A)."
+            );
+        }
     }
 
     Object.assign(prerequisite, data);

@@ -36,6 +36,8 @@ const semesterValidator = async (curriculumId) => {
 
                 status: "Active",
 
+                curriculum: curriculumId,
+
             });
 
         for (const prerequisite of prerequisites) {

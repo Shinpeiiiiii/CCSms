@@ -168,16 +168,10 @@ const Prerequisite = () => {
                     updateData
                 );
             } else {
-                const requiredSubjects = Array.isArray(formData.requiredSubject)
-                    ? formData.requiredSubject
-                    : [formData.requiredSubject];
-
-                for (const reqSubId of requiredSubjects) {
-                    await createPrerequisite({
-                        ...formData,
-                        requiredSubject: reqSubId,
-                    });
-                }
+                await createPrerequisite({
+                    ...formData,
+                    requiredSubject: requiredSubjects,
+                });
             }
             if (!useSplitModal) {
                 closeModal();

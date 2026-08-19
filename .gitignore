@@ -1,5 +1,6 @@
-.agent/
+.agents/
 .kilo/
+.deepcode/
 .docs/
 node_modules/
 .env

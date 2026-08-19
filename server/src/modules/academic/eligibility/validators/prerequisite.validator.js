@@ -14,7 +14,7 @@ const validatePrerequisite = async (
     const warnings = [];
 
     const result =
-        await prerequisiteService.checkPrerequisitesMet(
+        await prerequisiteService.checkPrerequisiteMet(
 
             subjectId,
 

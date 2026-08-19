@@ -5,7 +5,7 @@ const subjcetPrerequisitesSchema = new mongoose.Schema({
     subject: {type: mongoose.Schema.Types.ObjectId, ref: "Subject", required: true},
     requiredSubject: {type: mongoose.Schema.Types.ObjectId, ref: "Subject", required: true},
     curriculum: {type: mongoose.Schema.Types.ObjectId, ref: "Curriculum", required: false, index: true},
-    type: {type: String, enum: ["Prerequisite", "Corerequisite"], default: "Prerequisite"},
+    type: {type: String, enum: ["Prerequisite", "Corequisite"], default: "Prerequisite"},
     minimumGrade: {type: Number, default: 75, min: 60, max: 100},
     status: {type: String, enum: ["Active", "Inactive"], default: "Active"},
     createdBy: {type: mongoose.Schema.Types.ObjectId, ref:"User"},
@@ -17,7 +17,7 @@ const subjcetPrerequisitesSchema = new mongoose.Schema({
 
 subjcetPrerequisitesSchema.index(
     {
-        subject: 1,requiredSubject: 1
+        subject: 1, requiredSubject: 1, curriculum: 1
     },
     {
         unique: true
