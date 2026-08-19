@@ -11,7 +11,7 @@ FROM base AS development
 # Install ALL dependencies, including devDependencies (nodemon, etc.)
 RUN npm ci
 
-COPY server/.
+COPY server/ .
 
 ENV NODE_ENV=development
 EXPOSE 5000
@@ -24,7 +24,7 @@ FROM base AS builder
 # Install production-only dependencies
 RUN npm ci --omit=dev
 
-COPY server/.
+COPY server/ .
 
 # ---- Production stage ----
 FROM node:20-slim AS production
