@@ -3,7 +3,7 @@ FROM node:20-slim AS base
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY server/package*.json ./
 
 # ---- Development stage ----
 FROM base AS development
@@ -11,7 +11,7 @@ FROM base AS development
 # Install ALL dependencies, including devDependencies (nodemon, etc.)
 RUN npm ci
 
-COPY . .
+COPY server/.
 
 ENV NODE_ENV=development
 EXPOSE 5000
@@ -24,7 +24,7 @@ FROM base AS builder
 # Install production-only dependencies
 RUN npm ci --omit=dev
 
-COPY . .
+COPY server/.
 
 # ---- Production stage ----
 FROM node:20-slim AS production
