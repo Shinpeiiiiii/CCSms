@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import NavHeader from './components/NavHeader'
 import Footer from '../home/components/Footer'
 import Hero from '../home/components/Hero'
 import About from './components/About'
-import Program from '../home/components/Program'
+import FeatureShowcase from '../auth/components/FeatureShowcase'
 import Enrollment from './components/Enrollment'
+import Program from '../home/components/Program'
+
 
 const Home = () => {
     const location = useLocation()
@@ -27,10 +29,11 @@ const Home = () => {
     }, [location])
 
     return (
-        <div style={{ background: '#0A0F1E', minHeight: '100vh' }}>
+        <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
             <NavHeader />
             <Hero />
             <About />
+            <FeatureShowcase />
             <Enrollment />
             <Program />
             <Footer />

@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcrypt')
 
 const User = require('../../auth/models/User')
 
@@ -31,7 +31,7 @@ const register = async (req, res) => {
       user,
     })
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       message: error.message,
     })
   }

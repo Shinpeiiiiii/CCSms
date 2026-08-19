@@ -12,7 +12,6 @@ export const createStudent = async (studentData) => {
         console.log("full response:", response)        // ← add this
         console.log("response.data:", response.data)   // ← and this
         return response.data
-    
 }
 
 export const deleteStudent = async (studentId) => {
@@ -23,5 +22,14 @@ export const deleteStudent = async (studentId) => {
 export const updateStudent = async (studentId, studentData) => {
         const response = await api.put(`/students/${studentId}`, studentData)
         return response.data
+}
+
+export const assignSection = async (studentId, sectionId) => {
+        const response = await api.patch(`/students/${studentId}/assign-section`, { sectionId })
+        return response.data
+}
+export const studentDashboard = async () => {
+        const response = await api.get('students/dashboard');
+        return response.data;
 }
 

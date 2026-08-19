@@ -1,6 +1,5 @@
-import SearchInput from "../../../../../components/search/SearchInput";
 import PrimaryButton from "../../../../../components/buttons/PrimaryButton";
-
+import SearchBox from "../../../../../components/search/SearchInput"
 const ProgramToolbar = ({
     search,
     setSearch,
@@ -8,31 +7,19 @@ const ProgramToolbar = ({
 }) => {
 
     return (
-
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 16,
-                flexWrap: "wrap",
-            }}
-        >
-
-            <SearchInput
+        <div className="flex justify-between gap-4">
+            <SearchBox
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search programs..."
+                placeholder="Search program..."
             />
-
-            <PrimaryButton onClick={onAdd}>
-                + Add Program
+            <PrimaryButton
+                onClick={onAdd}
+            >
+                Add Program
             </PrimaryButton>
-
         </div>
-
     );
-
 };
 
 export default ProgramToolbar;

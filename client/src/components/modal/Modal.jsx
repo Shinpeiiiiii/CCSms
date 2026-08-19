@@ -1,20 +1,26 @@
 import { useEffect } from "react";
+import { X } from "lucide-react";
 
 const Modal = ({
     isOpen,
-    onClose,
+    onClose = () => {},
     title,
     children,
     footer,
     size = "md",
 }) => {
-    
+    const handleClose = () => {
+        if (typeof onClose === "function") {
+            onClose();
+        }
+    };
+
     useEffect(() => {
         if (!isOpen) return;
 
         const handleEscape = (event) => {
             if (event.key === "Escape") {
-                onClose();
+                handleClose();
             }
         };
 
@@ -23,113 +29,44 @@ const Modal = ({
         return () => {
             document.removeEventListener("keydown", handleEscape);
         };
-    }, [isOpen, onClose]);
+    }, [isOpen, handleClose]);
 
     if (!isOpen) return null;
 
-    const sizes = {
-        sm: "440px",
-        md: "680px",
-        lg: "900px",
-        xl: "1140px",
+    const sizeClasses = {
+        sm: "max-w-[440px]",
+        md: "max-w-[680px]",
+        lg: "max-w-[900px]",
+        xl: "max-w-[1140px]",
     };
 
     return (
-        <div
-            style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 1000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(5, 8, 16, 0.75)',
-                backdropFilter: 'blur(8px)',
-                padding: 16,
-            }}
-        >
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/32 backdrop-blur-sm p-4">
             <div
-                style={{
-                    width: '100%',
-                    maxWidth: sizes[size] || sizes.md,
-                    background: '#0D1225',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 20,
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    animation: 'fadeIn 0.25s ease-out',
-                }}
+                className={`w-full bg-white border border-zinc-200 rounded-2xl shadow-lg overflow-hidden flex flex-col ${sizeClasses[size] || sizeClasses.md}`}
             >
                 {/* Header */}
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
-                        padding: '18px 24px',
-                    }}
-                >
-                    <h2
-                        style={{
-                            fontFamily: 'Sora, sans-serif',
-                            fontSize: '1.25rem',
-                            fontWeight: 700,
-                            color: '#F1F5F9',
-                        }}
-                    >
+                <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-[18px]">
+                    <h2 className="font-sora text-xl font-bold text-zinc-900 m-0">
                         {title}
                     </h2>
 
                     <button
-                        onClick={onClose}
-                        style={{
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            color: '#94A3B8',
-                            fontSize: '1.25rem',
-                            width: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                            e.currentTarget.style.color = '#EF4444';
-                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)';
-                            e.currentTarget.style.color = '#94A3B8';
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
-                        }}
+                        onClick={handleClose}
+                        className="bg-transparent border-none text-zinc-500 w-8 h-8 rounded-full inline-flex items-center justify-center cursor-pointer transition-all hover:bg-zinc-100 hover:text-zinc-900"
                     >
-                        &times;
+                        <X size={18} />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div style={{ padding: 24, overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+                <div className="px-6 py-6 overflow-y-auto max-h-[calc(100vh-200px)] text-zinc-700">
                     {children}
                 </div>
 
                 {/* Footer */}
                 {footer && (
-                    <div
-                        style={{
-                            borderTop: '1px solid rgba(255,255,255,0.06)',
-                            padding: '16px 24px',
-                            display: 'flex',
-                            justifyContent: 'end',
-                            gap: 12,
-                        }}
-                    >
+                    <div className="border-t border-zinc-200 px-6 py-4 flex justify-end gap-3">
                         {footer}
                     </div>
                 )}

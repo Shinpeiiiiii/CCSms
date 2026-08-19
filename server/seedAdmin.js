@@ -27,6 +27,8 @@ const seedAdmin = async() => {
             email: 'seddy012345@gmail.com',
             password: hashedPassword,
             role: 'admin',
+            isActive: true,
+            mustChangePassword: false,
         })
 
         console.log('Admin created',admin.email)

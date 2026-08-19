@@ -7,3 +7,13 @@
 !.dev.vars.example
 .env*
 !.env.example
+.agents/
+.kilo/
+.deepcode/
+.docs/
+node_modules/
+.env
+.env.local
+.env.*.local
+.env.*
+!.env.example

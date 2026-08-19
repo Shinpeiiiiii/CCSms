@@ -1,22 +1,36 @@
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
 const User = require('../models/User')
+const { changePassword: changePasswordService } = require('../services/changePassword.services')
+
+const Max_Attempts = 5
+const LockDuration = 15 * 60 * 1000 //15 mins
 
 const login = async (req, res) => {
   try {
 
-    console.log('BODY:',req.body)
+    //console.log('BODY:',req.body)
     const { email, password } = req.body
-
     const user = await User.findOne({email})
-
+    const invalidCredentialsResponse = () => res.status(400).json({message: 'Invalid email and password.'})
     console.log('FOUND USER',user)
 
 
     if (!user) {
-      return res.status(400).json({
-        message: 'User not found',
+      return invalidCredentialsResponse()
+    }
+
+    if (user.isActive === false) {
+      return res.status(403).json({
+        message: 'Your account is not yet activated. Please check your email for the activation link.',
+      })
+    }
+
+    if(user.lockUntil && user.lockUntil > Date.now()){
+      const minsleft = Math.ceil((user.lockUntil - Date.now()) / 60000)
+      return res.status(429).json({
+        message: `Too many failed attempts. Try again in ${minsleft} minute(s).`,
       })
     }
 
@@ -25,39 +39,94 @@ const login = async (req, res) => {
       user.password
     )
 
-    console.log('PASSWORD MATCH',isMatch)
+    if(!isMatch){
+      user.failedLoginAttempts += 1
 
-    if (!isMatch) {
-      return res.status(400).json({
-        message: 'Invalid Password',
-      })
+      if(user.failedLoginAttempts >= Max_Attempts){
+        user.lockUntil = new Date(Date.now() + LockDuration)
+      }
+
+      await user.save()
+      return invalidCredentialsResponse()
     }
 
-    const token = jwt.sign(
-      {
-        id: user._id,role: user.role
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: '1d',
-      },
-      console.log(user.role)
-    )
+    user.failedLoginAttempts = 0
+    user.lockUntil = null
+    user.tokenVersion += 1;
+    const previousLogin = user.lastLogin;
+    user.lastLogin = new Date();
+    await user.save();
 
-    res.status(200).json({
-      token,
+    console.log('PASSWORD MATCH',isMatch)
+
+    const {
+        generateAccessToken,
+        generateRefreshToken,
+    } = require("../../../utils/token");
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    res.cookie("refreshToken",refreshToken,{
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      secure: true,
+      maxAge: 5 * 60 * 60 * 1000,
+    })
+    .status(200)
+    .json({
+      accessToken,
 
       user: {
         id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
+        mustChangePassword: user.mustChangePassword,
+        lastLogin: previousLogin,
       },
     })
-  } catch (error) {
+  }catch (error) {
+    console.error(error);
     res.status(500).json({
       message: error.message,
     })
   }
 }
 
-module.exports = login
+const changePassword = async (req, res) => {
+
+    try{
+
+        await changePasswordService(
+
+            req.user.id,
+
+            req.body.currentPassword,
+
+            req.body.newPassword
+
+        );
+
+        return res.json({
+
+            message:
+                "Password changed successfully.",
+
+        });
+
+    }catch(error){
+
+        return res.status(400).json({
+
+            message:error.message,
+
+        });
+
+    }
+
+};
+
+module.exports = {login, changePassword};

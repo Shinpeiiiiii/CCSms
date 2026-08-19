@@ -1,0 +1,104 @@
+﻿# CCSms
+
+A full-stack school management system with role-based access for admins, registrars, teachers, and students.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite 8, Tailwind CSS v4 |
+| UI Library | shadcn/ui (Radix primitives) |
+| State | Zustand (auth) + TanStack Query v5 |
+| Routing | React Router DOM v7 |
+| Validation | Zod v4, react-hook-form |
+| Backend | Express 5 (Node.js) |
+| Database | MongoDB (Mongoose 9) |
+| Cache | Redis (ioredis v6) |
+| Auth | JWT + httpOnly refresh cookies |
+| Security | express-rate-limit, Cloudflare Turnstile |
+
+## Architecture
+
+```
+TeacherPortal/
+├── client/        # React frontend (Vite)
+└── server/        # Express API (MongoDB + Redis)
+```
+
+### Client Structure
+
+- **`src/modules/`** — Feature-first modules: `auth`, `dashboard`, `students`, `academic`, `accounts`, `admission`, `enrollmentform`, `home`, `public`
+- **`src/components/`** — Shared UI: shadcn/ui, `DataTable`, `RoleProtectedRoute`, search, toast
+- **`src/shared/`** — Layouts (`AuthLayout`, `DashboardLayout`) and generic components
+- **`src/services/api.js`** — Axios instance with token refresh interceptor
+- **`src/constants/`** — Centralized role definitions and TanStack Query keys
+
+### Server Structure
+
+- **`server/src/app.js`** — Express app, middleware, and module route mounts
+- **`server/src/modules/`** — Domain modules following `routes → controller → service → model`
+- **`server/src/middlewares/`** — JWT auth, role authorization, rate limiting, Turnstile captcha
+
+### State & Data Flow
+
+1. **Auth**: Zustand `useAuthStore` persists to `localStorage` and syncs across tabs via `BroadcastChannel`. Access tokens are attached to Axios requests; refresh tokens live in httpOnly cookies.
+2. **Server state**: TanStack Query v5 handles caching, deduplication, and background refetching. Server responses are cached in Redis (300s TTL).
+3. **Routing**: Route-level guards via `RoleProtectedRoute` and `ProtectedRoute` redirect unauthenticated users to `/login`.
+
+## Roles
+
+| Role | Access |
+|------|--------|
+| `admin` | Accounts, departments, full academic management |
+| `registrar` | Students, sections, programs, subjects, enrollment periods, application review |
+| `teacher` | Dashboard, programs, sections, subjects, curricula, academic loads |
+| `student` | Student dashboard, My Subjects, My Profile, enrollment form |
+
+## Environment Variables
+
+### Client (`client/.env`)
+```
+VITE_API_URL=
+```
+
+### Server (`server/.env`)
+```
+PORT=5000
+MONGODB_URI=
+JWT_ACCESS_SECRET=
+JWT_REFRESH_SECRET=
+JWT_ACCESS_EXPIRY=
+JWT_REFRESH_EXPIRY=
+REDIS_URL=
+ENABLE_TURNSTILE=false
+CORS_ORIGIN=
+MAIL_HOST=
+MAIL_PORT=
+MAIL_USER=
+MAIL_PASS=
+```
+
+## Getting Started
+
+```bash
+# Install dependencies
+cd client && npm install
+cd ../server && npm install
+
+# Run development servers
+cd client && npm run dev
+cd ../server && npm run dev
+```
+
+The Vite dev server proxies `/api` to `localhost:5000`.
+
+## Build
+
+```bash
+cd client && npm run build
+cd server && npm run start
+```
+
+## Deployment
+
+Deployed on Railway via `railway.json`.

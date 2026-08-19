@@ -1,0 +1,49 @@
+name: Deplot React + Vite to Github pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_requires:
+    branches: [main]
+      
+
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+
+        steps:
+            #CHECK THE REPOSITORY
+            - name: Check out code
+              uses: actions/checkout@v4
+
+            #SET UP NODE JS
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
+
+
+            #INSTALL DEPENDENCIES
+            - name: Install Dependencies
+              run: npm ci
+            
+            #RUNT LINTER
+            - name: Run linter
+              run: npm run lint --if-present
+
+            #RUN TEST PROJECT
+            - name: Run tests
+              run: npm test --if-present
+
+            #DEPLOY TO GITHUB PAGES
+            - name: Build Docker Image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: false
+                  tagas: college-portal-backend:ci
+                  cache-from: type=gha
+                  cache-to: type=gha, mode=max

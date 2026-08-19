@@ -4,7 +4,7 @@ const About = () => (
   <section
     id="about"
     style={{
-      background: 'linear-gradient(180deg, #0A0F1E 0%, #080C16 100%)',
+      background: '#F8F9FA',
       padding: '100px 24px',
       position: 'relative',
       overflow: 'hidden',
@@ -18,7 +18,7 @@ const About = () => (
         left: '-10%',
         width: 380,
         height: 380,
-        background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(26,115,232,0.04) 0%, transparent 70%)',
         borderRadius: '50%',
         pointerEvents: 'none',
       }}
@@ -37,12 +37,13 @@ const About = () => (
         <div>
           <p
             style={{
-              color: '#6366F1',
+              color: '#1A73E8',
               fontWeight: 600,
               fontSize: 12,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               marginBottom: 14,
+              marginTop: 0,
             }}
           >
             Who We Are
@@ -52,16 +53,17 @@ const About = () => (
               fontFamily: 'Sora, sans-serif',
               fontSize: 'clamp(1.875rem, 4vw, 2.75rem)',
               fontWeight: 800,
-              color: '#F1F5F9',
+              color: '#202124',
               marginBottom: 20,
               letterSpacing: '-0.02em',
               lineHeight: 1.15,
+              marginTop: 0,
             }}
           >
             Shaping the Future of Cebu's{' '}
             <span
               style={{
-                background: 'linear-gradient(135deg, #818CF8, #A78BFA)',
+                background: 'linear-gradient(135deg, #1A73E8, #8B5CF6)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -70,10 +72,10 @@ const About = () => (
               Tech Professionals
             </span>
           </h2>
-          <p style={{ color: '#475569', fontSize: '0.9375rem', lineHeight: 1.75, marginBottom: 20 }}>
+          <p style={{ color: '#5F6368', fontSize: '0.9375rem', lineHeight: 1.75, marginBottom: 20, marginTop: 0 }}>
             TeacherPortal is Cebu's premier academic management gateway. Founded to address the challenges of digital-first education, we bridge student potential with industry-ready technology curriculum.
           </p>
-          <p style={{ color: '#475569', fontSize: '0.9375rem', lineHeight: 1.75 }}>
+          <p style={{ color: '#5F6368', fontSize: '0.9375rem', lineHeight: 1.75, margin: 0 }}>
             Our online enrollment system makes accessing computer education seamless, fast, and structured, so future developers and educators can start learning without administrative friction.
           </p>
         </div>
@@ -84,7 +86,7 @@ const About = () => (
             {
               title: 'Industry-Aligned Curriculum',
               desc: 'Degree programs structured in collaboration with Cebu’s leading tech companies and startup hubs.',
-              color: '#6366F1',
+              color: '#1A73E8',
             },
             {
               title: 'Student-First Management',
@@ -100,11 +102,11 @@ const About = () => (
             <div
               key={title}
               style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: '#FFFFFF',
+                border: '1px solid #DADCE0',
                 borderRadius: 16,
                 padding: '24px',
-                backdropFilter: 'blur(10px)',
+                boxShadow: '0 1px 2px 0 rgba(60,64,67,0.05)',
               }}
             >
               <h3
@@ -112,8 +114,9 @@ const About = () => (
                   fontFamily: 'Sora, sans-serif',
                   fontWeight: 700,
                   fontSize: '1rem',
-                  color: '#F1F5F9',
+                  color: '#202124',
                   marginBottom: 8,
+                  marginTop: 0,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
@@ -130,7 +133,7 @@ const About = () => (
                 />
                 {title}
               </h3>
-              <p style={{ color: '#475569', fontSize: '0.8125rem', lineHeight: 1.6, paddingLeft: 16 }}>
+              <p style={{ color: '#5F6368', fontSize: '0.8125rem', lineHeight: 1.6, paddingLeft: 16, margin: 0 }}>
                 {desc}
               </p>
             </div>

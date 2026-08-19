@@ -1,9 +1,9 @@
-import { useState } from "react";
 import Modal from "./Modal";
 
 const ConfirmModal = ({
     isOpen,
     onClose,
+    onCancel,
     onConfirm,
     title = "Confirmation",
     message = "Are you sure?",
@@ -11,67 +11,46 @@ const ConfirmModal = ({
     cancelText = "Cancel",
     loading = false,
 }) => {
-    const [cancelHovered, setCancelHovered] = useState(false);
-    const [confirmHovered, setConfirmHovered] = useState(false);
+    const handleDismiss = () => {
+        if (typeof onClose === "function") {
+            onClose();
+            return;
+        }
+
+        if (typeof onCancel === "function") {
+            onCancel();
+        }
+    };
 
     return (
         <Modal
             isOpen={isOpen}
-            onClose={onClose}
+            onClose={handleDismiss}
             title={title}
             size="sm"
-            footer={
-                <>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        disabled={loading}
-                        style={{
-                            padding: '10px 20px',
-                            borderRadius: 100,
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            background: cancelHovered ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
-                            color: '#94A3B8',
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            opacity: loading ? 0.5 : 1,
-                        }}
-                        onMouseEnter={() => setCancelHovered(true)}
-                        onMouseLeave={() => setCancelHovered(false)}
-                    >
-                        {cancelText}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={onConfirm}
-                        disabled={loading}
-                        style={{
-                            padding: '10px 24px',
-                            borderRadius: 100,
-                            border: 'none',
-                            background: confirmHovered ? '#DC2626' : '#EF4444',
-                            color: 'white',
-                            fontSize: '0.875rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            boxShadow: confirmHovered ? '0 0 16px rgba(239, 68, 68, 0.4)' : 'none',
-                            opacity: loading ? 0.5 : 1,
-                        }}
-                        onMouseEnter={() => setConfirmHovered(true)}
-                        onMouseLeave={() => setConfirmHovered(false)}
-                    >
-                        {loading ? "Please wait..." : confirmText}
-                    </button>
-                </>
-            }
         >
-            <p style={{ color: '#94A3B8', fontSize: '0.9375rem', lineHeight: 1.6 }}>
+            <p className="text-zinc-600 text-base leading-relaxed m-0">
                 {message}
             </p>
+            <div className="flex justify-end gap-3 mt-6">
+                <button
+                    type="button"
+                    onClick={handleDismiss}
+                    disabled={loading}
+                    className="px-5 py-2.5 rounded-full border border-zinc-200 bg-white text-zinc-600 text-sm font-medium cursor-pointer transition-all hover:bg-zinc-100 disabled:opacity-50"
+                >
+                    {cancelText}
+                </button>
+
+                <button
+                    type="button"
+                    onClick={onConfirm}
+                    disabled={loading}
+                    className="px-6 py-2.5 rounded-full border-none bg-red-600 text-white text-sm font-semibold cursor-pointer transition-all hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/20 disabled:opacity-50"
+                >
+                    {loading ? "Please wait..." : confirmText}
+                </button>
+            </div>
         </Modal>
     );
 };

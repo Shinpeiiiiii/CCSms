@@ -1,273 +1,326 @@
-import { useEffect, useState } from 'react'
-import DashboardLayout from '../../../shared/layouts/DashboardLayout'
-import { getStudents, createStudent, deleteStudent } from '../services/student.service'
+// Students.jsx
+import React, { useState, useMemo, useCallback } from 'react';
+import DashboardLayout from "../../../shared/layouts/DashboardLayout";
+import { ToastProvider, useToast } from '../../../components/toast/ToastContainer';
+import { TableSkeleton } from '../../../components/toast/Skeleton';
 
-const inputStyle = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.09)',
-  borderRadius: 10, padding: '10px 14px',
-  color: '#F1F5F9', fontSize: 14, outline: 'none',
-  fontFamily: 'Inter, sans-serif', width: '100%', boxSizing: 'border-box',
-  transition: 'border-color 0.2s, box-shadow 0.2s',
-}
+// Hooks
+import useStudents from '../hooks/useStudents';
+import useFilterMetadata from '../hooks/useFilterMetaData';
+import { useStudentFilters } from '../hooks/useStudentFilter';
+import { useBatchSelection } from '../hooks/useBatchSelection';
 
-const DEGREE_PROGRAMS = [
-  'Bachelor of Science in Computer Science',
-  'Bachelor of Science in Information Technology',
-  'Bachelor of Science in Nursing',
-  'Bachelor of Science in Education',
-  'Bachelor of Arts in Communication',
-]
+// Subcomponents (keep your existing ones, just style them with Tailwind)
+import StudentCategoryTabs from '../components/StudentCategoryTabs';
+import StudentFilterBar from '../components/StudentFilterBar';
+import StudentBatchActionBar from '../components/StudentBatchActionBar';
+import SingleAssignModal from '../components/SingleAssignModal';
+import BatchAssignModal from '../components/BatchAssignModal';
+import NewStudentForm from '../components/NewStudentForm';
+import DataTable from '../../../components/table/DataTable';
+import StudentColumn from '../components/StudentColumn';
+import Card from '../../../components/cards/Cards';
 
-const YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year']
+// ─── Header Component ──────────────────────────────────────────────
+const PageHeader = ({ showForm, onToggleForm }) => (
+  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
+    <div>
+      <h1 className="font-sora text-2xl font-extrabold text-black tracking-tight">
+        Students Directory
+      </h1>
+      <p className="text-slate-500 text-sm mt-1">
+        Manage student records, program assignments, and class section allocations.
+      </p>
+    </div>
+    <button
+      onClick={onToggleForm}
+      className={`
+        inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
+        transition-all duration-200 active:scale-95
+        ${showForm 
+          ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20' 
+          : 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:from-indigo-400 hover:to-violet-400'}
+      `}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        {showForm ? (
+          <path d="M18 6L6 18M6 6l12 12" />
+        ) : (
+          <>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </>
+        )}
+      </svg>
+      {showForm ? 'Cancel' : 'Add Student'}
+    </button>
+  </div>
+);
 
-const Students = () => {
-  const [students, setStudents] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [search, setSearch] = useState('')
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ firstName: '', middleName: '', lastName: '', email: '', degreeProgram: '', yearLevel: '' })
-  const [deleteId, setDeleteId] = useState(null)
+// ─── Main Students Component ───────────────────────────────────────
+const StudentsContent = () => {
+  const { addToast } = useToast();
+  
+  // Data hooks
+  const {
+    students,
+    loading,
+    submitting,
+    addStudent,
+    removeStudent,
+    updateStudentSection,
+    batchUpdateSections
+  } = useStudents();
 
-  const fetchStudents = async () => {
-    setLoading(true)
-    try {
-      const data = await getStudents()
-      setStudents(Array.isArray(data) ? data : [])
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
+  const { departments, programs, sections, refreshSections } = useFilterMetadata();
+
+  // Filter hooks
+  const {
+    search, setSearch,
+    selectedDept, setSelectedDept,
+    selectedProgram, setSelectedProgram,
+    selectedSectionFilter, setSelectedSectionFilter,
+    activeTab, setActiveTab,
+    filteredStudents,
+    counts,
+    hasActiveFilters,
+    resetFilters
+  } = useStudentFilters(students);
+
+  // Selection hooks
+  const {
+    selectedIds,
+    handleSelectAll,
+    toggleSelect,
+    clearSelection,
+    isAllSelected
+  } = useBatchSelection(filteredStudents);
+
+  // Local UI state
+  const [showForm, setShowForm] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  
+  // Form state
+  const [form, setForm] = useState({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    email: '',
+    degreeProgram: '',
+    yearLevel: ''
+  });
+
+  // Single assign modal state
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [targetSectionId, setTargetSectionId] = useState('');
+  const [assigning, setAssigning] = useState(false);
+
+  // Batch assign modal state
+  const [showBatchAssignModal, setShowBatchAssignModal] = useState(false);
+  const [batchTargetSectionId, setBatchTargetSectionId] = useState('');
+  const [batchAssigning, setBatchAssigning] = useState(false);
+
+  // ─── Derived Data ───────────────────────────────────────────────
+  const selectedStudentsList = useMemo(() => 
+    students.filter(s => selectedIds.includes(s._id)),
+    [students, selectedIds]
+  );
+
+  const filteredSections = useMemo(() => {
+    if (!selectedStudent) return [];
+    return sections.filter(sec => {
+      if (selectedStudent.program?._id) {
+        const progId = sec.curriculum?.program?._id || sec.curriculum?.program;
+        return progId === selectedStudent.program._id;
+      }
+      if (selectedStudent.degreeProgram) {
+        const progName = sec.curriculum?.program?.programName || '';
+        const query = selectedStudent.degreeProgram.toLowerCase();
+        return progName.toLowerCase().includes(query) || query.includes(progName.toLowerCase());
+      }
+      return true;
+    });
+  }, [sections, selectedStudent]);
+
+  // ─── Handlers ───────────────────────────────────────────────────
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    const result = await addStudent(form);
+    if (result.success) {
+      addToast('Student added successfully', 'success');
+      setForm({ firstName: '', middleName: '', lastName: '', email: '', degreeProgram: '', yearLevel: '' });
+      setShowForm(false);
+    } else {
+      addToast(result.error, 'error');
     }
-  }
+  }, [form, addStudent, addToast]);
 
-  useEffect(() => { fetchStudents() }, [])
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSubmitting(true)
-    try {
-      const newStudent = await createStudent(form)
-      if (newStudent) setStudents(prev => [...prev, newStudent])
-      setForm({ firstName: '', middleName: '', lastName: '', email: '', degreeProgram: '', yearLevel: '' })
-      setShowForm(false)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setSubmitting(false)
+  const handleDelete = useCallback(async (id) => {
+    setDeleteId(id);
+    const result = await removeStudent(id);
+    if (result.success) {
+      addToast('Student removed successfully', 'success');
+      clearSelection();
+    } else {
+      addToast(result.error, 'error');
     }
-  }
+    setDeleteId(null);
+  }, [removeStudent, addToast, clearSelection]);
 
-  const handleDelete = async (id) => {
-    setDeleteId(id)
-    try {
-      await deleteStudent(id)
-      setStudents(prev => prev.filter(s => s._id !== id))
-    } catch (e) { console.error(e) }
-    finally { setDeleteId(null) }
-  }
+  const openAssignModal = useCallback((student) => {
+    setSelectedStudent(student);
+    setTargetSectionId(student.section?._id || '');
+    setShowAssignModal(true);
+    refreshSections();
+  }, [refreshSections]);
 
-  const filtered = students.filter(s =>
-    `${s.firstName} ${s.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-    s.email?.toLowerCase().includes(search.toLowerCase())
-  )
+  const handleAssignSection = useCallback(async () => {
+    if (!targetSectionId || !selectedStudent) return;
+    setAssigning(true);
+    
+    const result = await updateStudentSection(selectedStudent._id, targetSectionId);
+    
+    if (result.success) {
+      addToast('Section assigned successfully', 'success');
+      setShowAssignModal(false);
+      setTargetSectionId('');
+      refreshSections();
+    } else {
+      addToast(result.error, 'error');
+    }
+    setAssigning(false);
+  }, [targetSectionId, selectedStudent, updateStudentSection, addToast, refreshSections]);
 
-  const handleFocus = (e) => { e.target.style.borderColor = 'rgba(99,102,241,0.6)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)' }
-  const handleBlur = (e) => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; e.target.style.boxShadow = 'none' }
+  const handleBatchAssignSection = useCallback(async () => {
+    if (!batchTargetSectionId || selectedIds.length === 0) return;
+    setBatchAssigning(true);
+
+    const { successful, failed } = await batchUpdateSections(selectedIds, batchTargetSectionId);
+
+    if (failed.length === 0) {
+      addToast(`Successfully assigned ${successful.length} student(s)`, 'success');
+      setShowBatchAssignModal(false);
+      clearSelection();
+      setBatchTargetSectionId('');
+      refreshSections();
+    } else {
+      addToast(
+        `Assigned ${successful.length}, failed ${failed.length}: ${failed[0]?.error}`,
+        'error'
+      );
+    }
+    setBatchAssigning(false);
+  }, [batchTargetSectionId, selectedIds, batchUpdateSections, addToast, clearSelection, refreshSections]);
+
+  const openBatchModal = useCallback(() => {
+    setBatchTargetSectionId('');
+    setShowBatchAssignModal(true);
+    refreshSections();
+  }, [refreshSections]);
 
   return (
-    <DashboardLayout>
-      {/* Page header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 style={{ fontFamily: 'Sora, sans-serif', fontWeight: 800, fontSize: '1.5rem', color: '#F1F5F9', marginBottom: 4 }}>Students</h1>
-          <p style={{ color: '#475569', fontSize: 13 }}>{students.length} students enrolled</p>
-        </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Search */}
-          <div style={{ position: 'relative' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round"
-              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input type="text" placeholder="Search students..." value={search} onChange={e => setSearch(e.target.value)}
-              style={{ ...inputStyle, width: 220, paddingLeft: 36, paddingTop: 9, paddingBottom: 9 }}
-              onFocus={handleFocus} onBlur={handleBlur}
-            />
-          </div>
-          {/* Add student button */}
-          <button
-            onClick={() => setShowForm(v => !v)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              background: showForm ? 'rgba(99,102,241,0.15)' : 'linear-gradient(135deg, #6366F1, #8B5CF6)',
-              color: showForm ? '#818CF8' : 'white',
-              border: showForm ? '1px solid rgba(99,102,241,0.3)' : 'none',
-              padding: '9px 18px', borderRadius: 10, fontWeight: 600, fontSize: 14,
-              cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-              boxShadow: showForm ? 'none' : '0 0 18px rgba(99,102,241,0.25)',
-              transition: 'all 0.2s',
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            {showForm ? 'Cancel' : 'Add Student'}
-          </button>
-        </div>
-      </div>
+    <div className="space-y-5 animate-in fade-in duration-500">
+      <PageHeader showForm={showForm} onToggleForm={() => setShowForm(v => !v)} />
 
-      {/* Add Student Form */}
+      <StudentCategoryTabs
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        counts={counts}
+        setSelectedStudentIds={clearSelection}
+      />
+
+      <StudentFilterBar
+        selectedDept={selectedDept}
+        setSelectedDept={setSelectedDept}
+        selectedProgram={selectedProgram}
+        setSelectedProgram={setSelectedProgram}
+        selectedSectionFilter={selectedSectionFilter}
+        setSelectedSectionFilter={setSelectedSectionFilter}
+        search={search}
+        setSearch={setSearch}
+        departments={departments}
+        programs={programs}
+        sections={sections}
+        resetFilters={resetFilters}
+      />
+
+      <StudentBatchActionBar
+        selectedStudentIds={selectedIds}
+        setSelectedStudentIds={clearSelection}
+        openBatchModal={openBatchModal}
+      />
+
       {showForm && (
-        <div style={{
-          background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 18, padding: '28px', marginBottom: 28, backdropFilter: 'blur(10px)',
-        }}>
-          <h2 style={{ fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: 16, color: '#F1F5F9', marginBottom: 20 }}>New Student</h2>
-          <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 14 }}>
-              {[['First Name', 'firstName', 'text'], ['Middle Name', 'middleName', 'text'], ['Last Name', 'lastName', 'text'], ['Email', 'email', 'email']].map(([label, key, type]) => (
-                <div key={key}>
-                  <label style={{ display: 'block', color: '#64748B', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>{label}</label>
-                  <input type={type} value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })}
-                    placeholder={label} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} required={key !== 'middleName'} />
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 20 }}>
-              <div>
-                <label style={{ display: 'block', color: '#64748B', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>Degree Program</label>
-                <select value={form.degreeProgram} onChange={e => setForm({ ...form, degreeProgram: e.target.value })}
-                  style={{ ...inputStyle }} onFocus={handleFocus} onBlur={handleBlur} required>
-                  <option value="" disabled>Select program</option>
-                  {DEGREE_PROGRAMS.map(p => <option key={p} value={p} style={{ background: '#0A0F1E' }}>{p}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', color: '#64748B', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>Year Level</label>
-                <select value={form.yearLevel} onChange={e => setForm({ ...form, yearLevel: e.target.value })}
-                  style={{ ...inputStyle }} onFocus={handleFocus} onBlur={handleBlur} required>
-                  <option value="" disabled>Select year</option>
-                  {YEAR_LEVELS.map(y => <option key={y} value={y} style={{ background: '#0A0F1E' }}>{y}</option>)}
-                </select>
-              </div>
-            </div>
-            <button type="submit" disabled={submitting} style={{
-              background: submitting ? 'rgba(99,102,241,0.35)' : 'linear-gradient(135deg, #6366F1, #8B5CF6)',
-              color: 'white', border: 'none', padding: '10px 24px', borderRadius: 10,
-              fontWeight: 600, fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer',
-              boxShadow: '0 0 18px rgba(99,102,241,0.2)', fontFamily: 'Inter, sans-serif',
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}>
-              {submitting ? 'Saving...' : 'Save Student'}
-            </button>
-          </form>
-        </div>
+        <NewStudentForm
+          showForm={showForm}
+          handleSubmit={handleSubmit}
+          form={form}
+          setForm={setForm}
+          submitting={submitting}
+        />
       )}
 
-      {/* Table */}
-      <div style={{
-        background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
-        borderRadius: 18, overflow: 'hidden',
-      }}>
+      <Card>
         {loading ? (
-          <div style={{ padding: 48, textAlign: 'center', color: '#334155' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2"
-              style={{ animation: 'spin 1s linear infinite', display: 'block', margin: '0 auto 12px' }}>
-              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-            </svg>
-            Loading students...
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ padding: 64, textAlign: 'center' }}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,0.25)" strokeWidth="1.5" style={{ display: 'block', margin: '0 auto 16px' }}>
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-            </svg>
-            <p style={{ color: '#334155', fontSize: 14 }}>{search ? 'No students match your search.' : 'No students yet. Add your first student!'}</p>
+          <div className="p-6">
+            <TableSkeleton rows={6} cols={7} isDark={true} />
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                  {['Name', 'Email', 'Degree Program', 'Year Level', 'Actions'].map(col => (
-                    <th key={col} style={{
-                      padding: '14px 20px', textAlign: 'left',
-                      color: '#334155', fontSize: 11, fontWeight: 700,
-                      letterSpacing: '0.06em', textTransform: 'uppercase',
-                    }}>
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((s, i) => (
-                  <tr key={s._id}
-                    style={{
-                      borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                      transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '14px 20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{
-                          width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                          background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.3))',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#A5B4FC', fontSize: 12, fontWeight: 700,
-                        }}>
-                          {s.firstName?.[0] || '?'}
-                        </div>
-                        <span style={{ color: '#E2E8F0', fontWeight: 500, fontSize: 14 }}>
-                          {[s.firstName, s.middleName, s.lastName].filter(Boolean).join(' ')}
-                        </span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '14px 20px', color: '#64748B', fontSize: 13 }}>{s.email}</td>
-                    <td style={{ padding: '14px 20px', color: '#64748B', fontSize: 13 }}>
-                      <span style={{
-                        background: 'rgba(99,102,241,0.1)', color: '#818CF8',
-                        padding: '3px 10px', borderRadius: 100, fontSize: 12, fontWeight: 500,
-                      }}>
-                        {s.degreeProgram || '—'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '14px 20px', color: '#64748B', fontSize: 13 }}>{s.yearLevel || '—'}</td>
-                    <td style={{ padding: '14px 20px' }}>
-                      <button
-                        onClick={() => handleDelete(s._id)}
-                        disabled={deleteId === s._id}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 5,
-                          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-                          color: '#FCA5A5', padding: '6px 12px', borderRadius: 8,
-                          fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                          transition: 'all 0.2s', opacity: deleteId === s._id ? 0.5 : 1,
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.18)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)' }}
-                        type="button"
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                          <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" />
-                        </svg>
-                        {deleteId === s._id ? '...' : 'Delete'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={StudentColumn({
+              openAssignModal,
+              handleDelete,
+              selectedStudentIds: selectedIds,
+              handleSelectAll,
+              toggleSelectStudent: toggleSelect,
+              isAllSelected,
+              deleteId,
+            })}
+            data={filteredStudents}
+            emptyMessage={hasActiveFilters ? "No students match your filter parameters." : "No students registered yet."}
+          />
         )}
-      </div>
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-    </DashboardLayout>
-  )
-}
+      </Card>
 
-export default Students
+      <SingleAssignModal
+        showAssignModal={showAssignModal}
+        selectedStudent={selectedStudent}
+        onClose={() => {
+          setShowAssignModal(false);
+          setTargetSectionId('');
+        }}
+        targetSectionId={targetSectionId}
+        setTargetSectionId={setTargetSectionId}
+        filteredSections={filteredSections}
+        assigning={assigning}
+        handleAssignSection={handleAssignSection}
+      />
+
+      <BatchAssignModal
+        showBatchAssignModal={showBatchAssignModal}
+        onClose={() => {
+          setShowBatchAssignModal(false);
+          setBatchTargetSectionId('');
+        }}
+        selectedStudentsList={selectedStudentsList}
+        sections={sections}
+        batchTargetSectionId={batchTargetSectionId}
+        setBatchTargetSectionId={setBatchTargetSectionId}
+        batchAssigning={batchAssigning}
+        handleBatchAssignSection={handleBatchAssignSection}
+      />
+    </div>
+  );
+};
+
+// ─── Wrapped Export ────────────────────────────────────────────────
+const Students = () => (
+  <DashboardLayout>
+    <ToastProvider>
+      <StudentsContent />
+    </ToastProvider>
+  </DashboardLayout>
+);
+
+export default Students;

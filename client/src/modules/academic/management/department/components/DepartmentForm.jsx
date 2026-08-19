@@ -1,6 +1,11 @@
-import { useEffect, useState } from "react";
-import { TextField, TextAreaField, SelectField, FormActions } from "../../../../../components/forms"
+import { useState } from "react";
 
+import {
+    TextField,
+    TextAreaField,
+    SelectField,
+    FormActions,
+} from "../../../../../components/forms";
 
 const DepartmentForm = ({
     initialValues = null,
@@ -11,30 +16,37 @@ const DepartmentForm = ({
     const getInitialForm = () => ({
         departmentCode: initialValues?.departmentCode || "",
         departmentName: initialValues?.departmentName || "",
-        head: initialValues?.head || "",
+        description: initialValues?.description || "",
+        departmentHead: initialValues?.departmentHead || "",
         status: initialValues?.status || "Active",
     });
 
     const [form, setForm] = useState(getInitialForm);
 
     const handleChange = (e) => {
+
         const { name, value } = e.target;
-        setForm((previous) => ({
-            ...previous,
+
+        setForm((prev) => ({
+            ...prev,
             [name]: value,
         }));
     };
 
     const handleSubmit = (e) => {
+
         e.preventDefault();
+
         onSubmit(form);
     };
 
     return (
+
         <form
             onSubmit={handleSubmit}
-            style={{ display: 'flex', flexDirection: 'column', gap: 20 }}
+            className="flex flex-col gap-4"
         >
+
             <TextField
                 label="Department Code"
                 name="departmentCode"
@@ -80,7 +92,9 @@ const DepartmentForm = ({
                 loading={loading}
                 submitLabel="Save Department"
             />
+
         </form>
+
     );
 };
 

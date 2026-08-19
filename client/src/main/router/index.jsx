@@ -3,42 +3,76 @@ import useAuthStore from '../../modules/auth/state/auth-store'
 
 import Home from '../../modules/home/Home'
 import Login from '../../modules/auth/pages/Login'
+import ChangePassword from '../../modules/auth/pages/ChangePassword'
+import ForgotPassword from '../../modules/auth/pages/ForgotPassword'
+import ActivateAccount from '../../modules/auth/pages/ActivateAccount'
 import Dashboard from '../../modules/dashboard/pages/Dashboard'
-import Register from '../../modules/auth/pages/Register'
 import Students from '../../modules/students/pages/Students'
 import Enrollmentform from '../../modules/enrollmentform/pages/EnrollmentForm'
 import ProtectedRoute from '../../modules/auth/components/protected-route/Protected-Route'
 import Enrollment from '../../modules/home/components/Enrollment'
 import Accounts from '../../modules/accounts/pages/Accounts'
 import RoleProtectedRoute from '../../shared/components/RoleProtectedRoute'
-import EnrollmentReview from '../../modules/enrollment-review/pages/EnrollmentReview'
+//import EnrollmentReview from '../../modules/enrollment-review/pages/EnrollmentReview'
 import Department from '../../modules/academic/management/department/pages/Department'
 import Program from '../../modules/academic/management/program/pages/Program'
+import Subject from '../../modules/academic/management/subject/pages/Subject'
+import Curriculum from '@/modules/academic/management/curriculum/pages/Curriculum'
+import CurriculumSubject from '../../modules/academic/management/curriculumsubject/pages/CurriculumSubject'
+import Prerequisites from '@/modules/academic/management/prerequisite/pages/Prerequisite'
+import EnrollmentPeriod from '@/modules/academic/management/enrollmentperiod/pages/EnrollmentPeriod'
+import Section from '@/modules/academic/management/section/pages/Section'
+import Admission from "@/modules/admission/pages/PendingApplication"
+import TrackApplication from '@/modules/home/pages/TrackApplication'
+import AcademicLoads from '@/modules/academic/pages/AcademicLoads'
+import SectionSubjects from '@/modules/academic/management/sectionSubject/pages/SectionSubjects'
+
+
+import MySubjects from '@/modules/students/pages/MySubjects'
+import StudentDashboard from '@/modules/students/pages/StudentDashboard'
+import MyProfile from '@/modules/students/pages/MyProfile'
+
+
 
 const Router = () => {
-    const token = useAuthStore((state) => state.token)
+    const accessToken = useAuthStore((state) => state.accessToken)
+    const user = useAuthStore((state) => state.user)
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <Home />} />
+                <Route path="/" element={
+                    accessToken ? (
+                        user?.role === 'student' ?
+                            <Navigate to="/student/dashboard" replace /> :
+                            <Navigate to="/dashboard" replace />
+                    ) : <Home />
+                } />
                 <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/change-password" element={<ChangePassword />} />
+                <Route path="/activate-account" element={<ActivateAccount />} />
                 <Route path="/enrollmentform" element={<Enrollmentform />} />
                 <Route path="/enrollment" element={<Enrollment />} />
+                <Route path="/track" element={<TrackApplication />} />
                 <Route path="/department" element={
-                    <RoleProtectedRoute allowedRoles={['admin']}>
+                    <RoleProtectedRoute allowedRoles={['admin', 'registrar', 'teacher']}>
                         <Department />
                     </RoleProtectedRoute>
                 } />
+                <Route path='/registrar/academic-loads' element={
+                    <RoleProtectedRoute allowedRoles={['admin', 'registrar']}>
+                        <AcademicLoads/>
+                    </RoleProtectedRoute>
+                }
+                />
                 <Route path="/dashboard" element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={['admin', 'teacher', 'registrar']}>
                         <Dashboard />
                     </ProtectedRoute>
-                } />
-               
-                <Route path="/enrollment-review" element={
-                    <RoleProtectedRoute allowedRoles={['registrar']}>
-                        <EnrollmentReview />
+                }/>
+                <Route path="/admission" element={
+                    <RoleProtectedRoute allowedRoles={['registrar','admin']}>
+                        <Admission />
                     </RoleProtectedRoute>
                 } />
                 <Route path="/attendance" element={
@@ -51,17 +85,75 @@ const Router = () => {
                     </RoleProtectedRoute>
                 } />
                 <Route path="/student" element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={['admin', 'registrar', 'teacher']}>
                         <Students />
                     </ProtectedRoute>
                 } />
                 <Route path="/program" element={
-                    <RoleProtectedRoute allowedRoles={['admin']}>
+                    <RoleProtectedRoute allowedRoles={['admin','teacher','registrar']}>
                         <Program />
                     </RoleProtectedRoute>
                 } />
-
-
+                <Route path="/section" element={
+                    <RoleProtectedRoute allowedRoles={['admin','registrar','teacher']}>
+                        <Section/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path="/subject" element={
+                    <RoleProtectedRoute allowedRoles={['admin','registrar', 'teacher']}>
+                        <Subject />
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/section-subject' element={
+                    <RoleProtectedRoute allowedRoles={['admin','registrar']}>
+                        <SectionSubjects/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path="/curriculum" element={
+                    <RoleProtectedRoute allowedRoles={['admin','registrar','teacher']}>
+                        <Curriculum />
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path="/enrollmentperiod" element={
+                    <RoleProtectedRoute allowedRoles={['admin', 'registrar']}>
+                        <EnrollmentPeriod/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path="/curriculum/:curriculumId/subjects" element={
+                    <RoleProtectedRoute allowedRoles={['admin', 'registrar']}>
+                        <CurriculumSubject />
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path= "/prerequisites" element={
+                    <RoleProtectedRoute allowedRoles={['admin']}>
+                        <Prerequisites />
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/student/subjects' element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <MySubjects/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/student/dashboard' element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <StudentDashboard/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/student/profile' element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <MyProfile/>
+                    </RoleProtectedRoute>
+                }
+                />
             </Routes>
         </BrowserRouter>
     )

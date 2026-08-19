@@ -17,16 +17,23 @@ const programSchema = new mongoose.Schema(
             unique: true,
         },
 
-        description: {
-            type: String,
-            default: '',
-            trim: true,
-        },
+       
 
         department: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Department',
             required: true,
+        },
+        programLevel: {
+            type: String,
+            enum: ['College'],
+            required: true,
+        },
+
+        durationYears: {
+            type: Number,
+            required: true,
+            min: 1,
         },
 
         status: {
@@ -34,6 +41,13 @@ const programSchema = new mongoose.Schema(
             enum: ['Active', 'Inactive'],
             default: 'Active',
         },
+
+        description: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',

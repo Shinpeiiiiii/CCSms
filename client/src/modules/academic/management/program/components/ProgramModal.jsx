@@ -7,7 +7,7 @@ const ProgramModal = ({
     onSubmit,
     loading,
     program,
-    department = [],
+    departments = [],
 }) => {
 
     return (
@@ -23,7 +23,7 @@ const ProgramModal = ({
 
             <ProgramForm
                 initialValues={program}
-                department={department}
+                department={departments}
                 onSubmit={onSubmit}
                 loading={loading}
             />

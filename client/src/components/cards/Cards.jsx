@@ -3,36 +3,41 @@ const Card = ({
     subtitle,
     children,
     actions,
+    padding = 0,
 }) => {
     return (
         <div
             style={{
-                background: 'rgba(255,255,255,0.025)',
-                border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: 18,
-                backdropFilter: 'blur(8px)',
-                overflow: 'hidden',
+                background: '#FFFFFF',
+                overflow: 'visible',
+                boxShadow: '0 1px 2px 0 rgba(60,64,67,0.05)',
             }}
         >
             {(title || subtitle || actions) && (
                 <div
                     style={{
+                        minWidth: 0,
+                        flex: 1,
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'flex-start',
                         padding: '24px 24px 20px',
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        borderBottom: '1px solid #E8EAED',
                     }}
                 >
                     <div>
                         {title && (
                             <h2
                                 style={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
                                     fontFamily: 'Sora, sans-serif',
-                                    fontSize: '1.375rem',
+                                    fontSize: '1.25rem',
                                     fontWeight: 700,
-                                    color: '#F1F5F9',
+                                    color: '#202124',
                                     letterSpacing: '-0.01em',
+                                    margin: 0,
                                 }}
                             >
                                 {title}
@@ -43,8 +48,11 @@ const Card = ({
                             <p
                                 style={{
                                     fontSize: '0.8125rem',
-                                    color: '#475569',
+                                    color: '#5F6368',
                                     marginTop: 4,
+                                    marginRight: 0,
+                                    marginBottom: 0,
+                                    marginLeft: 0,
                                 }}
                             >
                                 {subtitle}
@@ -53,13 +61,13 @@ const Card = ({
                     </div>
 
                     {actions && (
-                        <div>
+                        <div style={{ flexShrink: 0}}>
                             {actions}
                         </div>
                     )}
                 </div>
             )}
-            <div style={{ padding: 24 }}>
+            <div style={{ padding }}>
                 {children}
             </div>
         </div>

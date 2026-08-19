@@ -1,12 +1,14 @@
-import React, { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
+import { Layers, Menu, X } from 'lucide-react'
 
 const TABS = [
   { label: 'Home',       to: '/'           },
   { label: 'About',      to: '/#about'     },
   { label: 'Programs',   to: '/#programs'  },
   { label: 'Enrollment', to: '/#enrollment'},
+  { label: 'Track Status', to: '/track'    },
   { label: 'Login',      to: '/login'      },
 ]
 
@@ -47,10 +49,10 @@ const NavHeader = () => {
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        background: 'rgba(10, 15, 30, 0.85)',
+        background: 'rgba(255, 255, 255, 0.85)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        borderBottom: '1px solid #E8EAED',
       }}
     >
       <div
@@ -74,48 +76,42 @@ const NavHeader = () => {
             style={{
               width: 36,
               height: 36,
-              background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
+              background: '#1A73E8',
               borderRadius: 10,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 16px rgba(99,102,241,0.4)',
+              boxShadow: '0 2px 6px rgba(26,115,232,0.2)',
+              color: '#FFFFFF',
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Layers size={20} />
           </div>
           <span
             style={{
               fontFamily: 'Sora, sans-serif',
               fontWeight: 700,
               fontSize: 17,
-              color: '#F1F5F9',
+              color: '#202124',
               letterSpacing: '-0.01em',
             }}
           >
-            TeacherPortal
+            School Management System
           </span>
         </Link>
 
-        {/* Desktop Navigation (hidden on mobile) */}
+        {/* Desktop Navigation */}
         <nav aria-label="Main navigation" className="desktop-nav">
           <ul
             className="relative flex"
             style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.09)',
+              background: '#F1F3F4',
+              border: '1px solid #DADCE0',
               borderRadius: 100,
               padding: '4px',
               gap: 0,
               listStyle: 'none',
+              margin: 0,
             }}
             onMouseLeave={handleMouseLeave}
           >
@@ -141,7 +137,7 @@ const NavHeader = () => {
           </ul>
         </nav>
 
-        {/* Mobile Menu Button (hidden on desktop) */}
+        {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className="mobile-menu-btn"
@@ -150,28 +146,29 @@ const NavHeader = () => {
             display: 'none',
             width: 40,
             height: 40,
-            borderRadius: 10,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '50%',
+            background: 'transparent',
+            border: 'none',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            color: '#F1F5F9',
+            color: '#5F6368',
             outline: 'none',
             transition: 'background 0.2s',
           }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#F1F3F4'
+            e.currentTarget.style.color = '#202124'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = '#5F6368'
+          }}
         >
           {isMobileOpen ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <X size={22} />
           ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
+            <Menu size={22} />
           )}
         </button>
       </div>
@@ -189,10 +186,10 @@ const NavHeader = () => {
               top: 68,
               left: 0,
               right: 0,
-              background: 'rgba(10, 15, 30, 0.96)',
+              background: 'rgba(255, 255, 255, 0.98)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
+              borderBottom: '1px solid #E8EAED',
               padding: '24px',
               display: 'flex',
               flexDirection: 'column',
@@ -217,8 +214,8 @@ const NavHeader = () => {
                     borderRadius: 12,
                     fontSize: 15,
                     fontWeight: 600,
-                    color: isActive ? '#A5B4FC' : '#94A3B8',
-                    background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
+                    color: isActive ? '#1A73E8' : '#5F6368',
+                    background: isActive ? '#E8F0FE' : 'transparent',
                     textDecoration: 'none',
                     fontFamily: 'Inter, sans-serif',
                     transition: 'all 0.2s',
@@ -258,8 +255,8 @@ const Tab = ({ children, to, isActive, setPosition, onClick }) => {
           display: 'block',
           padding: '8px 16px',
           fontSize: 13,
-          fontWeight: isActive ? 600 : 400,
-          color: isActive ? '#A5B4FC' : '#64748B',
+          fontWeight: isActive ? 600 : 500,
+          color: isActive ? '#1A73E8' : '#5F6368',
           textDecoration: 'none',
           borderRadius: 100,
           transition: 'color 0.2s',
@@ -287,8 +284,8 @@ const Cursor = ({ position }) => (
       height: 36,
       top: 4,
       borderRadius: 100,
-      background: 'rgba(99,102,241,0.2)',
-      border: '1px solid rgba(99,102,241,0.25)',
+      background: '#FFFFFF',
+      boxShadow: '0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.24)',
       listStyle: 'none',
     }}
   />

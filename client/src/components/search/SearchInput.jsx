@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Search } from "lucide-react";
 
 const SearchInput = ({
     value,
@@ -6,11 +7,9 @@ const SearchInput = ({
     placeholder = "Search...",
     style = {},
 }) => {
-
     const [focused, setFocused] = useState(false);
 
     return (
-
         <div
             style={{
                 position: "relative",
@@ -18,32 +17,18 @@ const SearchInput = ({
                 maxWidth: "100%",
             }}
         >
-
             {/* Search Icon */}
-            <svg
-                viewBox="0 0 24 24"
-                width="18"
-                height="18"
+            <Search
+                size={18}
                 style={{
                     position: "absolute",
                     left: 14,
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "#94A3B8",
+                    color: "#5F6368",
                     pointerEvents: "none",
                 }}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-            >
-                <circle cx="11" cy="11" r="7" />
-                <line
-                    x1="20"
-                    y1="20"
-                    x2="16.65"
-                    y2="16.65"
-                />
-            </svg>
+            />
 
             <input
                 type="text"
@@ -55,27 +40,24 @@ const SearchInput = ({
                 style={{
                     width: "100%",
                     padding: "12px 16px 12px 42px",
-                    borderRadius: 12,
+                    borderRadius: 100, // pill style for search is extremely google-like
                     border: focused
-                        ? "1px solid rgba(99,102,241,.6)"
-                        : "1px solid rgba(255,255,255,.08)",
-                    background: "rgba(255,255,255,.03)",
-                    color: "#F1F5F9",
+                        ? "1px solid #1A73E8"
+                        : "1px solid #DADCE0",
+                    background: "#FFFFFF",
+                    color: "#202124",
                     fontSize: ".875rem",
                     outline: "none",
                     transition: "all .2s",
                     boxSizing: "border-box",
                     boxShadow: focused
-                        ? "0 0 0 3px rgba(99,102,241,.12)"
+                        ? "0 0 0 3px rgba(26,115,232,.12)"
                         : "none",
                     ...style,
                 }}
             />
-
         </div>
-
     );
-
 };
 
 export default SearchInput;
