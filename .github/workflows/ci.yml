@@ -39,8 +39,8 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          context: server
-          file: server/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: false
           tags: college-portal-backend:ci
           cache-from: type=gha
