@@ -17,17 +17,27 @@ const semesterValidator = async (curriculumId) => {
 
     curriculumSubjects.forEach(item => {
 
-        lookup.set(
+        if (item.subject) {
 
-            String(item.subject._id),
+            lookup.set(
 
-            item
+                String(item.subject._id),
 
-        );
+                item
+
+            );
+
+        }
 
     });
 
     for (const item of curriculumSubjects) {
+
+        if (!item.subject) {
+
+            continue;
+
+        }
 
         const prerequisites =
             await SubjectPrerequisite.find({
@@ -35,6 +45,8 @@ const semesterValidator = async (curriculumId) => {
                 subject: item.subject._id,
 
                 status: "Active",
+
+                type: "Prerequisite",
 
                 curriculum: curriculumId,
 

@@ -2,7 +2,7 @@ import api from '../../../services/api';
 
 export const getTeachers = async () => {
     const response = await api.get('/accounts/teachers');
-    return response.data;
+    return response.data.data || [];
 };
 
 export const createAccount = async (data) => {

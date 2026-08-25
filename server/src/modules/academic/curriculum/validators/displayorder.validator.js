@@ -33,21 +33,29 @@ const displayOrderValidator = async (curriculumId) => {
 
         const used = new Set();
 
+        const duplicates = new Set();
+
         for (const item of groups[key]) {
 
             if (
                 used.has(item.displayOrder)
             ) {
 
-                errors.push(
-
-                    `Duplicate display order (${item.displayOrder}) in Year ${item.yearLevel} Semester ${item.semester}.`
-
-                );
+                duplicates.add(item.displayOrder);
 
             }
 
             used.add(item.displayOrder);
+
+        }
+
+        for (const displayOrder of duplicates) {
+
+            errors.push(
+
+                `Duplicate display order (${displayOrder}) in Year ${groups[key][0].yearLevel} Semester ${groups[key][0].semester}.`
+
+            );
 
         }
 

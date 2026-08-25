@@ -154,7 +154,7 @@ const Department = () => {
                     <DepartmentToolbar
                         search={search}
                         setSearch={setSearch}
-                        onAdd={openCreate}
+                        onAdd={() => openCreate()}
                     />
                 }
             >

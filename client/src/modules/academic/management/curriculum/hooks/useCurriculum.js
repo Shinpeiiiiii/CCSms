@@ -37,6 +37,7 @@ const useCurriculum = () => {
     };
 
     const publishCurriculum = async(id) => {
+        console.log("Attempting to publish curriculum with ID:", id);
         try{
             await publishCurriculumService(id);
             toast.success("Curriculum published successfully.");

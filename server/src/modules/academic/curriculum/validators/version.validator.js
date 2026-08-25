@@ -12,6 +12,12 @@ const versionValidator = async (curriculumId) => {
 
     for (const item of curriculumSubjects) {
 
+        if (!item.subject) {
+
+            continue;
+
+        }
+
         const latest =
             await Subject.findOne({
 

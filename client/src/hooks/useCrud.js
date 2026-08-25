@@ -9,9 +9,7 @@ const useCrud = () => {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isDeleteOpen, setDeleteOpen] = useState(false);
 
-    console.log(isModalOpen,selectedItem);
     const openCreate = (payload = null) => {
-        console.log("Add curriculum button is triggered.")
         setSelectedItem(payload);
         setModalOpen(true);
     };

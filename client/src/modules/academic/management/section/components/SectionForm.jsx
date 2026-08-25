@@ -50,7 +50,29 @@ const SectionForm = ({
 
     useEffect(() => {
 
-        if (!initialValues) return;
+        if (!initialValues) {
+
+            setFormData({
+
+                sectionCode: "",
+
+                sectionName: "",
+
+                program: "",
+
+                curriculum: "",
+
+                academicYear: "",
+
+                yearLevel: 1,
+
+                capacity: 40,
+
+            });
+
+            return;
+
+        }
 
         setFormData({
 
@@ -62,23 +84,17 @@ const SectionForm = ({
 
             program:
                 initialValues.program?._id ||
-
                 initialValues.program ||
-
                 "",
 
             curriculum:
                 initialValues.curriculum?._id ||
-
                 initialValues.curriculum ||
-
                 "",
 
             academicYear:
                 initialValues.academicYear?._id ||
-
                 initialValues.academicYear ||
-
                 "",
 
             yearLevel:

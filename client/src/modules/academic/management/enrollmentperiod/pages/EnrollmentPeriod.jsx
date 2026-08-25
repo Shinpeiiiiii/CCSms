@@ -149,7 +149,7 @@ const EnrollmentPeriod = () => {
                     <EnrollmentPeriodToolbar
                         search={search}
                         setSearch={setSearch}
-                        onAdd={openCreate}
+                        onAdd={() => openCreate()}
                     />
                 }
             >

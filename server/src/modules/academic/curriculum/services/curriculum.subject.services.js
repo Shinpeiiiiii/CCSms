@@ -51,7 +51,7 @@ const addSubjectToCurriculum = async (curriculumId, data) => {
         )
     }
 
-    const displayOrder = data.displayOrder || await getNextDisplayOrder(resolvedCurriculumId, data.yearLevel, data.semester);
+    const displayOrder = await getNextDisplayOrder(resolvedCurriculumId, data.yearLevel, data.semester);
 
     const created = await CurriculumSubject.create({
         curriculum: resolvedCurriculumId,
@@ -228,7 +228,7 @@ const bulkAddSubjectToCurriculum = async (
             )
         }
 
-        const displayOrder = item.displayOrder || await getNextDisplayOrder(curriculumId, item.yearLevel, item.semester);
+        const displayOrder = await getNextDisplayOrder(curriculumId, item.yearLevel, item.semester);
 
         documents.push({
             curriculum: curriculumId,
@@ -248,6 +248,28 @@ const bulkAddSubjectToCurriculum = async (
 
 }
 
+const renumberDisplayOrders = async (curriculumId) => {
+    const subjects = await CurriculumSubject.find({
+        curriculum: curriculumId,
+    }).sort({ yearLevel: 1, semester: 1, displayOrder: 1, _id: 1 });
+
+    const groups = {};
+    for (const subject of subjects) {
+        const key = `${subject.yearLevel}-${subject.semester}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(subject);
+    }
+
+    for (const key in groups) {
+        const group = groups[key];
+        for (let i = 0; i < group.length; i++) {
+            await CurriculumSubject.findByIdAndUpdate(group[i]._id, { displayOrder: i + 1 });
+        }
+    }
+
+    await clearCache('curriculumSubjects', `curriculum:${curriculumId}`);
+};
+
 module.exports = {
     addSubjectToCurriculum,
     getCurriculumSubject,
@@ -255,4 +277,5 @@ module.exports = {
     removeCurriculumSubject,
     bulkAddSubjectToCurriculum,
     getNextDisplayOrder,
+    renumberDisplayOrders,
 }

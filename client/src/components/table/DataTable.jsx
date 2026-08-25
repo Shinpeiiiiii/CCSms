@@ -14,6 +14,7 @@ const DataTable = ({
     pagination = null,
     rowsPerPage = 10,
     showPagination = true,
+    className = "",
 }) => {
 
     const [page, setPage] = useState(0);
@@ -88,10 +89,12 @@ const DataTable = ({
                     sortField={sortField}
                     sortDirection={sortDirection}
                     onSort={handleSort}
+                    className={className}
                 />
                 <TableBody
                     columns={columns}
                     data={paginatedData}
+                    className={className}
                 />
             </table>
 

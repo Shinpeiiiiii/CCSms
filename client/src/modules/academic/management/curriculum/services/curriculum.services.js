@@ -74,7 +74,9 @@ Publish Curriculum
 export const publishCurriculum = async (id) => {
 
     const { data } = await api.patch(
-        `/curriculum/${id}/publish`
+        `/curriculum/${id}/publish`,
+        {},
+        { timeout: 60000 }
     );
 
     return data;

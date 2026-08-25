@@ -102,7 +102,7 @@ const Accounts = () => {
                     <AccountToolbar
                         search={search}
                         setSearch={setSearch}
-                        onAdd={openCreate}
+                        onAdd={() => openCreate()}
                         selectedRole={selectedRole}
                         onRoleChange={(e) => setSelectedRole(e.target.value)}
                     />

@@ -198,7 +198,7 @@ const Program = () => {
                         <ProgramToolbar
                             search={search}
                             setSearch={setSearch}
-                            onAdd={openCreate}
+                            onAdd={() => openCreate()}
                         />
                     }
                 >

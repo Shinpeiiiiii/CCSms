@@ -3,6 +3,7 @@ import TableRow from "./TableRow";
 const TableBody = ({
     columns,
     data,
+    className = "",
 }) => {
 
     return (
@@ -15,6 +16,7 @@ const TableBody = ({
                     key={row._id ?? row.id ?? index}
                     row={row}
                     columns={columns}
+                    className={className}
                 />
 
             ))}

@@ -5,7 +5,7 @@ const getTeachers = async (req, res) => {
         const teachers = await accountService.getTeachers();
         return res.status(200).json({
             success: true,
-            message: teachers,
+            data: teachers,
         });
     }catch(error){
         console.error('get teachers error', error);

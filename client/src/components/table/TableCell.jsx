@@ -1,8 +1,10 @@
 const TableCell = ({
     children,
+    className = "",
 }) => {
     return (
         <td
+            className={className}
             style={{
                 padding: '10px 16px',
                 fontSize: '0.875rem',

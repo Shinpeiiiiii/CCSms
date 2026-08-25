@@ -3,6 +3,7 @@ const TableHeader = ({
     sortField,
     sortDirection,
     onSort,
+    className = "",
 }) => {
     return (
         <thead>
@@ -15,6 +16,7 @@ const TableHeader = ({
                     <th
                         key={column.header}
                         onClick={() => column.sortable && onSort(column)}
+                        className={className}
                         style={{
                             padding: '12px 16px',
                             textAlign: column.align || "left",

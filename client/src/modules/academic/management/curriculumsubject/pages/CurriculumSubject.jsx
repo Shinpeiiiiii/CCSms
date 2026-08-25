@@ -22,6 +22,7 @@ import {
   updateCurriculumSubject,
   autoStructureCurriculum,
   bulkAddCurriculumSubject,
+  renumberDisplayOrders,
 } from "../services/curriculumsubject.services";
 
 /* ─── Constants ─── */
@@ -172,6 +173,7 @@ const CurriculumSubject = () => {
   const [structuring, setStructuring] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [batchSaving, setBatchSaving] = useState(false);
+  const [renumbering, setRenumbering] = useState(false);
 
   /* Hooks */
   const { subjects, loading, refreshSubjects } = useCurriculumSubject(curriculumId);
@@ -326,6 +328,21 @@ const CurriculumSubject = () => {
     []
   );
 
+  const handleRenumber = useCallback(async () => {
+    try {
+      setRenumbering(true);
+      await renumberDisplayOrders(curriculumId);
+      toast.success("Display orders renumbered successfully.");
+      await refreshSubjects();
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to renumber display orders."
+      );
+    } finally {
+      setRenumbering(false);
+    }
+  }, [curriculumId, refreshSubjects]);
+
   /* Columns memoized so DataTable doesn't recompute unless handlers change */
   const columns = useMemo(
     () =>
@@ -345,12 +362,14 @@ const CurriculumSubject = () => {
           <CurriculumSubjectToolbar
             search={search}
             setSearch={setSearch}
-            onAdd={openCreate}
+            onAdd={() => openCreate()}
             viewMode={viewMode}
             setViewMode={setViewMode}
             onAutoStructure={handleAutoStructure}
             structuring={structuring}
             onBatchAdd={handleBatchAddOpen}
+            onRenumber={handleRenumber}
+            renumbering={renumbering}
           />
         }
         padding={0}

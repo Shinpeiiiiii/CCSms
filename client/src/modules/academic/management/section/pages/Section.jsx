@@ -105,8 +105,14 @@ const Section = () => {
                 toast.success("Section updated successfully.");
             }
             else {
-                await createSection(formData);
-                toast.success("Section created successfully.");
+                const result = await createSection(formData);
+                if (result?.generatedSubjects > 0) {
+                    toast.success(
+                        `Section created and ${result.generatedSubjects} subject(s) generated.`
+                    );
+                } else {
+                    toast.success("Section created successfully.");
+                }
             }
             closeModal();
             await refreshSections();
@@ -199,7 +205,7 @@ const Section = () => {
                     <SectionToolbar
                         search={search}
                         setSearch={setSearch}
-                        onAdd={openCreate}
+                        onAdd={() => openCreate()}
                     />
                 }
             >

@@ -59,7 +59,7 @@ export default function SectionSubjectRow({
     };
 
     return (
-        <tr className="border-b">
+        <tr className="border-b text-black">
 
             <td className="p-2">
                 {subject.subject?.subjectCode}

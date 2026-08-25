@@ -140,18 +140,25 @@ const removeCurriculumSubject = async (req, res) => {
 
 }
 
+const renumberDisplayOrders = async (req, res) => {
+    try{
+        await curriculumSubjectService.renumberDisplayOrders(req.params.curriculumId);
+        return res.status(200).json({
+            message: 'Display orders renumbered successfully.',
+        })
+    }catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        })
+    }
+}
+
 module.exports = {
-
     addSubjectToCurriculum,
-
     bulkAddSubjectToCurriculum,
-
     getCurriculumSubject,
-
     getCurriculumStructure,
-
     updateCurriculumSubject,
-
     removeCurriculumSubject,
-
+    renumberDisplayOrders,
 }

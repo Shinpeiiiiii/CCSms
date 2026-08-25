@@ -227,7 +227,7 @@ const Subject = () => {
 
                         setSearch={setSearch}
 
-                        onAdd={openCreate}
+                        onAdd={() => openCreate()}
 
                     />
 

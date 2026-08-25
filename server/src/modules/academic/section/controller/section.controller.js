@@ -4,8 +4,7 @@ const createSection = async (req, res) => {
 
     try {
 
-        const section =
-            await sectionService.createSection({
+        const result = await sectionService.createSection({
 
                 ...req.body,
 
@@ -17,7 +16,9 @@ const createSection = async (req, res) => {
 
             message: 'Section created successfully.',
 
-            section,
+            section: result.section,
+
+            generatedSubjects: result.generatedSubjects || 0,
 
         })
 

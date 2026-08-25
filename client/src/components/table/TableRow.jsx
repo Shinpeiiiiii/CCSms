@@ -4,6 +4,7 @@ import TableCell from "./TableCell";
 const TableRow = ({
     row,
     columns,
+    className = "",
 }) => {
     const [hovered, setHovered] = useState(false);
 
@@ -20,6 +21,7 @@ const TableRow = ({
             {columns.map((column) => (
                 <TableCell
                     key={column.header}
+                    className={className}
                 >
                     {
                         column.render

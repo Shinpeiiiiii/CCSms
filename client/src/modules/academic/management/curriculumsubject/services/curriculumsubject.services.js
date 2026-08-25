@@ -35,3 +35,8 @@ export const bulkAddCurriculumSubject = async (curriculumId, payload) => {
     const { data } = await api.post(`/curriculum/${curriculumId}/bulk`, payload);
     return data;
 };
+
+export const renumberDisplayOrders = async (curriculumId) => {
+    const { data } = await api.post(`/curriculum/${curriculumId}/renumber`);
+    return data;
+}

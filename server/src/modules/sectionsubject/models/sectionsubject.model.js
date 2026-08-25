@@ -40,7 +40,7 @@ const sectionSubjectSchema = new mongoose.Schema({
             "Thursday",
             "Friday",
         ],
-        default:"",
+        default: undefined,
     },
 
     startTime:{

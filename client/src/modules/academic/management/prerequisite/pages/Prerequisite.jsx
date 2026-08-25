@@ -248,14 +248,14 @@ const Prerequisite = () => {
                     onCurriculumChange={setSelectedCurriculumId}
                     search={search}
                     onSearchChange={setSearch}
-                    onAdd={openCreate}
+                    onAdd={() => openCreate()}
                 />
             </Card>
 
             {loading ? (
                 <PrerequisiteLoadingSkeleton />
             ) : curriculumEntries.length === 0 ? (
-                <PrerequisiteEmptyState search={search} onAdd={openCreate} />
+                <PrerequisiteEmptyState search={search} onAdd={() => openCreate()} />
             ) : (
                 <div className="flex flex-col gap-6">
                     {curriculumEntries.map(([curriculumId, curriculumGroup]) => (

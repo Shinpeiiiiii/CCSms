@@ -11,15 +11,33 @@ const prerequisiteValidator = async (curriculumId) => {
             "subjectCode subjectName"
         );
 
-    const subjectIds = new Set(
-        curriculumSubjects.map(item =>
-            String(item.subject._id)
-        )
-    );
+    const subjectIds = new Set();
+
+    for (const item of curriculumSubjects) {
+
+        if (item.subject) {
+
+            subjectIds.add(String(item.subject._id));
+
+        }
+
+    }
 
     const errors = [];
 
     for (const item of curriculumSubjects) {
+
+        if (!item.subject) {
+
+            errors.push(
+
+                "A curriculum subject references a subject that no longer exists."
+
+            );
+
+            continue;
+
+        }
 
         const prerequisites =
             await SubjectPrerequisite.find({

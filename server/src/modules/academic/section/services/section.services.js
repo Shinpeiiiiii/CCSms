@@ -49,10 +49,22 @@ const createSection = async (data) => {
         throw new Error('Curriculum and Academic Year do not match.')
     }
 
-    return await Section.create({
+    const section = await Section.create({
         ...data,
         sectionCode: data.sectionCode.toUpperCase(),
     })
+
+    let generatedSubjects = 0;
+
+    if (data.curriculum) {
+        const generated = await generateSectionSubjects(section._id)
+        generatedSubjects = generated.length
+    }
+
+    return {
+        section,
+        generatedSubjects,
+    }
 
 }
 

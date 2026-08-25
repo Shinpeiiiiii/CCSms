@@ -124,10 +124,10 @@ const Curriculum = () => {
     };
 
     const handlePublish = async (curriculum) => {
-        console.log('data',curriculum);
-        console.log('curriculum id:',curriculum._id);
+        console.log("Attempting to publish curriculum:", curriculum);
         try {
             const result = await publishCurriculum(curriculum._id);
+            console.log("Publish result:", result);
             if (result?.errors?.length) {
                 toast.error(
                     <div>
@@ -165,9 +165,9 @@ const Curriculum = () => {
         }
     };
 
-    const handleArchive = async (id) => {
+    const handleArchive = async (curriculum) => {
         try {
-            await archiveCurriculum(id);
+            await archiveCurriculum(curriculum._id);
             toast.success("Curriculum archived successfully.");
             await refreshCurriculums();
         } catch (error) {
@@ -195,7 +195,7 @@ const Curriculum = () => {
                     <CurriculumToolbar
                         search={search}
                         setSearch={setSearch}
-                        onAdd={openCreate}
+                        onAdd={() => openCreate()}
                     />
                 }
             >
