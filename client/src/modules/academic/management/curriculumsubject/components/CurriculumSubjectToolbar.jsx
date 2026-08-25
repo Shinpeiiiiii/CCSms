@@ -10,8 +10,6 @@ const CurriculumSubjectToolbar = ({
     onAutoStructure,
     structuring = false,
     onBatchAdd,
-    onRenumber,
-    renumbering = false,
 }) => {
     return (
         <div className="flex flex-wrap items-center gap-3">
@@ -54,23 +52,10 @@ const CurriculumSubjectToolbar = ({
                     </button>
                 )}
 
-                {onRenumber && (
-                    <button
-                        onClick={onRenumber}
-                        disabled={renumbering}
-                        className={`rounded-lg border px-4 py-2 text-[13px] font-semibold transition-colors ${
-                            renumbering
-                                ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
-                                : "border-black/70 bg-white text-black hover:bg-black hover:text-white"
-                        }`}
-                    >
-                        {renumbering ? "Renumbering..." : "Auto-renumber display order"}
-                    </button>
-                )}
-
                 <PrimaryButton onClick={onAdd}>
                     Add Subject
                 </PrimaryButton>
+                
             </div>
         </div>
     );
