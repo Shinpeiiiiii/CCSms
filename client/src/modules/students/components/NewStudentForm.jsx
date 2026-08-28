@@ -1,17 +1,15 @@
 import React from 'react'
 
 const inputStyle = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.09)',
-  borderRadius: 10,
+  background: '#FFFFFF',
+  border: '1px solid #E5E7EB',
   padding: '10px 14px',
-  color: '#F1F5F9',
-  fontSize: 14,
+  color: '#111827',
+  fontSize: 13,
   outline: 'none',
-  fontFamily: 'Inter, sans-serif',
   width: '100%',
   boxSizing: 'border-box',
-  transition: 'border-color 0.2s, box-shadow 0.2s',
+  transition: 'border-color 0.15s',
 }
 
 const DEGREE_PROGRAMS = [
@@ -27,25 +25,14 @@ const YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year']
 const NewStudentForm = ({ showForm, handleSubmit, form, setForm, submitting }) => {
   if (!showForm) return null
 
-  const handleFocus = (e) => {
-    e.target.style.borderColor = 'rgba(99,102,241,0.6)'
-    e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'
-  }
-  const handleBlur = (e) => {
-    e.target.style.borderColor = 'rgba(255,255,255,0.09)'
-    e.target.style.boxShadow = 'none'
-  }
-
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.025)',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 18,
-      padding: '28px',
-      marginBottom: 28,
-      backdropFilter: 'blur(10px)',
+      background: '#FFFFFF',
+      border: '1px solid #E5E7EB',
+      padding: '24px',
+      marginBottom: 24,
     }}>
-      <h2 style={{ fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: 16, color: '#F1F5F9', marginBottom: 20 }}>
+      <h2 style={{ fontWeight: 600, fontSize: 15, color: '#111827', marginBottom: 20 }}>
         New Student
       </h2>
       <form onSubmit={handleSubmit}>
@@ -57,7 +44,7 @@ const NewStudentForm = ({ showForm, handleSubmit, form, setForm, submitting }) =
             ['Email', 'email', 'email']
           ].map(([label, key, type]) => (
             <div key={key}>
-              <label style={{ display: 'block', color: '#64748B', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>
+              <label style={{ display: 'block', color: '#6B7280', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', marginBottom: 6 }}>
                 {label}
               </label>
               <input
@@ -66,8 +53,6 @@ const NewStudentForm = ({ showForm, handleSubmit, form, setForm, submitting }) =
                 onChange={e => setForm({ ...form, [key]: e.target.value })}
                 placeholder={label}
                 style={inputStyle}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
                 required={key !== 'middleName'}
               />
             </div>
@@ -75,35 +60,31 @@ const NewStudentForm = ({ showForm, handleSubmit, form, setForm, submitting }) =
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 20 }}>
           <div>
-            <label style={{ display: 'block', color: '#64748B', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>
+            <label style={{ display: 'block', color: '#6B7280', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', marginBottom: 6 }}>
               Degree Program
             </label>
             <select
               value={form.degreeProgram}
               onChange={e => setForm({ ...form, degreeProgram: e.target.value })}
               style={inputStyle}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
               required
             >
               <option value="" disabled>Select program</option>
-              {DEGREE_PROGRAMS.map(p => <option key={p} value={p} style={{ background: '#0A0F1E' }}>{p}</option>)}
+              {DEGREE_PROGRAMS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', color: '#64748B', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>
+            <label style={{ display: 'block', color: '#6B7280', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', marginBottom: 6 }}>
               Year Level
             </label>
             <select
               value={form.yearLevel}
               onChange={e => setForm({ ...form, yearLevel: e.target.value })}
               style={inputStyle}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
               required
             >
               <option value="" disabled>Select year</option>
-              {YEAR_LEVELS.map(y => <option key={y} value={y} style={{ background: '#0A0F1E' }}>{y}</option>)}
+              {YEAR_LEVELS.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
         </div>
@@ -111,19 +92,17 @@ const NewStudentForm = ({ showForm, handleSubmit, form, setForm, submitting }) =
           type="submit"
           disabled={submitting}
           style={{
-            background: submitting ? 'rgba(99,102,241,0.35)' : 'linear-gradient(135deg, #6366F1, #8B5CF6)',
+            background: submitting ? '#D1D5DB' : '#111827',
             color: 'white',
             border: 'none',
             padding: '10px 24px',
-            borderRadius: 10,
             fontWeight: 600,
-            fontSize: 14,
+            fontSize: 13,
             cursor: submitting ? 'not-allowed' : 'pointer',
-            boxShadow: '0 0 18px rgba(99,102,241,0.2)',
-            fontFamily: 'Inter, sans-serif',
             display: 'flex',
             alignItems: 'center',
             gap: 8,
+            transition: 'background 0.15s',
           }}
         >
           {submitting ? 'Saving...' : 'Save Student'}

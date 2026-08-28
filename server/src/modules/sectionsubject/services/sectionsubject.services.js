@@ -1,6 +1,8 @@
 const SectionSubject = require("../models/sectionsubject.model");
 const Section = require("../../academic/section/models/section.models")
 const CurriculumSubject = require("../../academic/curriculum/models/curriculum.subject.models")
+const StudentSubject = require("../../studentsubject/models/studentsubject.models")
+const Student = require("../../students/models/Student")
 
 
 const updateSectionSubject = async (id, payload) => {
@@ -144,6 +146,196 @@ const deleteSchedule = async (id) => {
     await SectionSubject.findByIdAndDelete(id);
 };
 
+const getTeacherSchedule = async (teacherId) => {
+    return await SectionSubject.find({
+        instructor: teacherId,
+        status: "Scheduled",
+    })
+    .populate("subject", "subjectCode subjectName lectureUnits laboratoryUnits totalUnits")
+    .populate("section", "sectionCode sectionName yearLevel academicYear")
+    .sort({ day: 1, startTime: 1 });
+};
+
+const getTeacherDashboard = async (teacherId) => {
+    const classes = await SectionSubject.find({
+        instructor: teacherId,
+        status: "Scheduled",
+    })
+    .populate("subject", "subjectCode subjectName totalUnits")
+    .populate("section", "sectionCode sectionName yearLevel");
+
+    const totalSubjects = [...new Set(classes.map(c => c.subject?._id?.toString()))].filter(Boolean).length;
+    const totalSections = [...new Set(classes.map(c => c.section?._id?.toString()))].filter(Boolean).length;
+    const totalUnits = classes.reduce((sum, c) => sum + (c.subject?.totalUnits || 0), 0);
+
+    let totalStudents = 0;
+    const classesWithCount = await Promise.all(
+        classes.map(async (c) => {
+            const studentCount = await Student.countDocuments({
+                section: c.section?._id,
+                status: "Active",
+            });
+            totalStudents += studentCount;
+            return {
+                _id: c._id,
+                subject: c.subject,
+                section: c.section,
+                day: c.day,
+                startTime: c.startTime,
+                endTime: c.endTime,
+                room: c.room,
+                studentCount,
+            };
+        })
+    );
+
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const today = daysOfWeek[new Date().getDay()];
+    const todayClasses = classesWithCount
+        .filter(c => c.day === today)
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+    return {
+        stats: { totalSubjects, totalSections, totalUnits, totalStudents },
+        todayClasses,
+        allClasses: classesWithCount,
+    };
+};
+
+const getTeacherClasses = async (teacherId) => {
+    const classes = await SectionSubject.find({
+        instructor: teacherId,
+        status: "Scheduled",
+    })
+    .populate("subject", "subjectCode subjectName totalUnits")
+    .populate("section", "sectionCode sectionName yearLevel");
+
+    return await Promise.all(
+        classes.map(async (c) => {
+            const studentCount = await Student.countDocuments({
+                section: c.section?._id,
+                status: "Active",
+            });
+            return {
+                _id: c._id,
+                subject: c.subject,
+                section: c.section,
+                day: c.day,
+                startTime: c.startTime,
+                endTime: c.endTime,
+                room: c.room,
+                studentCount,
+            };
+        })
+    );
+};
+
+const getClassStudents = async (sectionSubjectId) => {
+    const sectionSubject = await SectionSubject.findById(sectionSubjectId)
+        .populate("subject", "subjectCode subjectName")
+        .populate("section", "sectionCode sectionName");
+
+    if (!sectionSubject) {
+        throw new Error("Section subject not found.");
+    }
+
+    const students = await Student.find({
+        section: sectionSubject.section._id,
+        status: "Active",
+    })
+    .select("studentNumber firstName lastName email status yearLevel studentType")
+    .sort({ lastName: 1 });
+
+    return {
+        sectionSubject: {
+            _id: sectionSubject._id,
+            subject: sectionSubject.subject,
+            section: sectionSubject.section,
+            day: sectionSubject.day,
+            startTime: sectionSubject.startTime,
+            endTime: sectionSubject.endTime,
+            room: sectionSubject.room,
+        },
+        students: students.map(s => ({
+            _id: s._id,
+            student: s,
+            units: null,
+            finalGrade: null,
+            remarks: null,
+        })),
+    };
+};
+
+const getClassGrades = async (sectionSubjectId) => {
+    const sectionSubject = await SectionSubject.findById(sectionSubjectId)
+        .populate("subject", "subjectCode subjectName")
+        .populate("section", "sectionCode sectionName");
+
+    if (!sectionSubject) {
+        throw new Error("Section subject not found.");
+    }
+
+    const enrollments = await StudentSubject.find({
+        section: sectionSubject.section._id,
+        subject: sectionSubject.subject._id,
+    })
+    .populate("student", "studentNumber firstName lastName")
+    .sort({ "student.lastName": 1 });
+
+    return {
+        sectionSubject: {
+            _id: sectionSubject._id,
+            subject: sectionSubject.subject,
+            section: sectionSubject.section,
+            day: sectionSubject.day,
+            startTime: sectionSubject.startTime,
+            endTime: sectionSubject.endTime,
+            room: sectionSubject.room,
+        },
+        grades: enrollments.map(e => ({
+            _id: e._id,
+            student: e.student,
+            units: e.units,
+            finalGrade: e.finalGrade,
+            remarks: e.remarks,
+            status: e.status,
+        })),
+    };
+};
+
+const updateGrades = async (sectionSubjectId, gradesArray) => {
+    const sectionSubject = await SectionSubject.findById(sectionSubjectId);
+    if (!sectionSubject) {
+        throw new Error("Section subject not found.");
+    }
+
+    const results = await Promise.all(
+        gradesArray.map(async ({ studentSubjectId, finalGrade }) => {
+            const updates = { finalGrade };
+
+            if (finalGrade !== null && finalGrade !== undefined) {
+                updates.remarks = finalGrade >= 75 ? "Passed" : "Failed";
+                updates.status = finalGrade >= 75 ? "Completed" : "Failed";
+            } else {
+                updates.remarks = null;
+                updates.status = "Loaded";
+            }
+
+            return await StudentSubject.findByIdAndUpdate(studentSubjectId, updates, { new: true })
+                .populate("student", "studentNumber firstName lastName");
+        })
+    );
+
+    return results.map(r => ({
+        _id: r._id,
+        student: r.student,
+        finalGrade: r.finalGrade,
+        remarks: r.remarks,
+        status: r.status,
+        units: r.units,
+    }));
+};
+
 module.exports = {
     updateSectionSubject,
     generateSectionSubjects,
@@ -151,4 +343,10 @@ module.exports = {
     createSchedule,
     getSectionSchedule,
     deleteSchedule,
+    getTeacherSchedule,
+    getTeacherDashboard,
+    getTeacherClasses,
+    getClassStudents,
+    getClassGrades,
+    updateGrades,
 };

@@ -28,6 +28,9 @@ const studentApplicationRoutes = require('./modules/studentapplications/routes/s
 
 const verificationRoutes = require("./modules/verification/routes/verification.routes")
 const sectionsubjectModel = require('./modules/sectionsubject/models/sectionsubject.model')
+const attendanceRoutes = require('./modules/attendance/routes/attendance.routes')
+const notificationRoutes = require('./modules/notification/routes/notification.routes')
+const materialRoutes = require('./modules/materials/routes/material.routes')
 connectDB()
 const app = express()
 app.use(cookieParser());
@@ -73,6 +76,13 @@ app.use('/api/verification',verificationRoutes);
 app.use('/api/student-applications', studentApplicationRoutes);
 app.use('/api/student-subject',studentSubjectRoutes);
 app.use('/api/section-subject', sectionSubjectRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/materials', materialRoutes);
+
+// Serve uploaded files
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 

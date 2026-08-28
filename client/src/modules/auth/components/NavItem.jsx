@@ -1,13 +1,15 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 
-const NavItem = ({ label, to, icon: Icon, isActive, onClick }) => {
+const NavItem = ({ label, to, icon: Icon, isActive, onClick, isCollapsed = false }) => {
   const iconRef = useRef(null)
 
   return (
     <Link
       to={to}
       onClick={onClick}
+      title={isCollapsed ? label : undefined}
       onMouseEnter={() => iconRef.current?.startAnimation?.()}
       onMouseLeave={() => iconRef.current?.stopAnimation?.()}
       style={{
@@ -15,8 +17,8 @@ const NavItem = ({ label, to, icon: Icon, isActive, onClick }) => {
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        paddingLeft: '14px',
-        paddingRight: '14px',
+        paddingLeft: isCollapsed ? '0' : '14px',
+        paddingRight: isCollapsed ? '0' : '14px',
         height: '44px',
         minHeight: '44px',
         borderRadius: '10px',
@@ -30,6 +32,10 @@ const NavItem = ({ label, to, icon: Icon, isActive, onClick }) => {
         fontSize: '14px',
         letterSpacing: '0.01em',
         outline: 'none',
+        justifyContent: isCollapsed ? 'center' : 'flex-start',
+        width: isCollapsed ? '44px' : 'auto',
+        marginLeft: isCollapsed ? 'auto' : undefined,
+        marginRight: isCollapsed ? 'auto' : undefined,
       }}
       className={`
         nav-item-link
@@ -38,17 +44,20 @@ const NavItem = ({ label, to, icon: Icon, isActive, onClick }) => {
     >
       {/* Active indicator - left bar */}
       {isActive && (
-        <span
+        <motion.span
+          layoutId="sidebar-active-indicator"
           style={{
             position: 'absolute',
-            left: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
+            left: '0',
+            top: '0',
+            bottom: '0',
+            margin: 'auto 0',
             width: '3.5px',
             height: '22px',
             backgroundColor: '#334155',
             borderRadius: '0 4px 4px 0',
           }}
+          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
         />
       )}
 
@@ -81,17 +90,19 @@ const NavItem = ({ label, to, icon: Icon, isActive, onClick }) => {
       </span>
 
       {/* Label */}
-      <span
-        style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          fontSize: '14px',
-          letterSpacing: '0.01em',
-        }}
-      >
-        {label}
-      </span>
+      {!isCollapsed && (
+        <span
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            fontSize: '14px',
+            letterSpacing: '0.01em',
+          }}
+        >
+          {label}
+        </span>
+      )}
     </Link>
   )
 }

@@ -102,6 +102,96 @@ const deleteSchedule = async (req, res) => {
     }
 };
 
+const getMySchedule = async (req, res) => {
+    try {
+        const schedule = await sectionsubjectService.getTeacherSchedule(req.user.id);
+        return res.status(200).json({
+            success: true,
+            data: schedule,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const getMyDashboard = async (req, res) => {
+    try {
+        const data = await sectionsubjectService.getTeacherDashboard(req.user.id);
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const getMyClasses = async (req, res) => {
+    try {
+        const data = await sectionsubjectService.getTeacherClasses(req.user.id);
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const getClassStudents = async (req, res) => {
+    try {
+        const data = await sectionsubjectService.getClassStudents(req.params.sectionId);
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const getClassGrades = async (req, res) => {
+    try {
+        const data = await sectionsubjectService.getClassGrades(req.params.sectionId);
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const updateGrades = async (req, res) => {
+    try {
+        const data = await sectionsubjectService.updateGrades(req.params.sectionId, req.body.grades);
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     updateSectionSubject,
     generatesectionSubject,
@@ -109,4 +199,10 @@ module.exports = {
     createSchedule,
     getSectionSchedule,
     deleteSchedule,
+    getMySchedule,
+    getMyDashboard,
+    getMyClasses,
+    getClassStudents,
+    getClassGrades,
+    updateGrades,
 };

@@ -1,16 +1,13 @@
-// Students.jsx
 import React, { useState, useMemo, useCallback } from 'react';
 import DashboardLayout from "../../../shared/layouts/DashboardLayout";
 import { ToastProvider, useToast } from '../../../components/toast/ToastContainer';
 import { TableSkeleton } from '../../../components/toast/Skeleton';
 
-// Hooks
 import useStudents from '../hooks/useStudents';
 import useFilterMetadata from '../hooks/useFilterMetaData';
 import { useStudentFilters } from '../hooks/useStudentFilter';
 import { useBatchSelection } from '../hooks/useBatchSelection';
 
-// Subcomponents (keep your existing ones, just style them with Tailwind)
 import StudentCategoryTabs from '../components/StudentCategoryTabs';
 import StudentFilterBar from '../components/StudentFilterBar';
 import StudentBatchActionBar from '../components/StudentBatchActionBar';
@@ -21,25 +18,24 @@ import DataTable from '../../../components/table/DataTable';
 import StudentColumn from '../components/StudentColumn';
 import Card from '../../../components/cards/Cards';
 
-// ─── Header Component ──────────────────────────────────────────────
 const PageHeader = ({ showForm, onToggleForm }) => (
   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
     <div>
-      <h1 className="font-sora text-2xl font-extrabold text-black tracking-tight">
+      <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
         Students Directory
       </h1>
-      <p className="text-slate-500 text-sm mt-1">
+      <p className="text-gray-500 text-sm mt-1">
         Manage student records, program assignments, and class section allocations.
       </p>
     </div>
     <button
       onClick={onToggleForm}
       className={`
-        inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
-        transition-all duration-200 active:scale-95
+        inline-flex items-center gap-2 px-5 py-2.5 font-semibold text-sm
+        transition-colors border
         ${showForm 
-          ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20' 
-          : 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:from-indigo-400 hover:to-violet-400'}
+          ? 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+          : 'bg-gray-900 text-white border-gray-900 hover:bg-gray-800'}
       `}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -57,11 +53,9 @@ const PageHeader = ({ showForm, onToggleForm }) => (
   </div>
 );
 
-// ─── Main Students Component ───────────────────────────────────────
 const StudentsContent = () => {
   const { addToast } = useToast();
   
-  // Data hooks
   const {
     students,
     loading,
@@ -74,7 +68,6 @@ const StudentsContent = () => {
 
   const { departments, programs, sections, refreshSections } = useFilterMetadata();
 
-  // Filter hooks
   const {
     search, setSearch,
     selectedDept, setSelectedDept,
@@ -87,7 +80,6 @@ const StudentsContent = () => {
     resetFilters
   } = useStudentFilters(students);
 
-  // Selection hooks
   const {
     selectedIds,
     handleSelectAll,
@@ -96,11 +88,9 @@ const StudentsContent = () => {
     isAllSelected
   } = useBatchSelection(filteredStudents);
 
-  // Local UI state
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   
-  // Form state
   const [form, setForm] = useState({
     firstName: '',
     middleName: '',
@@ -110,18 +100,15 @@ const StudentsContent = () => {
     yearLevel: ''
   });
 
-  // Single assign modal state
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [targetSectionId, setTargetSectionId] = useState('');
   const [assigning, setAssigning] = useState(false);
 
-  // Batch assign modal state
   const [showBatchAssignModal, setShowBatchAssignModal] = useState(false);
   const [batchTargetSectionId, setBatchTargetSectionId] = useState('');
   const [batchAssigning, setBatchAssigning] = useState(false);
 
-  // ─── Derived Data ───────────────────────────────────────────────
   const selectedStudentsList = useMemo(() => 
     students.filter(s => selectedIds.includes(s._id)),
     [students, selectedIds]
@@ -143,7 +130,6 @@ const StudentsContent = () => {
     });
   }, [sections, selectedStudent]);
 
-  // ─── Handlers ───────────────────────────────────────────────────
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     const result = await addStudent(form);
@@ -220,7 +206,7 @@ const StudentsContent = () => {
   }, [refreshSections]);
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-500">
+    <div className="space-y-5">
       <PageHeader showForm={showForm} onToggleForm={() => setShowForm(v => !v)} />
 
       <StudentCategoryTabs
@@ -264,7 +250,7 @@ const StudentsContent = () => {
       <Card>
         {loading ? (
           <div className="p-6">
-            <TableSkeleton rows={6} cols={7} isDark={true} />
+            <TableSkeleton rows={6} cols={7} isDark={false} />
           </div>
         ) : (
           <DataTable
@@ -314,7 +300,6 @@ const StudentsContent = () => {
   );
 };
 
-// ─── Wrapped Export ────────────────────────────────────────────────
 const Students = () => (
   <DashboardLayout>
     <ToastProvider>

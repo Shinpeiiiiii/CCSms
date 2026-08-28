@@ -38,60 +38,59 @@ const StudentDashboard = () => {
     <DashboardLayout>
     <div className="p-6 space-y-6">
       {/* Welcome */}
-      <div className="bg-blue-600 text-white rounded-2xl p-6">
+      <div className="bg-gray-900 text-white p-6">
         <h1 className="text-2xl font-bold">
           Welcome, {dashboard.fullName}!
         </h1>
-
-        <p className="mt-1 text-blue-100">
+        <p className="mt-1 text-gray-400">
           Student Number: {dashboard.studentNumber}
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border border-gray-200 p-4">
           <div className="flex items-center gap-3">
-            <GraduationCap className="text-blue-600" />
+            <GraduationCap className="text-gray-600" size={20} />
             <div>
-              <p className="text-sm text-gray-500">Program</p>
-              <p className="font-semibold">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Program</p>
+              <p className="font-semibold text-sm text-gray-900">
                 {dashboard.program}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border border-gray-200 p-4">
           <div className="flex items-center gap-3">
-            <Layers className="text-green-600" />
+            <Layers className="text-gray-600" size={20} />
             <div>
-              <p className="text-sm text-gray-500">Section</p>
-              <p className="font-semibold">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Section</p>
+              <p className="font-semibold text-sm text-gray-900">
                 {dashboard.section || 'Unassigned'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border border-gray-200 p-4">
           <div className="flex items-center gap-3">
-            <BookOpen className="text-purple-600" />
+            <BookOpen className="text-gray-600" size={20} />
             <div>
-              <p className="text-sm text-gray-500">Subjects</p>
-              <p className="font-semibold">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Subjects</p>
+              <p className="font-semibold text-sm text-gray-900">
                 {dashboard.enrolledSubjects}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white border rounded-xl p-4">
+        <div className="bg-white border border-gray-200 p-4">
           <div className="flex items-center gap-3">
-            <User className="text-orange-600" />
+            <User className="text-gray-600" size={20} />
             <div>
-              <p className="text-sm text-gray-500">Year Level</p>
-              <p className="font-semibold">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Year Level</p>
+              <p className="font-semibold text-sm text-gray-900">
                 {dashboard.yearLevel}
               </p>
             </div>
@@ -100,47 +99,41 @@ const StudentDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white border rounded-xl p-6">
-        <h2 className="text-lg font-semibold mb-4">
+      <div className="bg-white border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold mb-4 text-gray-900">
           Quick Actions
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <a
             href="/student/subjects"
-            className="border rounded-lg p-4 hover:bg-gray-50"
+            className="border border-gray-200 p-4 hover:bg-gray-50 transition-colors"
           >
-            <BookOpen className="mb-2 text-blue-600" />
-
-            <p className="font-medium">My Subjects</p>
-
-            <p className="text-sm text-gray-500">
+            <BookOpen className="mb-2 text-gray-600" size={20} />
+            <p className="font-medium text-sm text-gray-900">My Subjects</p>
+            <p className="text-xs text-gray-500 mt-1">
               View your enrolled subjects.
             </p>
           </a>
 
           <a
             href="/student/profile"
-            className="border rounded-lg p-4 hover:bg-gray-50"
+            className="border border-gray-200 p-4 hover:bg-gray-50 transition-colors"
           >
-            <User className="mb-2 text-green-600" />
-
-            <p className="font-medium">My Profile</p>
-
-            <p className="text-sm text-gray-500">
+            <User className="mb-2 text-gray-600" size={20} />
+            <p className="font-medium text-sm text-gray-900">My Profile</p>
+            <p className="text-xs text-gray-500 mt-1">
               Update your personal information.
             </p>
           </a>
 
           <a
             href="/student/change-password"
-            className="border rounded-lg p-4 hover:bg-gray-50"
+            className="border border-gray-200 p-4 hover:bg-gray-50 transition-colors"
           >
-            <GraduationCap className="mb-2 text-purple-600" />
-
-            <p className="font-medium">Change Password</p>
-
-            <p className="text-sm text-gray-500">
+            <GraduationCap className="mb-2 text-gray-600" size={20} />
+            <p className="font-medium text-sm text-gray-900">Change Password</p>
+            <p className="text-xs text-gray-500 mt-1">
               Update your account password.
             </p>
           </a>

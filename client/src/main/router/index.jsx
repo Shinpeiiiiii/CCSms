@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
 import useAuthStore from '../../modules/auth/state/auth-store'
 
@@ -26,11 +27,24 @@ import Admission from "@/modules/admission/pages/PendingApplication"
 import TrackApplication from '@/modules/home/pages/TrackApplication'
 import AcademicLoads from '@/modules/academic/pages/AcademicLoads'
 import SectionSubjects from '@/modules/academic/management/sectionSubject/pages/SectionSubjects'
+import TeacherSchedule from '@/modules/teacher/pages/TeacherSchedule'
+import TeacherDashboard from '@/modules/teacher/pages/TeacherDashboard'
+import TeacherGrades from '@/modules/teacher/pages/TeacherGrades'
+import Notifications from '@/modules/teacher/pages/Notifications'
 
 
 import MySubjects from '@/modules/students/pages/MySubjects'
 import StudentDashboard from '@/modules/students/pages/StudentDashboard'
 import MyProfile from '@/modules/students/pages/MyProfile'
+
+const TeacherMaterials = React.lazy(() => import('@/modules/teacher/pages/TeacherMaterials'))
+const StudentMaterials = React.lazy(() => import('@/modules/students/pages/StudentMaterials'))
+
+const LoadingFallback = () => (
+    <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-sm text-gray-500">Loading...</div>
+    </div>
+)
 
 
 
@@ -77,6 +91,40 @@ const Router = () => {
                 } />
                 <Route path="/attendance" element={
                     <RoleProtectedRoute allowedRoles={['teacher']}>
+                    </RoleProtectedRoute>
+                } />
+                <Route path="/teacher/schedule" element={
+                    <RoleProtectedRoute allowedRoles={['teacher']}>
+                        <TeacherSchedule />
+                    </RoleProtectedRoute>
+                } />
+                <Route path="/teacher/dashboard" element={
+                    <RoleProtectedRoute allowedRoles={['teacher']}>
+                        <TeacherDashboard />
+                    </RoleProtectedRoute>
+                } />
+                <Route path="/teacher/grades" element={
+                    <RoleProtectedRoute allowedRoles={['teacher']}>
+                        <TeacherGrades />
+                    </RoleProtectedRoute>
+                } />
+                <Route path="/notifications" element={
+                    <RoleProtectedRoute allowedRoles={['admin', 'registrar', 'teacher', 'student']}>
+                        <Notifications />
+                    </RoleProtectedRoute>
+                } />
+                <Route path="/teacher/materials" element={
+                    <RoleProtectedRoute allowedRoles={['teacher']}>
+                        <Suspense fallback={<LoadingFallback />}>
+                            <TeacherMaterials />
+                        </Suspense>
+                    </RoleProtectedRoute>
+                } />
+                <Route path="/student/materials" element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <Suspense fallback={<LoadingFallback />}>
+                            <StudentMaterials />
+                        </Suspense>
                     </RoleProtectedRoute>
                 } />
                 <Route path="/account" element={

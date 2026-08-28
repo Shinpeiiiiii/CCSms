@@ -5,32 +5,27 @@ const StudentBatchActionBar = ({ selectedStudentIds, setSelectedStudentIds, open
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))',
-      border: '1px solid rgba(99,102,241,0.4)',
-      backdropFilter: 'blur(12px)',
-      borderRadius: 14,
+      background: '#F9FAFB',
+      border: '1px solid #E5E7EB',
       padding: '12px 20px',
       marginBottom: 20,
       display: 'flex',
       alignItems: 'center',
-      justify: 'space-between',
+      justifyContent: 'space-between',
       gap: 14,
       flexWrap: 'wrap',
-      boxShadow: '0 8px 20px rgba(99,102,241,0.15)',
-      animation: 'fadeIn 0.2s ease-in-out'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{
-          background: '#6366F1',
+          background: '#111827',
           color: 'white',
           padding: '4px 10px',
-          borderRadius: 100,
           fontSize: 12,
-          fontWeight: 700
+          fontWeight: 700,
         }}>
-          ⚡ {selectedStudentIds.length} Selected
+          {selectedStudentIds.length} Selected
         </span>
-        <span style={{ color: '#E2E8F0', fontSize: 13, fontWeight: 500 }}>
+        <span style={{ color: '#6B7280', fontSize: 13, fontWeight: 500 }}>
           Students marked for batch section assignment
         </span>
       </div>
@@ -39,14 +34,14 @@ const StudentBatchActionBar = ({ selectedStudentIds, setSelectedStudentIds, open
         <button
           onClick={() => setSelectedStudentIds([])}
           style={{
-            background: 'rgba(255,255,255,0.06)',
-            color: '#CBD5E1',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: '#FFFFFF',
+            color: '#6B7280',
+            border: '1px solid #E5E7EB',
             padding: '7px 14px',
-            borderRadius: 8,
             fontSize: 12,
             fontWeight: 600,
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'all 0.15s',
           }}
         >
           Clear Selection
@@ -55,18 +50,17 @@ const StudentBatchActionBar = ({ selectedStudentIds, setSelectedStudentIds, open
         <button
           onClick={openBatchModal}
           style={{
-            background: 'linear-gradient(135deg, #10B981, #059669)',
+            background: '#111827',
             color: 'white',
-            border: 'none',
+            border: '1px solid #111827',
             padding: '7px 18px',
-            borderRadius: 8,
             fontSize: 12,
             fontWeight: 700,
             cursor: 'pointer',
-            boxShadow: '0 0 14px rgba(16,185,129,0.3)',
             display: 'flex',
             alignItems: 'center',
-            gap: 6
+            gap: 6,
+            transition: 'all 0.15s',
           }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

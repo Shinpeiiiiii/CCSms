@@ -10,11 +10,9 @@ const LockDuration = 15 * 60 * 1000 //15 mins
 const login = async (req, res) => {
   try {
 
-    //console.log('BODY:',req.body)
     const { email, password } = req.body
     const user = await User.findOne({email})
     const invalidCredentialsResponse = () => res.status(400).json({message: 'Invalid email and password.'})
-    console.log('FOUND USER',user)
 
 
     if (!user) {

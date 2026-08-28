@@ -23,6 +23,7 @@ const startApplication = async (email) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+        console.log(`[startApplication] Blocked by existing User: email=${email} userId=${existingUser._id} role=${existingUser.role} isActive=${existingUser.isActive}`);
         throw new Error("This email is already registered. Please login instead.");
     }
 
@@ -32,6 +33,12 @@ const startApplication = async (email) => {
         });
 
     if (existing) {
+        console.log(`[startApplication] Found existing StudentApplication: id=${existing._id} number=${existing.applicationNumber} status=${existing.status} enrollmentPeriod=${existing.enrollmentPeriod}`);
+        if (existing.status !== "Pending" && existing.status !== "Needs Revision") {
+            throw new Error(
+                `Your application (${existing.applicationNumber}) is already ${existing.status} and can no longer be modified.`
+            );
+        }
         return existing;
     }
 
@@ -80,7 +87,14 @@ const submitApplication = async (id, data) => {
     }
 
     if (application.status !== "Pending" && application.status !== "Needs Revision") {
-        throw new Error("Application cannot be modified at this stage.");
+        const statusMessages = {
+            "Under Review": "Your application is currently under review and cannot be modified.",
+            "Approved": "Your application has already been approved.",
+            "Rejected": "Your application has been rejected and cannot be modified.",
+        };
+        throw new Error(
+            statusMessages[application.status] || "Application cannot be modified at this stage."
+        );
     }
 
     // Update details
@@ -147,6 +161,7 @@ const approveApplication = async (id, reviewedBy) => {
         email: application.email,
         password: hashedPassword,
         role: "student",
+        isActive: true,
         mustChangePassword: true,
     });
 

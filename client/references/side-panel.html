@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Class Roster — Side Panel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/motion@10.16.2/dist/motion.js"></script>
+<style>
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #eef0f3;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+
+  #backdrop {
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+  #backdrop.show { opacity: 1; }
+
+  #panel {
+    transform: translateX(100%);
+    transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #panel.show { transform: translateX(0); }
+
+  .tab-pill {
+    position: relative;
+    z-index: 1;
+  }
+  #tabIndicator {
+    transition: left 280ms cubic-bezier(0.16, 1, 0.3, 1), width 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .student-row {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: rowIn 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes rowIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  #sortMenu {
+    transform-origin: top right;
+    transform: scale(0.95) translateY(-4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 160ms ease, opacity 160ms ease;
+  }
+  #sortMenu.open {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>
+</head>
+<body class="w-full h-full">
+
+<!-- Trigger button (only for demo purposes) -->
+<div class="p-8">
+  <button id="openBtn" class="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition">
+    Open Class Roster
+  </button>
+</div>
+
+<!-- Backdrop -->
+<div id="backdrop" class="fixed inset-0 bg-slate-900/30 backdrop-blur-[1px] hidden"></div>
+
+<!-- Side Panel -->
+<div id="panel" class="fixed top-0 right-0 h-full w-full sm:w-[440px] bg-white shadow-2xl hidden flex flex-col overflow-hidden">
+
+  <!-- Header -->
+  <div class="bg-gray-50 px-5 pt-5 pb-4 border-b border-gray-200 flex-shrink-0">
+    <div class="flex items-center justify-between mb-4">
+      <button class="flex items-center gap-1.5 pl-2.5 pr-3.5 py-1.5 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Back to Classes
+      </button>
+      <button id="closeBtn" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-gray-100 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2 mb-3">
+      <span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-700 text-xs font-semibold">BSIT-1A</span>
+      <span class="px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-semibold">Room 3-1A</span>
+    </div>
+
+    <h1 class="text-xl font-bold text-gray-900 mb-2 leading-snug">IT101 — Introduction to Computing</h1>
+
+    <div class="flex items-center gap-1.5 text-sm text-gray-500">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Monday 7:00 AM – 9:00 AM
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="px-5 pt-4 pb-3 border-b border-gray-200 flex-shrink-0">
+    <div id="tabRow" class="relative flex items-center gap-1 text-sm font-medium">
+      <div id="tabIndicator" class="absolute top-0 h-full bg-slate-900 rounded-full transition-all"></div>
+      <button data-tab="students" class="tab-pill px-4 py-1.5 rounded-full text-white flex items-center gap-2">
+        Students
+        <span class="tab-count bg-white/25 text-white text-[11px] font-semibold px-1.5 py-0.5 rounded-full leading-none">4</span>
+      </button>
+      <button data-tab="attendance" class="tab-pill px-4 py-1.5 rounded-full text-gray-500 hover:text-gray-800 transition">Attendance</button>
+      <button data-tab="history" class="tab-pill px-4 py-1.5 rounded-full text-gray-500 hover:text-gray-800 transition">History</button>
+    </div>
+  </div>
+
+  <!-- Search & Sort -->
+  <div class="px-5 py-3 flex items-center gap-2 flex-shrink-0">
+    <div class="relative flex-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="searchInput" type="text" placeholder="Search students..." class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-300" />
+    </div>
+    <div class="relative">
+      <button id="sortBtn" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 transition whitespace-nowrap">
+        <span id="sortLabel">Name A-Z</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div id="sortMenu" class="absolute right-0 mt-1.5 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
+        <button data-sort="Name A-Z" class="sort-opt w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">Name A-Z</button>
+        <button data-sort="Name Z-A" class="sort-opt w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">Name Z-A</button>
+        <button data-sort="ID" class="sort-opt w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">Student ID</button>
+        <button data-sort="Status" class="sort-opt w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Column header -->
+  <div class="px-5 pb-2 flex-shrink-0">
+    <div class="flex items-center text-[11px] font-semibold text-gray-400 tracking-wide uppercase">
+      <span class="w-7">#</span>
+      <span>Student</span>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div id="studentList" class="flex-1 overflow-y-auto px-2 pb-4"></div>
+</div>
+
+<script>
+  const students = [
+    { id: "2026-000003", first: "Mikasa", last: "Jaeger", initials: "MJ", email: "kouoren@gmail.com", status: "Active", color: "bg-indigo-500" },
+    { id: "2026-000012", first: "Armin", last: "Arlert", initials: "AA", email: "aarmin@gmail.com", status: "Active", color: "bg-sky-500" },
+    { id: "2026-000045", first: "Levi", last: "Ackerman", initials: "LA", email: "levi.ack@gmail.com", status: "Active", color: "bg-slate-700" },
+    { id: "2026-000089", first: "Sasha", last: "Blouse", initials: "SB", email: "potatoes@gmail.com", status: "Inactive", color: "bg-amber-500" },
+  ];
+
+  let currentSort = "Name A-Z";
+  let currentQuery = "";
+
+  const listEl = document.getElementById("studentList");
+  const searchInput = document.getElementById("searchInput");
+
+  function sortStudents(arr) {
+    const copy = [...arr];
+    switch (currentSort) {
+      case "Name A-Z":
+        return copy.sort((a, b) => a.last.localeCompare(b.last));
+      case "Name Z-A":
+        return copy.sort((a, b) => b.last.localeCompare(a.last));
+      case "ID":
+        return copy.sort((a, b) => a.id.localeCompare(b.id));
+      case "Status":
+        return copy.sort((a, b) => a.status.localeCompare(b.status));
+      default:
+        return copy;
+    }
+  }
+
+  function renderList() {
+    let filtered = students.filter(s => {
+      const full = (s.first + " " + s.last + " " + s.email + " " + s.id).toLowerCase();
+      return full.includes(currentQuery.toLowerCase());
+    });
+    filtered = sortStudents(filtered);
+
+    listEl.innerHTML = "";
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div class="text-center text-sm text-gray-400 py-10">No students match your search.</div>`;
+      return;
+    }
+
+    filtered.forEach((s, i) => {
+      const row = document.createElement("div");
+      row.className = "student-row flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 transition cursor-pointer";
+      row.style.animationDelay = `${i * 45}ms`;
+      row.innerHTML = `
+        <span class="w-7 text-xs text-gray-400 font-medium">${String(i + 1).padStart(2, "0")}</span>
+        <div class="w-9 h-9 rounded-full ${s.color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0">${s.initials}</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-gray-900 truncate">${s.last}, ${s.first}</p>
+          <p class="text-xs text-gray-400 truncate">ID: ${s.id} &bull; ${s.email}</p>
+        </div>
+        <span class="flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${
+          s.status === "Active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+        }">${s.status}</span>
+      `;
+      listEl.appendChild(row);
+    });
+  }
+
+  searchInput.addEventListener("input", (e) => {
+    currentQuery = e.target.value;
+    renderList();
+  });
+
+  // Sort dropdown
+  const sortBtn = document.getElementById("sortBtn");
+  const sortMenu = document.getElementById("sortMenu");
+  const sortLabel = document.getElementById("sortLabel");
+
+  sortBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sortMenu.classList.toggle("open");
+  });
+  document.querySelectorAll(".sort-opt").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentSort = btn.dataset.sort;
+      sortLabel.textContent = currentSort;
+      sortMenu.classList.remove("open");
+      renderList();
+    });
+  });
+  document.addEventListener("click", () => sortMenu.classList.remove("open"));
+
+  // Tabs
+  const tabRow = document.getElementById("tabRow");
+  const indicator = document.getElementById("tabIndicator");
+  const tabs = document.querySelectorAll("[data-tab]");
+
+  function moveIndicator(target) {
+    const rowRect = tabRow.getBoundingClientRect();
+    const rect = target.getBoundingClientRect();
+    indicator.style.left = (rect.left - rowRect.left) + "px";
+    indicator.style.width = rect.width + "px";
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("text-white"));
+      tabs.forEach(t => t.classList.add("text-gray-500"));
+      tab.classList.remove("text-gray-500");
+      tab.classList.add("text-white");
+      moveIndicator(tab);
+    });
+  });
+
+  // Panel open/close
+  const openBtn = document.getElementById("openBtn");
+  const closeBtn = document.getElementById("closeBtn");
+  const backdrop = document.getElementById("backdrop");
+  const panel = document.getElementById("panel");
+
+  function openPanel() {
+    backdrop.classList.remove("hidden");
+    panel.classList.remove("hidden");
+    renderList();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        backdrop.classList.add("show");
+        panel.classList.add("show");
+        const activeTab = document.querySelector('[data-tab="students"]');
+        moveIndicator(activeTab);
+      });
+    });
+  }
+
+  function closePanel() {
+    backdrop.classList.remove("show");
+    panel.classList.remove("show");
+    setTimeout(() => {
+      backdrop.classList.add("hidden");
+      panel.classList.add("hidden");
+    }, 380);
+  }
+
+  openBtn.addEventListener("click", openPanel);
+  closeBtn.addEventListener("click", closePanel);
+  backdrop.addEventListener("click", closePanel);
+
+  window.addEventListener("resize", () => {
+    const activeTab = document.querySelector('.tab-pill.text-white');
+    if (activeTab) moveIndicator(activeTab);
+  });
+
+  // Auto-open on load for preview convenience
+  window.addEventListener("load", () => setTimeout(openPanel, 200));
+</script>
+
+</body>
+</html>

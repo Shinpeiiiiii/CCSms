@@ -17,16 +17,16 @@ const SearchInput = ({
                 maxWidth: "100%",
             }}
         >
-            {/* Search Icon */}
             <Search
-                size={18}
+                size={16}
                 style={{
                     position: "absolute",
-                    left: 14,
+                    left: 12,
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "#5F6368",
+                    color: focused ? "#111827" : "#9CA3AF",
                     pointerEvents: "none",
+                    transition: "color 0.2s",
                 }}
             />
 
@@ -39,20 +39,16 @@ const SearchInput = ({
                 onBlur={() => setFocused(false)}
                 style={{
                     width: "100%",
-                    padding: "12px 16px 12px 42px",
-                    borderRadius: 100, // pill style for search is extremely google-like
+                    padding: "10px 14px 10px 38px",
                     border: focused
-                        ? "1px solid #1A73E8"
-                        : "1px solid #DADCE0",
+                        ? "1px solid #111827"
+                        : "1px solid #E5E7EB",
                     background: "#FFFFFF",
-                    color: "#202124",
-                    fontSize: ".875rem",
+                    color: "#111827",
+                    fontSize: "0.8125rem",
                     outline: "none",
-                    transition: "all .2s",
+                    transition: "border-color 0.2s",
                     boxSizing: "border-box",
-                    boxShadow: focused
-                        ? "0 0 0 3px rgba(26,115,232,.12)"
-                        : "none",
                     ...style,
                 }}
             />

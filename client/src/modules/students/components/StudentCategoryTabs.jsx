@@ -9,7 +9,7 @@ const StudentCategoryTabs = ({ activeTab, setActiveTab, counts, setSelectedStude
   ]
 
   return (
-    <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: 0, marginBottom: 20, flexWrap: 'wrap' }}>
       {tabs.map(([key, label]) => {
         const isActive = activeTab === key
         return (
@@ -20,17 +20,15 @@ const StudentCategoryTabs = ({ activeTab, setActiveTab, counts, setSelectedStude
               setSelectedStudentIds([])
             }}
             style={{
-              background: isActive ? 'linear-gradient(135deg, #6366F1, #8B5CF6)' : 'rgba(255,255,255,0.03)',
-              color: isActive ? '#FFFFFF' : '#94A3B8',
-              border: isActive ? 'none' : '1px solid rgba(255,255,255,0.07)',
+              background: isActive ? '#111827' : '#FFFFFF',
+              color: isActive ? '#FFFFFF' : '#6B7280',
+              border: '1px solid #E5E7EB',
+              borderRightWidth: 0,
               padding: '8px 16px',
-              borderRadius: 100,
               fontSize: 12,
               fontWeight: 600,
               cursor: 'pointer',
-              fontFamily: 'Inter, sans-serif',
-              transition: 'all 0.2s',
-              boxShadow: isActive ? '0 0 12px rgba(99,102,241,0.3)' : 'none'
+              transition: 'all 0.15s',
             }}
           >
             {label}

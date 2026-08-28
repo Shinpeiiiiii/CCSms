@@ -41,12 +41,12 @@ const Modal = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/32 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/32 backdrop-blur-sm p-4">
             <div
-                className={`w-full bg-white border border-zinc-200 rounded-2xl shadow-lg overflow-hidden flex flex-col ${sizeClasses[size] || sizeClasses.md}`}
+                className={`w-full bg-white border border-zinc-200 shadow-lg overflow-hidden flex flex-col ${sizeClasses[size] || sizeClasses.md}`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-[18px]">
+                <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4.5">
                     <h2 className="font-sora text-xl font-bold text-zinc-900 m-0">
                         {title}
                     </h2>

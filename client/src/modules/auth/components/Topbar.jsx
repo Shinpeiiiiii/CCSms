@@ -20,6 +20,21 @@ const Topbar = ({ onToggleSidebar = () => {}, isMobile = false }) => {
 
   const pageTitle = PAGE_TITLES[location.pathname] || 'Portal'
 
+  const toggleBtnStyle = {
+    width: 40,
+    height: 40,
+    background: 'transparent',
+    border: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#5F6368',
+    cursor: 'pointer',
+    outline: 'none',
+    transition: 'all 0.2s',
+    borderRadius: 0,
+  }
+
   return (
     <header
       style={{
@@ -35,32 +50,13 @@ const Topbar = ({ onToggleSidebar = () => {}, isMobile = false }) => {
     >
       {/* Page title & Hamburger on Mobile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Mobile hamburger */}
         {isMobile && (
           <button
             onClick={onToggleSidebar}
             aria-label="Open Navigation Menu"
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: 'transparent',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#5F6368',
-              cursor: 'pointer',
-              outline: 'none',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#F1F3F4'
-              e.currentTarget.style.color = '#202124'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.color = '#5F6368'
-            }}
+            style={toggleBtnStyle}
+            className="topbar-toggle-btn"
           >
             <Menu size={20} />
           </button>
@@ -96,28 +92,8 @@ const Topbar = ({ onToggleSidebar = () => {}, isMobile = false }) => {
         {/* Notification bell */}
         <button
           aria-label="Notifications"
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            background: 'transparent',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#5F6368',
-            cursor: 'pointer',
-            outline: 'none',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#F1F3F4'
-            e.currentTarget.style.color = '#202124'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = '#5F6368'
-          }}
+          style={toggleBtnStyle}
+          className="topbar-toggle-btn"
         >
           <Bell size={20} />
         </button>
@@ -165,6 +141,13 @@ const Topbar = ({ onToggleSidebar = () => {}, isMobile = false }) => {
           </div>
         </div>
       </div>
+
+      <style>{`
+        .topbar-toggle-btn:hover {
+          background-color: #F1F3F4 !important;
+          color: #202124 !important;
+        }
+      `}</style>
     </header>
   )
 }

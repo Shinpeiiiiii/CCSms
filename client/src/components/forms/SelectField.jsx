@@ -1,15 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronDown, Check } from "lucide-react";
 
-/**
- * SelectField — Google Material-style select.
- *
- * Drop-in compatible with the native <select> version:
- * onChange still receives an event-shaped object: { target: { name, value } }
- *
- * New optional prop (safe to ignore if you don't need it):
- *   - disabled
- */
 const SelectField = ({
   label,
   name,
@@ -25,7 +16,7 @@ const SelectField = ({
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [menuVisible, setMenuVisible] = useState(false); // controls enter animation
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const wrapperRef = useRef(null);
   const menuRef = useRef(null);
@@ -34,7 +25,6 @@ const SelectField = ({
   const selectedIndex = options.findIndex((item) => String(item[valueField]) === String(value));
   const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
 
-  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
@@ -45,7 +35,6 @@ const SelectField = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Mount animation — flip visibility a tick after `open` so the transition runs
   useEffect(() => {
     if (open) {
       setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
@@ -56,7 +45,6 @@ const SelectField = ({
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep highlighted option scrolled into view
   useEffect(() => {
     if (!open || !menuRef.current) return;
     const el = menuRef.current.querySelector(`[data-index="${highlightedIndex}"]`);
@@ -110,35 +98,31 @@ const SelectField = ({
     }
   };
 
-  const borderColor = focused || open ? "#1A73E8" : "#DADCE0";
-  const ringColor = "rgba(26,115,232,0.12)";
+  const borderColor = focused || open ? "#111827" : "#E5E7EB";
 
   const labelStyle = {
     display: "block",
-    marginBottom: 8,
-    color: "#5F6368",
-    fontWeight: 600,
+    marginBottom: 6,
+    color: "#6B7280",
+    fontWeight: 500,
     fontSize: ".8125rem",
-    letterSpacing: ".01em",
   };
 
   const buttonStyle = {
     width: "100%",
-    background: disabled ? "#F1F3F4" : "#FFFFFF",
+    background: disabled ? "#F9FAFB" : "#FFFFFF",
     border: `1px solid ${borderColor}`,
-    borderRadius: 12,
-    padding: "12px 16px",
-    color: disabled ? "#9AA0A6" : selectedOption ? "#202124" : "#5F6368",
+    padding: "10px 14px",
+    color: disabled ? "#9CA3AF" : selectedOption ? "#111827" : "#6B7280",
     outline: "none",
-    transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+    transition: "border-color 0.15s ease",
     boxSizing: "border-box",
-    boxShadow: focused || open ? `0 0 0 3px ${ringColor}` : "none",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
     cursor: disabled ? "not-allowed" : "pointer",
-    fontSize: "0.9375rem",
+    fontSize: "0.8125rem",
     fontFamily: "inherit",
     textAlign: "left",
   };
@@ -148,7 +132,7 @@ const SelectField = ({
       {label && (
         <label style={labelStyle}>
           {label}
-          {required && <span style={{ color: "#D93025" }}> *</span>}
+          {required && <span style={{ color: "#DC2626" }}> *</span>}
         </label>
       )}
 
@@ -177,9 +161,9 @@ const SelectField = ({
           {selectedOption ? selectedOption[labelField] : placeholder || `Select ${label || "an option"}`}
         </span>
         <ChevronDown
-          size={18}
-          strokeWidth={2.25}
-          color={disabled ? "#9AA0A6" : "#5F6368"}
+          size={16}
+          strokeWidth={2}
+          color={disabled ? "#9CA3AF" : "#6B7280"}
           style={{
             flexShrink: 0,
             transition: "transform 0.15s ease",
@@ -195,27 +179,26 @@ const SelectField = ({
           tabIndex={-1}
           style={{
             position: "absolute",
-            top: "calc(100% + 4px)",
+            top: "calc(100% + 2px)",
             left: 0,
             right: 0,
             margin: 0,
-            padding: "6px",
+            padding: "4px",
             listStyle: "none",
             background: "#FFFFFF",
-            borderRadius: 12,
-            maxHeight: 280,
+            border: "1px solid #E5E7EB",
+            maxHeight: 240,
             overflowY: "auto",
             zIndex: 50,
-            boxShadow:
-              "0 1px 3px rgba(60,64,67,0.30), 0 4px 12px 2px rgba(60,64,67,0.15)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             opacity: menuVisible ? 1 : 0,
-            transform: menuVisible ? "translateY(0) scale(1)" : "translateY(-6px) scale(0.98)",
+            transform: menuVisible ? "translateY(0)" : "translateY(-4px)",
             transformOrigin: "top center",
-            transition: "opacity 0.14s ease, transform 0.14s ease",
+            transition: "opacity 0.12s ease, transform 0.12s ease",
           }}
         >
           {options.length === 0 && (
-            <li style={{ padding: "10px 12px", color: "#9AA0A6", fontSize: "0.875rem" }}>
+            <li style={{ padding: "8px 10px", color: "#9CA3AF", fontSize: "0.8125rem" }}>
               No options available
             </li>
           )}
@@ -237,17 +220,13 @@ const SelectField = ({
                   alignItems: "center",
                   justifyContent: "space-between",
                   gap: 8,
-                  padding: "10px 12px",
-                  borderRadius: 8,
-                  fontSize: "0.9375rem",
-                  color: isSelected ? "#1A73E8" : "#202124",
-                  background: isSelected
-                    ? "#E8F0FE"
-                    : isHighlighted
-                    ? "#F1F3F4"
-                    : "transparent",
+                  padding: "8px 10px",
+                  fontSize: "0.8125rem",
+                  color: isSelected ? "#111827" : "#374151",
+                  background: isHighlighted ? "#F3F4F6" : "transparent",
                   cursor: "pointer",
                   transition: "background 0.1s ease",
+                  fontWeight: isSelected ? 500 : 400,
                 }}
               >
                 <span
@@ -255,12 +234,11 @@ const SelectField = ({
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
-                    fontWeight: isSelected ? 500 : 400,
                   }}
                 >
                   {item[labelField]}
                 </span>
-                {isSelected && <Check size={16} strokeWidth={2.5} color="#1A73E8" style={{ flexShrink: 0 }} />}
+                {isSelected && <Check size={14} strokeWidth={2.5} color="#111827" style={{ flexShrink: 0 }} />}
               </li>
             );
           })}

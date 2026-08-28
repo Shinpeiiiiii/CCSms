@@ -15,53 +15,49 @@ const SingleAssignModal = ({
   if (!showAssignModal || !selectedStudent) return null
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 backdrop-blur-md p-5">
-      <div className="w-full max-w-[480px] bg-[rgba(10,15,30,0.95)] border border-white/10 rounded-[20px] p-7 shadow-2xl font-['Inter']">
-        <h3 className="font-['Sora'] font-bold text-lg text-slate-100 mb-3">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-5">
+      <div className="w-full max-w-[480px] bg-white border border-gray-200 p-6 shadow-lg">
+        <h3 className="font-semibold text-lg text-gray-900 mb-4">
           Assign Class Section
         </h3>
 
-        <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3.5 mb-5">
-          <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider m-0 mb-1">Student</p>
-          <p className="text-slate-100 text-base font-semibold mb-3">
+        <div className="bg-gray-50 border border-gray-200 p-3.5 mb-5">
+          <p className="text-gray-500 text-[11px] font-semibold uppercase tracking-wider m-0 mb-1">Student</p>
+          <p className="text-gray-900 text-sm font-semibold mb-3">
             {[selectedStudent.firstName, selectedStudent.middleName, selectedStudent.lastName].filter(Boolean).join(' ')}
           </p>
-          <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider m-0 mb-1">Academic Program</p>
-          <p className="text-indigo-400 text-sm font-medium">
+          <p className="text-gray-500 text-[11px] font-semibold uppercase tracking-wider m-0 mb-1">Academic Program</p>
+          <p className="text-gray-700 text-sm font-medium">
             {selectedStudent.program?.programName || selectedStudent.degreeProgram || 'No Program Assigned'}
           </p>
         </div>
 
         {loadingSections ? (
-          <div className="py-[30px] text-center text-slate-500">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.5"
-              className="animate-spin block mx-auto mb-3">
-              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-            </svg>
+          <div className="py-[30px] text-center text-gray-500 text-sm">
             Fetching active sections...
           </div>
         ) : (
           <div>
-            <label className="block text-slate-400 text-xs font-semibold tracking-wider uppercase mb-2">
+            <label className="block text-gray-600 text-[11px] font-semibold tracking-wider uppercase mb-2">
               Select Section
             </label>
             <select
               value={targetSectionId}
               onChange={e => setTargetSectionId(e.target.value)}
-              className="w-full bg-white/[0.04] border border-white/10 rounded-[10px] px-3.5 py-2.5 text-slate-100 text-sm font-['Inter'] outline-none"
+              className="w-full border border-gray-200 bg-white px-3 py-2.5 text-gray-700 text-sm outline-none transition-colors focus:border-gray-900"
             >
               <option value="" disabled>-- Choose a Section --</option>
               {filteredSections.map(sec => (
-                <option key={sec._id} value={sec._id} style={{ background: '#0A0F1E', color: '#E2E8F0' }}>
+                <option key={sec._id} value={sec._id}>
                   {sec.sectionCode} - {sec.sectionName} (Year Level: {sec.yearLevel})
                 </option>
               ))}
             </select>
 
             {filteredSections.length === 0 && (
-              <div className="flex gap-2 bg-red-500/06 border border-red-500/15 rounded-[10px] p-3 mt-3.5">
-                <span className="text-base">⚠️</span>
-                <p className="text-red-300 text-xs m-0 leading-normal">
+              <div className="flex gap-2 bg-red-50 border border-red-200 p-3 mt-3.5">
+                <span className="text-sm">⚠️</span>
+                <p className="text-red-600 text-xs m-0 leading-normal">
                   No active sections exist for this student's program ({selectedStudent.program?.programName || selectedStudent.degreeProgram}).
                   Please verify curriculum sections.
                 </p>
@@ -69,8 +65,8 @@ const SingleAssignModal = ({
             )}
 
             {errorMsg && (
-              <div className="bg-red-500/08 border border-red-500/20 rounded-[10px] px-3.5 py-2.5 mt-3.5">
-                <p className="text-red-300 text-xs m-0">{errorMsg}</p>
+              <div className="bg-red-50 border border-red-200 px-3.5 py-2.5 mt-3.5">
+                <p className="text-red-600 text-xs m-0">{errorMsg}</p>
               </div>
             )}
 
@@ -78,7 +74,7 @@ const SingleAssignModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="bg-white/5 text-slate-400 border border-white/10 px-[18px] py-2 rounded-[10px] font-semibold text-sm cursor-pointer transition-all hover:bg-white/10"
+                className="bg-white text-gray-600 border border-gray-200 px-4 py-2 font-semibold text-sm cursor-pointer transition-colors hover:bg-gray-50"
               >
                 Cancel
               </button>
@@ -86,7 +82,7 @@ const SingleAssignModal = ({
                 type="button"
                 onClick={handleAssignSection}
                 disabled={!targetSectionId || assigning}
-                className="bg-gradient-to-br from-indigo-500 to-indigo-700 text-white border-none px-6 py-2 rounded-[10px] font-semibold text-sm cursor-pointer shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50"
+                className="bg-gray-900 text-white border border-gray-900 px-6 py-2 font-semibold text-sm cursor-pointer transition-colors hover:bg-gray-800 disabled:opacity-50"
               >
                 {assigning ? 'Assigning...' : 'Assign Section'}
               </button>

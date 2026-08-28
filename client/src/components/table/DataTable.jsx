@@ -15,6 +15,7 @@ const DataTable = ({
     rowsPerPage = 10,
     showPagination = true,
     className = "",
+    selectedIds = [],
 }) => {
 
     const [page, setPage] = useState(0);
@@ -95,6 +96,7 @@ const DataTable = ({
                     columns={columns}
                     data={paginatedData}
                     className={className}
+                    selectedIds={selectedIds}
                 />
             </table>
 

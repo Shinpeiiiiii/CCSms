@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
+const templateRoutes = require('./template.routes')
+
 const {
 
     createCurriculum,
@@ -12,12 +14,16 @@ const {
     createNewVersion,
     getVersionHistory,
     autoStructureCurriculum,
+    deleteBatch,
 
 } = require('../controller/curriculum.controller')
 
 const authMiddleware = require('../../../../middlewares/auth.middleware')
 const authorizeRoles = require('../../../../middlewares/role.middleware')
 
+router.use(templateRoutes)
+
+router.post('/batch', authMiddleware, authorizeRoles('admin'), deleteBatch)
 router.get('/:id',authMiddleware, authorizeRoles('admin','registrar'), getCurriculumById)
 router.get('/', authMiddleware, authorizeRoles('admin','registrar','teacher','student'), getCurriculum)
 router.post('/',authMiddleware, authorizeRoles('admin'), createCurriculum)
@@ -29,7 +35,4 @@ router.patch('/:id/publish',authMiddleware, authorizeRoles('admin'), publishCurr
 router.patch('/:id/archive', authMiddleware, authorizeRoles('admin'), archiveCurriculum)
 
 module.exports = router
-
-
-    autoStructureCurriculum
 

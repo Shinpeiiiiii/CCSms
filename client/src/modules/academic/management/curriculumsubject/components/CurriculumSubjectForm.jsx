@@ -3,8 +3,8 @@ import { useState } from "react";
 import {
     TextField,
     SelectField,
-    FormActions,
 } from "../../../../../components/forms";
+import PrimaryButton from "../../../../../components/buttons/PrimaryButton";
 
 const CurriculumSubjectForm = ({
     initialValues = null,
@@ -25,15 +25,11 @@ const CurriculumSubjectForm = ({
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+        setForm((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
         onSubmit({
             ...form,
             yearLevel: Number(form.yearLevel),
@@ -44,14 +40,7 @@ const CurriculumSubjectForm = ({
     };
 
     return (
-        <form
-            onSubmit={handleSubmit}
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 20,
-            }}
-        >
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {!isEdit && (
                 <SelectField
                     label="Subject"
@@ -66,19 +55,12 @@ const CurriculumSubjectForm = ({
             )}
 
             {isEdit && (
-                <div style={{
-                    padding: "10px 14px",
-                    background: "rgba(255,255,255,0.03)",
-                    borderRadius: 10,
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "#F1F5F9",
-                    fontSize: 14,
-                }}>
-                    {initialValues?.subject?.subjectCode} - {initialValues?.subject?.subjectName}
+                <div className="px-3 py-2 border border-gray-200 bg-gray-50 text-sm text-gray-700 font-medium">
+                    {initialValues?.subject?.subjectCode} — {initialValues?.subject?.subjectName}
                 </div>
             )}
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="grid grid-cols-2 gap-3">
                 <SelectField
                     label="Year Level"
                     name="yearLevel"
@@ -111,34 +93,37 @@ const CurriculumSubjectForm = ({
                 />
             </div>
 
-            <TextField
-                label="Display Order"
-                name="displayOrder"
-                type="number"
-                value={form.displayOrder}
-                onChange={handleChange}
-                helperText="Order within this year/semester (1 = first)"
-                required
-            />
+            <div className="grid grid-cols-2 gap-3">
+                <TextField
+                    label="Display Order"
+                    name="displayOrder"
+                    type="number"
+                    value={form.displayOrder}
+                    onChange={handleChange}
+                    helperText="Position within year/semester"
+                    required
+                />
 
-            <SelectField
-                label="Type"
-                name="isRequired"
-                value={String(form.isRequired)}
-                onChange={handleChange}
-                options={[
-                    { value: "true", label: "Required" },
-                    { value: "false", label: "Elective" },
-                ]}
-                valueField="value"
-                labelField="label"
-                required
-            />
+                <SelectField
+                    label="Type"
+                    name="isRequired"
+                    value={String(form.isRequired)}
+                    onChange={handleChange}
+                    options={[
+                        { value: "true", label: "Required" },
+                        { value: "false", label: "Elective" },
+                    ]}
+                    valueField="value"
+                    labelField="label"
+                    required
+                />
+            </div>
 
-            <FormActions
-                loading={loading}
-                submitLabel={isEdit ? "Save Changes" : "Add Subject"}
-            />
+            <div className="flex justify-end pt-2 border-t border-gray-100">
+                <PrimaryButton type="submit" loading={loading} size="sm">
+                    {isEdit ? "Save Changes" : "Add Subject"}
+                </PrimaryButton>
+            </div>
         </form>
     );
 };

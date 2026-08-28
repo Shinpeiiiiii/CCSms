@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import Modal from "../../../../../components/modal/Modal";
 import MultiSelectCheckbox from "../../../../../components/forms/MultiSelectCheckbox";
 import SelectField from "../../../../../components/forms/SelectField";
-import FormActions from "../../../../../components/forms/FormActions";
+import PrimaryButton from "../../../../../components/buttons/PrimaryButton";
 
 const CurriculumSubjectBatchModal = ({
     isOpen,
@@ -21,36 +21,35 @@ const CurriculumSubjectBatchModal = ({
 
     const selectedSubjects = useMemo(() => {
         const selected = new Set(selectedSubjectIds);
-        return subjects.filter(s => selected.has(s._id));
+        return subjects.filter((s) => selected.has(s._id));
     }, [subjects, selectedSubjectIds]);
 
     const availableOptions = useMemo(() => {
         const existingIds = new Set(selectedSubjectIds);
-        return subjects.filter(s => !existingIds.has(s._id));
+        return subjects.filter((s) => !existingIds.has(s._id));
     }, [subjects, selectedSubjectIds]);
 
     const handleRemoveSelected = (subjectId) => {
-        setSelectedSubjectIds(prev => prev.filter(id => id !== subjectId));
+        setSelectedSubjectIds((prev) => prev.filter((id) => id !== subjectId));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (selectedSubjectIds.length === 0) return;
 
-        const payload = selectedSubjectIds.map(subjectId => ({
+        const payload = selectedSubjectIds.map((subjectId) => ({
             subject: subjectId,
             yearLevel: Number(yearLevel),
             semester: Number(semester),
             isRequired,
         }));
-        try{
+
+        try {
             await onSubmit(payload);
             setSelectedSubjectIds([]);
-        }catch(error){
-            console.log("Submissino failed:",error);
+        } catch (error) {
+            console.error("Submission failed:", error);
         }
-        
     };
 
     const handleClose = () => {
@@ -68,13 +67,12 @@ const CurriculumSubjectBatchModal = ({
             title="Batch Add Subjects"
             size="lg"
         >
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                <div className="p-3 bg-blue-50 border border-blue-200 text-blue-900 rounded-[10px] text-sm font-medium">
-                    Select multiple subjects to add to this curriculum in one batch.
-                    Year level, semester, and type will apply to all selected subjects.
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div className="px-3 py-2 border border-gray-200 bg-gray-50 text-xs text-gray-500 leading-relaxed">
+                    Add multiple subjects at once. Year level, semester, and type apply to all selected.
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-3">
                     <SelectField
                         label="Year Level"
                         name="yearLevel"
@@ -122,23 +120,23 @@ const CurriculumSubjectBatchModal = ({
                 </div>
 
                 {selectedSubjects.length > 0 && (
-                    <div className="p-3 bg-white/[0.03] border border-white/10 rounded-[10px] flex flex-col gap-2.5">
-                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                            Selected Subjects ({selectedCount})
+                    <div className="border border-gray-200 bg-gray-50 p-3">
+                        <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                            Selected ({selectedCount})
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {selectedSubjects.map(item => (
+                        <div className="flex flex-wrap gap-1.5">
+                            {selectedSubjects.map((item) => (
                                 <span
                                     key={item._id}
-                                    className="px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 text-sm font-semibold border border-indigo-500/20 flex items-center gap-2"
+                                    className="inline-flex items-center gap-1.5 px-2 py-1 bg-white border border-gray-200 text-[12px] font-medium text-gray-700"
                                 >
-                                    {item.subjectCode} - {item.subjectName}
+                                    {item.subjectCode}
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveSelected(item._id)}
-                                        className="border-none bg-transparent cursor-pointer font-bold text-indigo-400 text-base leading-none"
+                                        className="text-gray-300 hover:text-gray-600 transition-colors"
                                     >
-                                        ✕
+                                        ×
                                     </button>
                                 </span>
                             ))}
@@ -156,12 +154,20 @@ const CurriculumSubjectBatchModal = ({
                     placeholder="Search subjects..."
                 />
 
-                <FormActions
-                    loading={loading}
-                    submitLabel={`Add ${selectedCount} Subject${selectedCount !== 1 ? 's' : ''}`}
-                    cancelLabel="Cancel"
-                    onCancel={handleClose}
-                />
+                <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        className="px-4 py-2 text-[12px] font-medium border border-gray-200 bg-white text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-700"
+                    >
+                        Cancel
+                    </button>
+                    <PrimaryButton type="submit" loading={loading} size="sm">
+                        {selectedCount > 0
+                            ? `Add ${selectedCount} Subject${selectedCount !== 1 ? "s" : ""}`
+                            : "Add Subjects"}
+                    </PrimaryButton>
+                </div>
             </form>
         </Modal>
     );

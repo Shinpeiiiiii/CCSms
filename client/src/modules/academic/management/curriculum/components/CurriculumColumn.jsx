@@ -9,6 +9,8 @@ const CurriculumColumn = ({
     openHistory,
     onArchive,
     navigate,
+    onSaveAsTemplate,
+    onExport,
 }) => [
 
     {
@@ -110,7 +112,19 @@ const CurriculumColumn = ({
                     onClick: () => onPublish(curriculum),
                 });
 
+                actions.push({
+                    label: "Save as Template",
+                    icon: "template",
+                    onClick: () => onSaveAsTemplate(curriculum),
+                });
+
             }
+
+            actions.push({
+                label: "Export",
+                icon: "export",
+                onClick: () => onExport(curriculum),
+            });
 
             if (curriculum.status === "Published") {
 

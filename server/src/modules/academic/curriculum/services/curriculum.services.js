@@ -433,17 +433,6 @@ const getVersionHistory = async (
 };
 
 
-module.exports = {
-
-    createCurriculum,
-    getCurriculum,
-    getCurriculumById,
-    updateCurriculum,
-    publishCurriculum,
-    archiveCurriculum,
-    createNewVersion,
-    getVersionHistory,
-}
 const autoStructureCurriculum = async (curriculumId, subjectGroups) => {
     const curriculum = await Curriculum.findById(curriculumId);
     if (!curriculum) {
@@ -505,6 +494,21 @@ const autoStructureCurriculum = async (curriculumId, subjectGroups) => {
     return createdSubjects;
 };
 
+const deleteBatch = async (ids) => {
+    if (!ids || !ids.length) {
+        throw new Error("No curriculum IDs provided.");
+    }
+
+    const result = await Curriculum.deleteMany({
+        _id: { $in: ids },
+        isCurrentVersion: true,
+    });
+
+    await clearCache('curriculums');
+
+    return { deletedCount: result.deletedCount };
+};
+
 module.exports = {
     createCurriculum,
     getCurriculum,
@@ -515,4 +519,5 @@ module.exports = {
     createNewVersion,
     getVersionHistory,
     autoStructureCurriculum,
+    deleteBatch,
 }

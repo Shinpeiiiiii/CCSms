@@ -199,6 +199,29 @@ const autoStructureCurriculum = async (req, res) => {
     }
 };
 
+const deleteBatch = async (req, res) => {
+    try {
+        const { ids } = req.body;
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({
+                message: "No curriculum IDs provided.",
+            });
+        }
+
+        const result = await curriculumService.deleteBatch(ids);
+
+        return res.status(200).json({
+            message: `${result.deletedCount} curriculum/curriculums deleted successfully.`,
+            deletedCount: result.deletedCount,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     createCurriculum,
     getCurriculum,
@@ -209,4 +232,5 @@ module.exports = {
     createNewVersion,
     getVersionHistory,
     autoStructureCurriculum,
+    deleteBatch,
 }

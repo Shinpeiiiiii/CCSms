@@ -9,231 +9,100 @@ const MultiSelectCheckbox = ({
     labelField = "name",
     placeholder = "Search...",
 }) => {
-
     const [search, setSearch] = useState("");
 
     const handleToggle = (optionValue) => {
-
         const exists = value.includes(optionValue);
-
         if (exists) {
-
-            onChange(
-                value.filter(id => id !== optionValue)
-            );
-
+            onChange(value.filter((id) => id !== optionValue));
         } else {
-
-            onChange([
-                ...value,
-                optionValue,
-            ]);
-
+            onChange([...value, optionValue]);
         }
-
     };
 
     const selectedItems = useMemo(() => {
-
-        return options.filter(option =>
-            value.includes(option[valueField])
-        );
-
+        return options.filter((option) => value.includes(option[valueField]));
     }, [options, value, valueField]);
 
     const filteredOptions = useMemo(() => {
-
         if (!search.trim()) return options;
-
         const keyword = search.toLowerCase();
-
-        return options.filter(option => {
+        return options.filter((option) => {
             const labelText = option[labelField]?.toLowerCase() || "";
             const codeText = option.subjectCode?.toLowerCase() || "";
             return labelText.includes(keyword) || codeText.includes(keyword);
         });
-
     }, [options, search, labelField]);
 
     return (
-
-        <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-            }}
-        >
-
+        <div className="flex flex-col gap-2.5">
             {label && (
-
-                <label
-                    style={{
-                        fontWeight: 600,
-                    }}
-                >
+                <label className="text-[13px] font-medium text-gray-600">
                     {label}
                 </label>
-
             )}
 
             <input
-
                 type="text"
-
                 value={search}
-
                 onChange={(e) => setSearch(e.target.value)}
-
                 placeholder={placeholder}
-
-                style={{
-                    padding: "8px 12px",
-                    border: "1px solid #ddd",
-                    borderRadius: 8,
-                    fontSize: 14,
-                    outline: "none",
-                }}
-
+                className="px-3 py-2 border border-gray-200 text-[13px] text-gray-700 outline-none transition-colors focus:border-gray-900 placeholder:text-gray-400"
             />
 
-            <div
-
-                style={{
-                    border: "1px solid #ddd",
-                    borderRadius: 8,
-                    padding: 12,
-                    maxHeight: 220,
-                    overflowY: "auto",
-                }}
-
-            >
-
+            <div className="border border-gray-200 p-2 max-h-[220px] overflow-y-auto">
                 {filteredOptions.length === 0 && (
-                    <div style={{ padding: "12px 0", color: "#888", fontSize: 13 }}>
+                    <div className="py-3 text-center text-[12px] text-gray-400">
                         No subjects found.
                     </div>
                 )}
 
-                {filteredOptions.map(option => {
-
-                    const optionValue =
-                        option[valueField];
-
-                    const checked =
-                        value.includes(optionValue);
+                {filteredOptions.map((option) => {
+                    const optionValue = option[valueField];
+                    const checked = value.includes(optionValue);
 
                     return (
-
                         <label
-
                             key={optionValue}
-
-                            style={{
-
-                                display: "flex",
-
-                                alignItems: "center",
-
-                                gap: 10,
-
-                                padding: "6px 0",
-
-                                cursor: "pointer",
-
-                            }}
-
+                            className="flex items-center gap-2.5 px-2 py-1.5 cursor-pointer hover:bg-gray-50 transition-colors"
                         >
-
                             <input
-
                                 type="checkbox"
-
                                 checked={checked}
-
-                                onChange={() =>
-                                    handleToggle(optionValue)
-                                }
-
+                                onChange={() => handleToggle(optionValue)}
+                                className="accent-gray-900"
                             />
-
-                            {option.subjectCode
-                                ? `${option.subjectCode} - ${option[labelField]}`
-                                : option[labelField]
-                            }
-
+                            <span className="text-[13px] text-gray-700">
+                                {option.subjectCode
+                                    ? `${option.subjectCode} — ${option[labelField]}`
+                                    : option[labelField]}
+                            </span>
                         </label>
-
                     );
-
                 })}
-
             </div>
 
-            {
-
-                selectedItems.length > 0 && (
-
-                    <div
-                        style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 8,
-                        }}
-                    >
-
-                        {
-
-                            selectedItems.map(item => (
-
-                                <span
-                                    key={item[valueField]}
-                                    style={{
-                                        padding: "5px 10px",
-                                        borderRadius: 20,
-                                        background: "#f1f5f9",
-                                        fontSize: 13,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 6,
-                                    }}
-                                >
-                                    {item.subjectCode
-                                        ? `${item.subjectCode}`
-                                        : item[labelField]
-                                    }
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            handleToggle(
-                                                item[valueField]
-                                            )
-                                        }
-                                        style={{
-                                            border: "none",
-                                            background: "transparent",
-                                            cursor: "pointer",
-                                            fontWeight: "bold",
-                                        }}
-                                    >
-                                        ✕
-                                    </button>
-                                </span>
-
-                            ))
-
-                        }
-
-                    </div>
-
-                )
-
-            }
-
+            {selectedItems.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                    {selectedItems.map((item) => (
+                        <span
+                            key={item[valueField]}
+                            className="inline-flex items-center gap-1.5 px-2 py-1 bg-gray-100 text-[12px] font-medium text-gray-600 border border-gray-200"
+                        >
+                            {item.subjectCode || item[labelField]}
+                            <button
+                                type="button"
+                                onClick={() => handleToggle(item[valueField])}
+                                className="text-gray-400 hover:text-gray-700 transition-colors"
+                            >
+                                ×
+                            </button>
+                        </span>
+                    ))}
+                </div>
+            )}
         </div>
-
     );
-
 };
 
 export default MultiSelectCheckbox;

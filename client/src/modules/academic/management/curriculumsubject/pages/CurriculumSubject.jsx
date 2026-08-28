@@ -2,8 +2,8 @@ import { memo, useMemo, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
+
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
-import Card from "../../../../../components/cards/Cards";
 import DataTable from "../../../../../components/table/DataTable";
 import ConfirmModal from "../../../../../components/modal/ConfirmModal";
 
@@ -22,10 +22,8 @@ import {
   updateCurriculumSubject,
   autoStructureCurriculum,
   bulkAddCurriculumSubject,
-  renumberDisplayOrders,
 } from "../services/curriculumsubject.services";
 
-/* ─── Constants ─── */
 const YEARS = [1, 2, 3, 4];
 const SEMESTERS = [1, 2];
 
@@ -34,148 +32,125 @@ const VIEW_MODE = {
   LIST: "list",
 };
 
-/* ─── Helpers ─── */
 const deriveStructure = (subjectList) => {
   const result = {};
-
   for (const item of subjectList) {
     const yearKey = `Year ${item.yearLevel}`;
     const semKey = `Semester ${item.semester}`;
-
     if (!result[yearKey]) result[yearKey] = {};
     if (!result[yearKey][semKey]) result[yearKey][semKey] = [];
-
     result[yearKey][semKey].push(item);
   }
-
   return result;
 };
 
-/* ─── Presentational Components ───
-    Google-style monochrome theme:
-    - Base surfaces: white / #DADCE0 borders
-    - "Required" = solid black pill, "Elective" = outlined black pill
-    - Units = neutral gray pill
-    - Hover states lift with a subtle border-darken + shadow, no color noise
- */
-const SubjectBadge = memo(({ isRequired, units }) => (
-   <div className="mt-1.5 flex items-center gap-1.5">
-       <span
-           className={`px-2 py-0.5 text-[10px] font-semibold tracking-wide ${
-               isRequired
-                   ? "bg-black text-white"
-                   : "border border-black/70 text-black"
-           }`}
-       >
-           {isRequired ? "Required" : "Elective"}
-       </span>
-       <span className="bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">
-           {units || 0} units
-       </span>
-   </div>
-));
 
-const SubjectCard = memo(({ item }) => (
-   <div className="group flex items-center justify-between gap-2 border border-gray-200 bg-white p-3 transition-colors hover:border-black/60 hover:shadow-sm">
-       <div className="min-w-0 flex-1">
-           <div className="truncate text-[13px] font-semibold text-black">
-               {item.subject?.subjectCode || "-"}
-           </div>
-           <div className="truncate text-[11px] text-gray-500">
-               {item.subject?.subjectName || "-"}
-           </div>
-           <SubjectBadge
-               isRequired={item.isRequired}
-               units={item.units || item.subject?.units}
-           />
-       </div>
-   </div>
-));
+const SubjectChip = memo(({ item }) => {
+  const { subjectCode, subjectName, units: subjectUnits } = item.subject ?? {};
+  const units = item.units ?? subjectUnits ?? 0;
+  const isRequired = !!item.isRequired;
 
-const EmptyCell = memo(() => (
-   <div className="border border-dashed border-gray-300 p-4 text-center text-[13px] text-gray-400">
-       No subjects
-   </div>
+  return (
+    <div className="border border-gray-200 bg-white p-5 transition-colors hover:border-gray-400">
+      <div>
+        <p className="text-sm font-semibold text-gray-900 truncate">
+          {subjectCode || "—"}
+        </p>
+        <p className="text-sm text-gray-500 truncate mt-1.5 leading-relaxed">
+          {subjectName || "—"}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <span
+          className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${
+            isRequired
+              ? "bg-gray-900 text-white"
+              : "border border-gray-300 text-gray-500"
+          }`}
+        >
+          {isRequired ? "Required" : "Elective"}
+        </span>
+        <span className="text-xs text-gray-400 font-medium tabular-nums">
+          {units} {units === 1 ? "unit" : "units"}
+        </span>
+      </div>
+    </div>
+  );
+});
+
+SubjectChip.displayName = "SubjectChip";
+
+const EmptySlot = memo(() => (
+  <div className="border border-dashed border-gray-200 p-4 text-center text-[11px] text-gray-300">
+    Empty
+  </div>
 ));
 
 const MatrixCell = memo(({ subjects }) => {
-   if (subjects.length === 0) return <EmptyCell />;
-
-   return (
-       <div className="flex flex-col gap-2">
-           {subjects.map((item) => (
-               <SubjectCard key={item._id} item={item} />
-           ))}
-       </div>
-   );
+  if (subjects.length === 0) return <EmptySlot />;
+  return (
+    <div className="flex flex-col gap-2">
+      {subjects.map((item) => (
+        <SubjectChip key={item._id} item={item} />
+      ))}
+    </div>
+  );
 });
 
-const CurriculumMatrix = memo(({ structure, title }) => {
-   return (
-       <div className="overflow-x-auto">
-           {title && (
-               <div className="mb-4 flex items-center justify-center border-b-2 border-black pb-3">
-                   <p className="w-fit text-center text-sm font-semibold uppercase tracking-wide text-black">
-                       {title}
-                   </p>
-               </div>
-           )}
-           <table className="w-full min-w-190 border border-gray-200 bg-white">
-               <thead>
-                   <tr>
-                       <th className="min-w-30 border-b-2 border-black bg-gray-50 p-4 text-left text-xs font-semibold uppercase tracking-wide text-black">
-                           Year
-                       </th>
-                       {SEMESTERS.map((sem) => (
-                           <th
-                               key={sem}
-                               className="min-w-50 border-b-2 border-black bg-gray-50 p-4 text-center text-xs font-semibold uppercase tracking-wide text-black"
-                           >
-                               Semester {sem}
-                           </th>
-                       ))}
-                   </tr>
-               </thead>
-               <tbody>
-                   {YEARS.map((year) => (
-                       <tr key={year}>
-                           <td className="border-b border-gray-100 border-r border-r-gray-200 p-4 align-top font-bold text-black">
-                               Year {year}
-                           </td>
-                           {SEMESTERS.map((sem) => {
-                               const cellSubjects =
-                                   structure[`Year ${year}`]?.[`Semester ${sem}`] || [];
-                               return (
-                                   <td
-                                       key={sem}
-                                       className="min-w-50 border-b border-gray-100 p-3 align-top"
-                                   >
-                                       <MatrixCell subjects={cellSubjects} />
-                                   </td>
-                               );
-                           })}
-                       </tr>
-                   ))}
-               </tbody>
-           </table>
-       </div>
-   );
-});
+const CurriculumMatrix = memo(({ structure }) => (
+  <div className="overflow-x-auto">
+    <table className="w-full min-w-160">
+      <thead>
+        <tr>
+          <th className="w-28 px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100">
+            Year
+          </th>
+          {SEMESTERS.map((sem) => (
+            <th
+              key={sem}
+              className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100"
+            >
+              Semester {sem}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {YEARS.map((year) => (
+          <tr key={year}>
+            <td className="px-4 py-4 align-top text-xs font-semibold text-gray-900 border-b border-gray-50">
+              Year {year}
+            </td>
+            {SEMESTERS.map((sem) => {
+              const cellSubjects =
+                structure[`Year ${year}`]?.[`Semester ${sem}`] || [];
+              return (
+                <td
+                  key={sem}
+                  className="px-3 py-3 align-top border-b border-gray-50"
+                >
+                  <MatrixCell subjects={cellSubjects} />
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+));
 
-/* ─── Main Component ─── */
 const CurriculumSubject = () => {
   const { curriculumId } = useParams();
 
-  /* State */
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [viewMode, setViewMode] = useState(VIEW_MODE.MATRIX);
   const [structuring, setStructuring] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [batchSaving, setBatchSaving] = useState(false);
-  const [renumbering, setRenumbering] = useState(false);
 
-  /* Hooks */
   const { subjects, loading, refreshSubjects } = useCurriculumSubject(curriculumId);
   const { subject: availableSubjects = [] } = useSubject();
   const {
@@ -191,7 +166,6 @@ const CurriculumSubject = () => {
     closeDelete,
   } = useCrud();
 
-  /* Derived */
   const derivedStructure = useMemo(() => deriveStructure(subjects), [subjects]);
 
   const filteredSubjects = useMemo(() => {
@@ -203,12 +177,17 @@ const CurriculumSubject = () => {
     );
   }, [subjects, search]);
 
-  /* Handlers */
+  const subjectCount = subjects.length;
+  const requiredCount = useMemo(
+    () => subjects.filter((s) => s.isRequired).length,
+    [subjects]
+  );
+  const electiveCount = subjectCount - requiredCount;
+
   const handleAutoStructure = useCallback(async () => {
     setStructuring(true);
     try {
       const groups = [];
-
       for (const year of YEARS) {
         const yearSubjects = Array.isArray(subjects)
           ? subjects.filter((s) => s.yearLevel === year)
@@ -246,11 +225,8 @@ const CurriculumSubject = () => {
       }
 
       await autoStructureCurriculum(curriculumId, groups);
-      toast.success("Curriculum structure organized successfully.");
+      toast.success("Curriculum structure organized.");
       await refreshSubjects();
-      // NOTE: loadStructure was referenced in the original file but was not
-      // defined in scope. If you have this helper, import/call it here.
-      // await loadStructure();
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Failed to structure curriculum."
@@ -266,16 +242,16 @@ const CurriculumSubject = () => {
         setSaving(true);
         if (selectedItem) {
           await updateCurriculumSubject(selectedItem._id, formData);
-          toast.success("Subject updated successfully.");
+          toast.success("Subject updated.");
         } else {
           await addCurriculumSubject(curriculumId, formData);
-          toast.success("Subject added to curriculum.");
+          toast.success("Subject added.");
         }
         closeModal();
         await refreshSubjects();
       } catch (error) {
         toast.error(
-          error.response?.data?.message || "Failed to save curriculum subject."
+          error.response?.data?.message || "Failed to save."
         );
       } finally {
         setSaving(false);
@@ -289,12 +265,12 @@ const CurriculumSubject = () => {
       try {
         setBatchSaving(true);
         await bulkAddCurriculumSubject(curriculumId, payload);
-        toast.success("Subjects added to curriculum successfully.");
+        toast.success("Subjects added.");
         setIsBatchModalOpen(false);
         await refreshSubjects();
       } catch (error) {
         toast.error(
-          error.response?.data?.message || "Failed to batch add subjects."
+          error.response?.data?.message || "Failed to batch add."
         );
       } finally {
         setBatchSaving(false);
@@ -305,45 +281,21 @@ const CurriculumSubject = () => {
 
   const handleDelete = useCallback(async () => {
     if (!selectedItem) return;
-
     try {
       setDeleting(true);
       await deleteCurriculumSubject(selectedItem._id);
       closeDelete();
       await refreshSubjects();
-      toast.success("Subject removed from curriculum.");
+      toast.success("Subject removed.");
     } catch (error) {
       toast.error(
-        error.response?.data?.message ||
-          "Failed to remove curriculum subject."
+        error.response?.data?.message || "Failed to remove."
       );
     } finally {
       setDeleting(false);
     }
   }, [selectedItem, closeDelete, refreshSubjects]);
 
-  const handleBatchAddOpen = useCallback(() => setIsBatchModalOpen(true), []);
-  const handleBatchAddClose = useCallback(
-    () => setIsBatchModalOpen(false),
-    []
-  );
-
-  const handleRenumber = useCallback(async () => {
-    try {
-      setRenumbering(true);
-      await renumberDisplayOrders(curriculumId);
-      toast.success("Display orders renumbered successfully.");
-      await refreshSubjects();
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to renumber display orders."
-      );
-    } finally {
-      setRenumbering(false);
-    }
-  }, [curriculumId, refreshSubjects]);
-
-  /* Columns memoized so DataTable doesn't recompute unless handlers change */
   const columns = useMemo(
     () =>
       CurriculumSubjectColumn({
@@ -355,10 +307,25 @@ const CurriculumSubject = () => {
 
   return (
     <DashboardLayout>
-      <Card
-        title="Curriculum Subjects"
-        subtitle="Manage curriculum subjects by year and semester"
-        actions={
+      <div className="mb-6">
+        <div className="flex items-center gap-6 text-xs text-gray-400">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-gray-900" />
+            {subjectCount} subjects
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-gray-400" />
+            {requiredCount} required
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-gray-300" />
+            {electiveCount} elective
+          </span>
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200">
+        <div className="px-5 py-4 border-b border-gray-100">
           <CurriculumSubjectToolbar
             search={search}
             setSearch={setSearch}
@@ -367,24 +334,23 @@ const CurriculumSubject = () => {
             setViewMode={setViewMode}
             onAutoStructure={handleAutoStructure}
             structuring={structuring}
-            onBatchAdd={handleBatchAddOpen}
-            onRenumber={handleRenumber}
-            renumbering={renumbering}
+            onBatchAdd={() => setIsBatchModalOpen(true)}
           />
-        }
-        padding={0}
-      >
-        {viewMode === VIEW_MODE.MATRIX ? (
-          <CurriculumMatrix structure={derivedStructure} title="Bachelor of Science on Information and Technology Curriculum" />
-        ) : (
-          <DataTable
-            columns={columns}
-            data={filteredSubjects}
-            loading={loading}
-            emptyMessage="No curriculum subjects found."
-          />
-        )}
-      </Card>
+        </div>
+
+        <div>
+          {viewMode === VIEW_MODE.MATRIX ? (
+            <CurriculumMatrix structure={derivedStructure} />
+          ) : (
+            <DataTable
+              columns={columns}
+              data={filteredSubjects}
+              loading={loading}
+              emptyMessage="No subjects found."
+            />
+          )}
+        </div>
+      </div>
 
       <CurriculumSubjectModal
         isOpen={isModalOpen}
@@ -397,7 +363,7 @@ const CurriculumSubject = () => {
 
       <CurriculumSubjectBatchModal
         isOpen={isBatchModalOpen}
-        onClose={handleBatchAddClose}
+        onClose={() => setIsBatchModalOpen(false)}
         onSubmit={handleBatchSave}
         subjects={availableSubjects}
         loading={batchSaving}
@@ -405,12 +371,10 @@ const CurriculumSubject = () => {
 
       <ConfirmModal
         isOpen={isDeleteOpen}
-        title="Remove Curriculum Subject"
+        title="Remove Subject"
         message={
           selectedItem
-            ? `Remove "${
-                selectedItem.subject?.subjectName || "this subject"
-              }" from this curriculum?`
+            ? `Remove "${selectedItem.subject?.subjectName || "this subject"}" from this curriculum?`
             : ""
         }
         onCancel={closeDelete}

@@ -4,7 +4,7 @@ import useAuthStore from '../state/auth-store';
 import { useNavigate } from 'react-router-dom';
 import LogoutOverlay from './LogoutOverlay';
 
-const UserMenu = ({ onClose }) => {
+const UserMenu = ({ onClose, isCollapsed = false }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const menuRef = useRef(null);
@@ -39,6 +39,43 @@ const UserMenu = ({ onClose }) => {
       onClose();
     }, 1200);
   };
+
+  // Collapsed mode — avatar only
+  if (isCollapsed) {
+    return (
+      <div
+        style={{
+          borderTop: '1px solid #F1F5F9',
+          padding: '16px 0',
+          flexShrink: 0,
+          backgroundColor: '#FFFFFF',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          title={user?.email || 'user@portal.com'}
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            backgroundColor: '#F1F5F9',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#475569',
+            fontSize: '14px',
+            fontWeight: 500,
+            flexShrink: 0,
+            fontFamily: "'Inter', sans-serif",
+            cursor: 'default',
+          }}
+        >
+          {user?.email?.[0]?.toUpperCase() || 'U'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

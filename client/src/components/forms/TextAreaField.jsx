@@ -12,23 +12,23 @@ const TextAreaField = ({
     const inputStyle = {
         width: "100%",
         background: "#FFFFFF",
-        border: focused ? "1px solid #1A73E8" : "1px solid #DADCE0",
-        borderRadius: 12,
-        padding: "12px 16px",
-        color: "#202124",
+        border: focused ? "1px solid #111827" : "1px solid #E5E7EB",
+        padding: "10px 14px",
+        color: "#111827",
+        fontSize: "0.8125rem",
+        fontFamily: "inherit",
         minHeight: 120,
         resize: "vertical",
         outline: "none",
-        transition: "all 0.2s",
+        transition: "border-color 0.15s ease",
         boxSizing: "border-box",
-        boxShadow: focused ? "0 0 0 3px rgba(26, 115, 232, 0.12)" : "none",
     };
 
     const labelStyle = {
         display: "block",
-        marginBottom: 8,
-        color: "#5F6368",
-        fontWeight: 600,
+        marginBottom: 6,
+        color: "#6B7280",
+        fontWeight: 500,
         fontSize: ".8125rem",
     };
 

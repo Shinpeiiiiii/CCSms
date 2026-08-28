@@ -11,13 +11,22 @@ import {
   Star,
   FileText,
   Building2,
+  Users,
+  Bell,
+  BookMarked,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
   {
     label: 'Dashboard',
     to: '/dashboard',
-    role: ['admin', 'registrar', 'teacher'],
+    role: ['admin', 'registrar'],
+    icon: LayoutDashboardIcon,
+  },
+  {
+    label: 'Dashboard',
+    to: '/teacher/dashboard',
+    role: ['teacher'],
     icon: LayoutDashboardIcon,
   },
   {
@@ -34,6 +43,12 @@ const NAV_ITEMS = [
     label: 'My Profile',
     role: ['student'],
     to: '/student/profile',
+  },
+  {
+    label: 'Materials',
+    role: ['student'],
+    to: '/student/materials',
+    icon: BookMarked,
   },
   {
     label: 'Department',
@@ -124,10 +139,36 @@ const NAV_ITEMS = [
     group: 'Students',
   },
   {
-    label: 'Attendance',
-    to: '/attendance',
-    role: 'teacher',
+    label: 'Notifications',
+    to: '/notifications',
+    role: ['admin', 'registrar'],
+    icon: Bell,
+  },
+  {
+    label: 'My Schedule',
+    to: '/teacher/schedule',
+    role: ['teacher'],
     icon: Clock,
+  },
+  {
+    label: 'Grade Book',
+    to: '/teacher/grades',
+    role: ['teacher'],
+    icon: GraduationCap,
+    group: 'Teaching',
+  },
+  {
+    label: 'Materials',
+    to: '/teacher/materials',
+    role: ['teacher'],
+    icon: BookMarked,
+    group: 'Teaching',
+  },
+  {
+    label: 'Notifications',
+    to: '/notifications',
+    role: ['teacher'],
+    icon: Bell,
   },
 ]
 

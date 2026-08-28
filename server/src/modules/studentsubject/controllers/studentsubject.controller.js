@@ -35,4 +35,13 @@ const removeSubjects = async (req, res) => {
     }
 }
 
-module.exports = {generateLoad, getStudentLoad, getMySubjects, removeSubjects};
+const generateBulkLoads = async (req, res) => {
+    try {
+        const result = await studentSubjectService.generateBulkLoads(req.body.sectionId);
+        return res.status(201).json({ success: true, message: "Bulk loads generated.", data: result });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+module.exports = {generateLoad, getStudentLoad, getMySubjects, removeSubjects, generateBulkLoads};

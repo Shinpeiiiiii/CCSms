@@ -109,3 +109,39 @@ export const getCurriculumHistory = async (id) => {
     const response = await api.get(`/curriculum/${id}/history`);
     return response.data;
 }
+
+/*
+=====================================
+Templates
+=====================================
+*/
+
+export const getTemplates = async () => {
+    const { data } = await api.get('/curriculum/templates')
+    return data;
+}
+
+export const saveAsTemplate = async (curriculumId, name) => {
+    const { data } = await api.post(`/curriculum/${curriculumId}/template`, { name })
+    return data;
+}
+
+export const createCurriculumFromTemplate = async (templateId, formData) => {
+    const { data } = await api.post(`/curriculum/from-template/${templateId}`, formData)
+    return data;
+}
+
+export const exportCurriculum = async (id) => {
+    const { data } = await api.get(`/curriculum/${id}/export`)
+    return data;
+}
+
+export const importCurriculum = async (payload) => {
+    const { data } = await api.post('/curriculum/import', payload)
+    return data;
+}
+
+export const deleteCurriculumsBatch = async (ids) => {
+    const { data } = await api.post('/curriculum/batch', { ids })
+    return data;
+}

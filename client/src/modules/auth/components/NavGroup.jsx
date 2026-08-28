@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import NavItem from './NavItem';
 
-const NavGroup = ({ label, items, isFirst = false, isOpen = true, onToggle }) => {
+const NavGroup = ({ label, items, isFirst = false, isOpen = true, onToggle, isCollapsed = false }) => {
   const contentRef = useRef(null);
   const [contentHeight, setContentHeight] = useState(() => (isOpen ? 'auto' : '0px'));
   const previousOpenRef = useRef(isOpen);
@@ -23,6 +23,34 @@ const NavGroup = ({ label, items, isFirst = false, isOpen = true, onToggle }) =>
       setContentHeight(isOpen ? `${contentRef.current.scrollHeight}px` : '0px');
     }
   }, [isOpen]);
+
+  // When collapsed, hide group header and divider — just show the items
+  if (isCollapsed) {
+    return (
+      <div role="group" aria-label={label} style={{ width: '100%' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+            width: '100%',
+          }}
+        >
+          {items.map(({ label: itemLabel, to, icon, isActive, onClick }) => (
+            <NavItem
+              key={itemLabel}
+              label={itemLabel}
+              to={to}
+              icon={icon}
+              isActive={isActive}
+              onClick={onClick}
+              isCollapsed={isCollapsed}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div role="group" aria-label={label}>
@@ -117,6 +145,7 @@ const NavGroup = ({ label, items, isFirst = false, isOpen = true, onToggle }) =>
               icon={icon}
               isActive={isActive}
               onClick={onClick}
+              isCollapsed={isCollapsed}
             />
           ))}
         </div>

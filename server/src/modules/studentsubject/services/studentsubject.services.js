@@ -115,4 +115,62 @@ const removeSubjects = async(studentId) => {
     await subject.deleteOne();
 }
 
-module.exports = {generateLoad, getStudentLoad, getMySubjects, removeSubjects};
+const generateBulkLoads = async (sectionId) => {
+    const section = await Section.findById(sectionId).populate("curriculum");
+    if (!section) {
+        throw new Error("Section not found.");
+    }
+
+    const enrollmentPeriod = await EnrollmentPeriod.findOne({ status: "Open" });
+    if (!enrollmentPeriod) {
+        throw new Error("There is no open enrollment period.");
+    }
+
+    const sectionSubjects = await SectionSubject.find({
+        section: section._id,
+    }).populate("subject");
+
+    if (!sectionSubjects.length) {
+        throw new Error("No section subjects found for this section.");
+    }
+
+    const students = await Student.find({ section: section._id, status: "Active" });
+    if (!students.length) {
+        throw new Error("No active students found in this section.");
+    }
+
+    let created = 0;
+    let skipped = 0;
+    const errors = [];
+
+    for (const student of students) {
+        const existing = await StudentSubject.find({
+            student: student._id,
+            enrollmentPeriod: enrollmentPeriod._id,
+        });
+
+        if (existing.length) {
+            skipped++;
+            continue;
+        }
+
+        const documents = sectionSubjects.map(ss => ({
+            student: student._id,
+            section: ss.section,
+            subject: ss.subject._id,
+            enrollmentPeriod: enrollmentPeriod._id,
+            academicYear: enrollmentPeriod.academicYear,
+            yearLevel: section.yearLevel,
+            semester: ss.semester || enrollmentPeriod.semester,
+            units: ss.subject?.units || 0,
+            status: "Loaded",
+        }));
+
+        await StudentSubject.insertMany(documents);
+        created++;
+    }
+
+    return { created, skipped, total: students.length };
+};
+
+module.exports = {generateLoad, getStudentLoad, getMySubjects, removeSubjects, generateBulkLoads};

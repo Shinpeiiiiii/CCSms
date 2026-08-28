@@ -4,15 +4,13 @@ import useAuthStore from '../state/auth-store';
 import NAV_ITEMS from '../config/navigation';
 import NavItem from './NavItem';
 import NavGroup from './NavGroup';
-import { Layers, X } from 'lucide-react';
+import { Layers, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 const UserMenu = React.lazy(() => import('./UserMenu'));
 
-// Module-level state survives component unmounts/remounts
-// (needed because each page creates its own DashboardLayout instance)
 const sidebarCollapseState = {};
 
-const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
+const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false, isCollapsed = false, onToggleCollapse = () => {} }) => {
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
 
@@ -81,8 +79,6 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
     return { groups, ungrouped };
   }, [visibleNav]);
 
-  // Memoize rendered items to prevent NavGroup from recalculating
-  // its collapsible height on every location change.
   const renderedUngrouped = useMemo(
     () =>
       groupedNav.ungrouped.map(({ label, to, icon }) => ({
@@ -110,8 +106,6 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
     [groupedNav.groups, location.pathname, onClose]
   );
 
-  // Persist group collapse state outside React lifecycle
-  // so it survives Sidebar remounts (each page wraps its own DashboardLayout)
   const [collapsedGroups, setCollapsedGroups] = useState(() => sidebarCollapseState);
 
   const isGroupOpen = useCallback(
@@ -122,14 +116,16 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
   const toggleGroup = useCallback((groupLabel) => {
     setCollapsedGroups((prev) => {
       const next = { ...prev, [groupLabel]: !prev[groupLabel] };
-      // Sync to module-level so it persists across remounts
       Object.assign(sidebarCollapseState, next);
       return next;
     });
   }, []);
 
+  // Determine sidebar width
+  const sidebarWidth = isMobile ? '100%' : isCollapsed ? '72px' : '275px';
+
   const sidebarBaseStyles = {
-    width: '275px',
+    width: sidebarWidth,
     backgroundColor: '#FFFFFF',
     borderRight: '1px solid #E5E7EB',
     display: 'flex',
@@ -155,9 +151,12 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
         ...sidebarBaseStyles,
         minHeight: '100vh',
         height: '100vh',
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
-        flexShrink: 0,
+        left: 0,
+        bottom: 0,
+        zIndex: 100,
+        transition: 'width 250ms ease-in-out',
       };
 
   return (
@@ -167,95 +166,144 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '20px',
+          justifyContent: isCollapsed ? 'center' : 'space-between',
+          padding: isCollapsed ? '20px 0' : '20px',
           borderBottom: '1px solid #F1F5F9',
           flexShrink: 0,
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            minWidth: 0,
-          }}
-        >
-          <div
+        {isCollapsed ? (
+          <button
+            onClick={onToggleCollapse}
+            aria-label="Expand sidebar"
             style={{
               width: '36px',
               height: '36px',
-              backgroundColor: '#111827',
-              borderRadius: '10px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              flexShrink: 0,
-              color: '#FFFFFF',
-            }}
-          >
-            <Layers size={19} strokeWidth={1.75} />
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              minWidth: 0,
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "'Sora', 'Inter', sans-serif",
-                fontWeight: 700,
-                fontSize: '15px',
-                color: '#111827',
-                letterSpacing: '-0.02em',
-                lineHeight: 1.3,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              SPMS
-            </span>
-            <span
-              style={{
-                fontSize: '11px',
-                color: '#6B7280',
-                fontWeight: 500,
-                letterSpacing: '0.04em',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Teacher Portal
-            </span>
-          </div>
-        </div>
-
-        {isMobile && (
-          <button
-            onClick={onClose}
-            aria-label="Close Sidebar"
-            style={{
               color: '#6B7280',
               cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '36px',
-              height: '36px',
-              borderRadius: '8px',
-              transition: 'background-color 200ms ease-in-out, color 200ms ease-in-out',
               outline: 'none',
               backgroundColor: 'transparent',
               border: 'none',
+              borderRadius: 0,
+              transition: 'all 0.15s',
             }}
-            className="close-sidebar-btn focus-visible:ring-2 focus-visible:ring-slate-900/20"
+            className="sidebar-toggle-btn"
           >
-            <X size={18} strokeWidth={1.75} />
+            <PanelLeftOpen size={19} strokeWidth={1.75} />
           </button>
+        ) : (
+          <>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                minWidth: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  backgroundColor: '#111827',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  color: '#FFFFFF',
+                }}
+              >
+                <Layers size={19} strokeWidth={1.75} />
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minWidth: 0,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'Sora', 'Inter', sans-serif",
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    color: '#111827',
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.3,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  SPMS
+                </span>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    color: '#6B7280',
+                    fontWeight: 500,
+                    letterSpacing: '0.04em',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Teacher Portal
+                </span>
+              </div>
+            </div>
+
+            {isMobile ? (
+              <button
+                onClick={onClose}
+                aria-label="Close Sidebar"
+                style={{
+                  color: '#6B7280',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  transition: 'background-color 200ms ease-in-out, color 200ms ease-in-out',
+                  outline: 'none',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                }}
+                className="close-sidebar-btn focus-visible:ring-2 focus-visible:ring-slate-900/20"
+              >
+                <X size={18} strokeWidth={1.75} />
+              </button>
+            ) : (
+              <button
+                onClick={onToggleCollapse}
+                aria-label="Collapse sidebar"
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#6B7280',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderRadius: 0,
+                  transition: 'all 0.15s',
+                  flexShrink: 0,
+                }}
+                className="sidebar-toggle-btn"
+              >
+                <PanelLeftClose size={18} strokeWidth={1.75} />
+              </button>
+            )}
+          </>
         )}
       </div>
 
@@ -265,15 +313,16 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
           display: 'flex',
           flexDirection: 'column',
           flex: 1,
-          padding: '16px 18px',
+          padding: isCollapsed ? '16px 0' : '16px 18px',
           overflowY: 'auto',
           overflowX: 'hidden',
+          alignItems: isCollapsed ? 'center' : 'stretch',
         }}
         aria-label="Main navigation"
       >
         {groupedNav.ungrouped.length > 0 && (
           <div
-            style={{ marginBottom: '8px' }}
+            style={{ marginBottom: '8px', width: '100%' }}
             role="group"
             aria-label="Main menu"
           >
@@ -285,6 +334,7 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
                 icon={icon}
                 isActive={isActive}
                 onClick={onClick}
+                isCollapsed={isCollapsed}
               />
             ))}
           </div>
@@ -298,13 +348,14 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
             isOpen={isGroupOpen(groupLabel)}
             onToggle={() => toggleGroup(groupLabel)}
             items={items}
+            isCollapsed={isCollapsed}
           />
         ))}
       </nav>
 
       {/* User Footer */}
       <Suspense fallback={null}>
-        <UserMenu isMobile={isMobile} onClose={onClose} />
+        <UserMenu isMobile={isMobile} onClose={onClose} isCollapsed={isCollapsed} />
       </Suspense>
 
       <style>{`
@@ -325,7 +376,6 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
           to { transform: rotate(360deg); }
         }
 
-        /* Hover states for nav items */
         .nav-item-link:hover {
           background-color: #F8FAFC !important;
           color: #111827 !important;
@@ -334,30 +384,30 @@ const Sidebar = ({ isOpen = false, onClose = () => {}, isMobile = false }) => {
           color: #334155 !important;
         }
 
-        /* Hover states for group headers */
         .nav-group-header:hover {
           color: #111827 !important;
           background-color: #F8FAFC !important;
         }
 
-        /* Hover for close button */
         .close-sidebar-btn:hover {
           background-color: #F8FAFC !important;
           color: #374151 !important;
         }
 
-        /* Hover for user menu trigger */
+        .sidebar-toggle-btn:hover {
+          background-color: #F1F3F4 !important;
+          color: #202124 !important;
+        }
+
         .user-menu-trigger:hover {
           background-color: #F8FAFC !important;
           color: #374151 !important;
         }
 
-        /* Hover for logout button */
         .logout-btn:hover {
           background-color: #FEF2F2 !important;
         }
 
-        /* Custom scrollbar */
         nav::-webkit-scrollbar {
           width: 4px;
         }
