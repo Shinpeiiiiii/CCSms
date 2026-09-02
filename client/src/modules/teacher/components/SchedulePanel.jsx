@@ -73,21 +73,29 @@ const SchedulePanel = ({
             className="fixed inset-y-0 right-0 w-full sm:w-1/2 shadow-2xl z-120 flex flex-col overflow-hidden"
             initial={{ x: '100%' }}
             animate={{ x }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 50 }}
         >
             {/* ─── Header ─── */}
             <div
                 style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}
                 className="px-5 pt-5 pb-5 shrink-0"
             >
-                {/* Nav row */}
-                <div className="flex items-center justify-between" style={{ marginBottom: '16px' }}>
-                    
-                    
-                </div>
+               
 
                 {selectedEntry && (
                     <>
+                        {/* Subject title */}
+                        <h1 style={{
+                            fontSize: '1.25rem',
+                            fontWeight: '700',
+                            color: '#111827',
+                            marginBottom: '8px',
+                            lineHeight: '1.35',
+                            padding: '5px 5px 5px',
+                        }}>
+                            {selectedEntry.subject?.subjectCode} — {selectedEntry.subject?.subjectName}
+                        </h1>
+
                         {/* Badges row */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 5px 5px' }}>
                             {selectedEntry.section?.sectionCode && (
@@ -116,17 +124,7 @@ const SchedulePanel = ({
                             )}
                         </div>
 
-                        {/* Subject title */}
-                        <h1 style={{
-                            fontSize: '1.25rem',
-                            fontWeight: '700',
-                            color: '#111827',
-                            marginBottom: '8px',
-                            lineHeight: '1.35',
-                            padding: '5px 5px 5px',
-                        }}>
-                            Subject: {selectedEntry.subject?.subjectCode} — {selectedEntry.subject?.subjectName}
-                        </h1>
+                        
 
                         {/* Schedule line */}
                         <div style={{
@@ -161,7 +159,7 @@ const SchedulePanel = ({
 
             {/* ─── Tab Content with Swipe ─── */}
             <div className="flex-1 overflow-hidden min-h-0 relative">
-                <AnimatePresence mode="wait" custom={direction}>
+                <AnimatePresence initial={false} custom={direction}>
                     <motion.div
                         key={activeTab}
                         custom={direction}
@@ -170,7 +168,7 @@ const SchedulePanel = ({
                         animate="center"
                         exit="exit"
                         onAnimationComplete={handleAnimationComplete}
-                        transition={{ type: 'spring', stiffness: 900, damping: 60 }}
+                        transition={{ type: 'spring', stiffness: 1200, damping: 100 }}
                         className="absolute inset-0 overflow-y-auto"
                     >
                         {activeTab === 'students' && (

@@ -5,7 +5,7 @@ const {
     createStudent,
     getStudents,
     deleteStudent,
-    updateStudent, getMyProfile, updateMyProfile, getDashboard, getMySubjects, assignSection
+    updateStudent, getMyProfile, updateMyProfile, getDashboard, getMySubjects, assignSection, getMyGrades, getMySchedule, getMyAttendance
 } = require('../controllers/student.controller')
 
 const router = express.Router()
@@ -24,6 +24,9 @@ router.get('/profile', authMiddleware, authorizeRoles('student'), getMyProfile)
 router.put('/profile/update', authMiddleware, authorizeRoles('student'), updateMyProfile)
 router.get('/dashboard', authMiddleware, authorizeRoles('student'), getDashboard)
 router.get('/subjects', authMiddleware, authorizeRoles('student'), getMySubjects)
+router.get('/grades', authMiddleware, authorizeRoles('student'), getMyGrades)
+router.get('/schedule', authMiddleware, authorizeRoles('student'), getMySchedule)
+router.get('/attendance', authMiddleware, authorizeRoles('student'), getMyAttendance)
 
 
 module.exports = router

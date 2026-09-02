@@ -56,6 +56,21 @@ const studentSubjectSchema = new mongoose.Schema({
         default: "Loaded",
     },
 
+    prelimGrade: {
+        type: Number,
+        default: null,
+    },
+
+    midtermGrade: {
+        type: Number,
+        default: null,
+    },
+
+    finalsGrade: {
+        type: Number,
+        default: null,
+    },
+
     finalGrade: {
         type: Number,
         default: null,

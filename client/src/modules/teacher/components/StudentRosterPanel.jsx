@@ -71,7 +71,7 @@ const TabPill = ({ tab, isActive, onClick, count }) => (
         <span className="relative z-10 flex items-center gap-1.5" style={{ color: isActive ? '#fff' : '#6B7280' }}>
             {tab.label}
             {isActive && count != null && (
-                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white/20 rounded-full">
+                <span className="inline-flex items-center justify-center min-w-4.5 h-4.5 px-1 text-[10px] font-bold bg-white/20 rounded-full">
                     {count}
                 </span>
             )}
@@ -138,6 +138,14 @@ const StudentRosterPanel = ({
         onTabChange?.(tabId);
     };
 
+    const handleClose = () => {
+        setSearch('');
+        setSort('name-asc');
+        setSortOpen(false);
+        setInternalTab('students');
+        onClose?.();
+    };
+
     useEffect(() => {
         if (!sortOpen) return;
         const handleClick = (e) => {
@@ -148,15 +156,6 @@ const StudentRosterPanel = ({
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
     }, [sortOpen]);
-
-    useEffect(() => {
-        if (!isOpen) {
-            setSearch('');
-            setSort('name-asc');
-            setSortOpen(false);
-            setInternalTab('students');
-        }
-    }, [isOpen]);
 
     const enrichedStudents = useMemo(() => {
         return students.map((s, i) => {
@@ -205,6 +204,7 @@ const StudentRosterPanel = ({
         return list;
     }, [enrichedStudents, search, sort]);
 
+    //Active students count
     const activeCount = enrichedStudents.filter(
         (s) => s.status === 'Active'
     ).length;
@@ -218,8 +218,8 @@ const StudentRosterPanel = ({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 bg-black/30 z-[110]"
-                        onClick={onClose}
+                        className="fixed inset-0 bg-black/30 z-110"
+                        onClick={handleClose}
                     />
 
                     <motion.div
@@ -231,19 +231,19 @@ const StudentRosterPanel = ({
                             stiffness: 300,
                             damping: 30,
                         }}
-                        className="fixed inset-y-0 right-0 w-full sm:w-[440px] bg-white shadow-2xl z-[120] flex flex-col rounded-l-2xl overflow-hidden"
+                        className="fixed inset-y-0 right-0 w-full sm:w-110 bg-white shadow-2xl z-120 flex flex-col rounded-l-2xl overflow-hidden"
                     >
                         <div className="bg-gray-50 rounded-tl-2xl px-5 pt-4 pb-4 border-b border-gray-200 shrink-0">
                             <div className="flex items-center justify-between mb-3">
                                 <button
-                                    onClick={onClose}
+                                    onClick={handleClose}
                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
                                 >
                                     <ChevronLeft size={14} />
                                     Back to Classes
                                 </button>
                                 <button
-                                    onClick={onClose}
+                                    onClick={handleClose}
                                     className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
                                 >
                                     <X size={16} />

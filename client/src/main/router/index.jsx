@@ -31,17 +31,21 @@ import TeacherSchedule from '@/modules/teacher/pages/TeacherSchedule'
 import TeacherDashboard from '@/modules/teacher/pages/TeacherDashboard'
 import TeacherGrades from '@/modules/teacher/pages/TeacherGrades'
 import Notifications from '@/modules/teacher/pages/Notifications'
+import GradingSchemes from '@/modules/grading/pages/GradingSchemes'
 
 
 import MySubjects from '@/modules/students/pages/MySubjects'
 import StudentDashboard from '@/modules/students/pages/StudentDashboard'
 import MyProfile from '@/modules/students/pages/MyProfile'
+import MyGrades from '@/modules/students/pages/MyGrades'
+import MySchedule from '@/modules/students/pages/MySchedule'
+import MyAttendance from '@/modules/students/pages/MyAttendance'
 
 const TeacherMaterials = React.lazy(() => import('@/modules/teacher/pages/TeacherMaterials'))
 const StudentMaterials = React.lazy(() => import('@/modules/students/pages/StudentMaterials'))
 
 const LoadingFallback = () => (
-    <div className="flex items-center justify-center min-h-[400px]">
+    <div className="flex items-center justify-center min-h-100">
         <div className="text-sm text-gray-500">Loading...</div>
     </div>
 )
@@ -184,6 +188,12 @@ const Router = () => {
                     </RoleProtectedRoute>
                 }
                 />
+                <Route path="/academic/grading" element={
+                    <RoleProtectedRoute allowedRoles={['admin']}>
+                        <GradingSchemes />
+                    </RoleProtectedRoute>
+                }
+                />
                 <Route path='/student/subjects' element={
                     <RoleProtectedRoute allowedRoles={['student']}>
                         <MySubjects/>
@@ -199,6 +209,24 @@ const Router = () => {
                 <Route path='/student/profile' element={
                     <RoleProtectedRoute allowedRoles={['student']}>
                         <MyProfile/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/student/grades' element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <MyGrades/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/student/schedule' element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <MySchedule/>
+                    </RoleProtectedRoute>
+                }
+                />
+                <Route path='/student/attendance' element={
+                    <RoleProtectedRoute allowedRoles={['student']}>
+                        <MyAttendance/>
                     </RoleProtectedRoute>
                 }
                 />

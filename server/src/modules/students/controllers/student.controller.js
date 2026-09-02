@@ -169,9 +169,39 @@ const assignSection = async (req, res) => {
     }
 }
 
+const getMyGrades = async (req, res) => {
+    try {
+        const grades = await studentService.getMyGrades(req.user.id);
+        return res.json({ success: true, data: grades });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+const getMySchedule = async (req, res) => {
+    try {
+        const schedule = await studentService.getMySchedule(req.user.id);
+        return res.json({ success: true, data: schedule });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+const getMyAttendance = async (req, res) => {
+    try {
+        const attendance = await studentService.getMyAttendance(req.user.id);
+        return res.json({ success: true, data: attendance });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     createStudent,
     getStudents,
     deleteStudent,
     updateStudent, getMyProfile, updateMyProfile, getDashboard, getMySubjects, assignSection,
+    getMyGrades,
+    getMySchedule,
+    getMyAttendance,
 }

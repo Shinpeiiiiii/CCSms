@@ -33,3 +33,18 @@ export const studentDashboard = async () => {
         return response.data;
 }
 
+export const getMyGrades = async () => {
+    const response = await api.get('/students/grades');
+    return response.data;
+}
+
+export const getMySchedule = async () => {
+    const response = await api.get('/students/schedule');
+    return response.data;
+}
+
+export const getMyAttendance = async () => {
+    const response = await api.get('/students/attendance');
+    return response.data;
+}
+

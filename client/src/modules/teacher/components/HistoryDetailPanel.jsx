@@ -34,7 +34,6 @@ const itemVariants = {
 };
 
 const HistoryDetailPanel = ({
-    historyPanelOpen,
     historyDetail,
     historyDetailLoading,
     onClose,
@@ -78,11 +77,11 @@ const HistoryDetailPanel = ({
 
     return (
         <motion.div
-            className="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl z-[130]"
-            initial={{ x: SECONDARY_PANEL_WIDTH + 40, opacity: 0 }}
+            className="fixed inset-y-0 right-0 w-full sm:w-105 bg-white shadow-2xl z-130"
+            initial={{ x: SECONDARY_PANEL_WIDTH + 40, opacity: 0.5 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: SECONDARY_PANEL_WIDTH + 40, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            exit={{ x: SECONDARY_PANEL_WIDTH + 40, opacity: 0.5 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 50 }}
         >
             <div className="flex flex-col h-full">
                 {/* Header */}

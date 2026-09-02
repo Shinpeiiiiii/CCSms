@@ -1,6 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import useAuthStore from '../state/auth-store'
 import { Menu, Bell } from 'lucide-react'
+import { getUnreadNotificationCount } from '@/modules/teacher/services/teacher.service'
 
 const PAGE_TITLES = {
   '/dashboard': 'Dashboard',
@@ -17,6 +19,23 @@ const Topbar = ({ onToggleSidebar = () => {}, isMobile = false }) => {
   const location = useLocation()
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    let active = true
+    const load = async () => {
+      try {
+        const res = await getUnreadNotificationCount()
+        if (active) setUnreadCount(res?.count ?? 0)
+      } catch {
+        /* ignore */
+      }
+    }
+    load()
+    return () => {
+      active = false
+    }
+  }, [location.pathname])
 
   const pageTitle = PAGE_TITLES[location.pathname] || 'Portal'
 
@@ -92,10 +111,32 @@ const Topbar = ({ onToggleSidebar = () => {}, isMobile = false }) => {
         {/* Notification bell */}
         <button
           aria-label="Notifications"
-          style={toggleBtnStyle}
+          onClick={() => navigate('/notifications')}
+          style={{ ...toggleBtnStyle, position: 'relative' }}
           className="topbar-toggle-btn"
         >
           <Bell size={20} />
+          {unreadCount > 0 && (
+            <span
+              style={{
+                position: 'absolute',
+                top: 6,
+                right: 6,
+                minWidth: 16,
+                height: 16,
+                borderRadius: 8,
+                background: '#EA4335',
+                color: '#FFF',
+                fontSize: 10,
+                fontWeight: 700,
+                lineHeight: '16px',
+                textAlign: 'center',
+                padding: '0 4px',
+              }}
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
         </button>
 
         {/* Separator */}

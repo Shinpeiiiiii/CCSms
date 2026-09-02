@@ -14,6 +14,7 @@ import {
   Users,
   Bell,
   BookMarked,
+  CalendarDays,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -49,6 +50,30 @@ const NAV_ITEMS = [
     role: ['student'],
     to: '/student/materials',
     icon: BookMarked,
+  },
+  {
+    label: 'My Grades',
+    role: ['student'],
+    to: '/student/grades',
+    icon: Star,
+  },
+  {
+    label: 'My Schedule',
+    role: ['student'],
+    to: '/student/schedule',
+    icon: Clock,
+  },
+  {
+    label: 'My Attendance',
+    role: ['student'],
+    to: '/student/attendance',
+    icon: CalendarDays,
+  },
+  {
+    label: 'Notifications',
+    role: ['student'],
+    to: '/notifications',
+    icon: Bell,
   },
   {
     label: 'Department',
@@ -119,16 +144,17 @@ const NAV_ITEMS = [
     group: 'Academic',
   },
   {
+    label: 'Grading Scheme',
+    to: '/academic/grading',
+    role: ['admin'],
+    icon: Star,
+    group: 'Academic',
+  },
+  {
     label: 'Students',
     to: '/student',
     role: ['admin', 'registrar'],
     icon: UserIcon,
-    group: 'Students',
-  },
-  {
-    label: 'Grades',
-    to: '/grade',
-    icon: Star,
     group: 'Students',
   },
   {

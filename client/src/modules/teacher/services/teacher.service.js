@@ -57,7 +57,7 @@ export const getMyNotifications = async () => {
 
 export const getUnreadNotificationCount = async () => {
     const response = await api.get('/notifications/unread-count')
-    return response.data
+    return response.data?.data || { count: 0 }
 }
 
 export const markNotificationRead = async (id) => {

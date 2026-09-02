@@ -31,6 +31,7 @@ const sectionsubjectModel = require('./modules/sectionsubject/models/sectionsubj
 const attendanceRoutes = require('./modules/attendance/routes/attendance.routes')
 const notificationRoutes = require('./modules/notification/routes/notification.routes')
 const materialRoutes = require('./modules/materials/routes/material.routes')
+const gradingRoutes = require('./modules/grading/routes/grading.routes')
 connectDB()
 const app = express()
 app.use(cookieParser());
@@ -79,6 +80,7 @@ app.use('/api/section-subject', sectionSubjectRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/materials', materialRoutes);
+app.use('/api/grading', gradingRoutes);
 
 // Serve uploaded files
 const path = require('path');
