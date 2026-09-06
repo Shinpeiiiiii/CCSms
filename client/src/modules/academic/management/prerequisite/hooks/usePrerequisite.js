@@ -1,58 +1,48 @@
-import { useEffect, useState } from "react";
-
-import {
-    getPrerequisite,
-} from "../services/prerequisite.services";
+import { useCallback } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
+import { getPrerequisite, createPrerequisite, updatePrerequisite, deactivatePrerequisite } from "../services/prerequisite.services";
 
 const usePrerequisite = () => {
 
-    const [prerequisites, setPrerequisites] = useState([]);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(true);
+    const {
+        data: prerequisites = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.PREREQUISITES,
+        queryFn: getPrerequisite,
+    });
 
-    const loadPrerequisites = async () => {
+    const refreshPrerequisites = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PREREQUISITES }),
+        [queryClient]
+    );
 
-        try {
+    const create = useMutation({
+        mutationFn: createPrerequisite,
+        onSuccess: refreshPrerequisites,
+    });
 
-            const data = await getPrerequisite();
+    const update = useMutation({
+        mutationFn: ({ id, data }) => updatePrerequisite(id, data),
+        onSuccess: refreshPrerequisites,
+    });
 
-            setPrerequisites(data);
-
-        }
-
-        catch (error) {
-
-            console.error(
-                "Failed to load prerequisites:",
-                error
-            );
-
-        }
-
-        finally {
-
-            setLoading(false);
-
-        }
-
-    };
-
-    useEffect(() => {
-
-        loadPrerequisites();
-
-    }, []);
+    const deactivate = useMutation({
+        mutationFn: deactivatePrerequisite,
+        onSuccess: refreshPrerequisites,
+    });
 
     return {
-
         prerequisites,
-
         loading,
-
-        refreshPrerequisites: loadPrerequisites,
-
+        refreshPrerequisites,
+        create,
+        update,
+        deactivate,
     };
-
 };
 
 export default usePrerequisite;

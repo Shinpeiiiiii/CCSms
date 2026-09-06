@@ -1,7 +1,8 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import Card from '@/components/cards/Cards';
 import EmptyState from '../components/EmptyState';
@@ -15,44 +16,64 @@ import {
     getAttendanceByDate,
     markAttendance,
 } from '../services/teacher.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 
 const TeacherSchedule = () => {
-    const [schedule, setSchedule] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
 
     // Main panel
     const [panelOpen, setPanelOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState(null);
     const [activeTab, setActiveTab] = useState('students');
 
-    // Students
-    const [roster, setRoster] = useState(null);
-    const [rosterLoading, setRosterLoading] = useState(false);
-
     // Attendance
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-    const [attendanceData, setAttendanceData] = useState(null);
-    const [attendanceLoading, setAttendanceLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
     // Secondary panel (history detail)
     const [historyPanelOpen, setHistoryPanelOpen] = useState(false);
-    const [historyDetail, setHistoryDetail] = useState(null);
-    const [historyDetailLoading, setHistoryDetailLoading] = useState(false);
+    const [historySelectedDate, setHistorySelectedDate] = useState(null);
 
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await getMySchedule();
-                setSchedule(res.data || []);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
+    const { data: schedule = [], isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.MY_SCHEDULE,
+        queryFn: getMySchedule,
+        select: (data) => data?.data || data || [],
+        refetchOnWindowFocus: true,
+    });
+
+    const selectedEntryId = selectedEntry?._id;
+
+    const { data: roster, isLoading: rosterLoading } = useQuery({
+        queryKey: QUERY_KEYS.CLASS_STUDENTS(selectedEntryId),
+        queryFn: () => getClassStudents(selectedEntryId),
+        enabled: !!selectedEntryId && panelOpen && activeTab === 'students',
+        select: (data) => data?.data || data,
+    });
+
+    const { data: attendanceData, isLoading: attendanceLoading } = useQuery({
+        queryKey: ['attendance', selectedEntryId, selectedDate],
+        queryFn: () => getAttendanceByDate(selectedEntryId, selectedDate),
+        enabled: !!selectedEntryId && panelOpen && activeTab === 'attendance',
+        select: (data) => data?.data || data,
+    });
+
+    const { data: historyDetail, isLoading: historyDetailLoading } = useQuery({
+        queryKey: ['attendance-history', selectedEntryId, historySelectedDate],
+        queryFn: () => getAttendanceByDate(selectedEntryId, historySelectedDate),
+        enabled: !!selectedEntryId && !!historySelectedDate && historyPanelOpen,
+        select: (data) => data?.data || null,
+    });
+
+    const saveAttendanceMutation = useMutation({
+        mutationFn: markAttendance,
+        onSuccess: () => {
+            toast.success('Attendance saved successfully');
+            queryClient.invalidateQueries({ queryKey: ['attendance', selectedEntryId, selectedDate] });
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.message || 'Failed to save attendance');
+        },
+    });
 
     const stats = useMemo(() => {
         const uniqueSubjects = new Set(schedule.map(s => s.subject?._id)).size;
@@ -74,104 +95,55 @@ const TeacherSchedule = () => {
         return map;
     }, [schedule]);
 
-    const handleEntryClick = useCallback(async (entry) => {
+    const handleEntryClick = useCallback((entry) => {
         setSelectedEntry(entry);
         setActiveTab('students');
         setPanelOpen(true);
         setHistoryPanelOpen(false);
-        setHistoryDetail(null);
-        setRosterLoading(true);
-        setRoster(null);
-        setAttendanceData(null);
-        try {
-            const res = await getClassStudents(entry._id);
-            setRoster(res.data);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setRosterLoading(false);
-        }
     }, []);
 
-    const handleTabChange = useCallback(async (tab) => {
+    const handleTabChange = useCallback((tab) => {
         if (!selectedEntry) return;
         setActiveTab(tab);
         if (tab !== 'history') {
             setHistoryPanelOpen(false);
-            setHistoryDetail(null);
         }
-        if (tab === 'attendance' && !attendanceData) {
-            setAttendanceLoading(true);
-            try {
-                const res = await getAttendanceByDate(selectedEntry._id, selectedDate);
-                setAttendanceData(res.data);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setAttendanceLoading(false);
-            }
-        }
-    }, [selectedEntry, attendanceData, selectedDate]);
+    }, [selectedEntry]);
 
-    const handleDateChange = useCallback(async (newDate) => {
+    const handleDateChange = useCallback((newDate) => {
         setSelectedDate(newDate);
-        if (selectedEntry && activeTab === 'attendance') {
-            setAttendanceLoading(true);
-            try {
-                const res = await getAttendanceByDate(selectedEntry._id, newDate);
-                setAttendanceData(res.data);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setAttendanceLoading(false);
-            }
-        }
-    }, [selectedEntry, activeTab]);
+    }, []);
 
     const handleSaveAttendance = useCallback(async (recordsArray) => {
         if (!selectedEntry) return;
         setSaving(true);
         try {
-            await markAttendance({
+            await saveAttendanceMutation.mutateAsync({
                 sectionSubjectId: selectedEntry._id,
                 date: selectedDate,
                 records: recordsArray,
             });
-            toast.success('Attendance saved successfully');
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to save attendance');
         } finally {
             setSaving(false);
         }
-    }, [selectedEntry, selectedDate]);
+    }, [selectedEntry, selectedDate, saveAttendanceMutation]);
 
     const handleHistoryDateSelect = useCallback(async (dateKey) => {
         if (!selectedEntry) return;
         setHistoryPanelOpen(true);
-        setHistoryDetailLoading(true);
-        setHistoryDetail(null);
-        try {
-            const res = await getAttendanceByDate(selectedEntry._id, dateKey);
-            setHistoryDetail(res.data);
-        } catch {
-            setHistoryDetail(null);
-        } finally {
-            setHistoryDetailLoading(false);
-        }
+        setHistorySelectedDate(dateKey);
     }, [selectedEntry]);
 
     const closeHistoryPanel = useCallback(() => {
         setHistoryPanelOpen(false);
-        setHistoryDetail(null);
+        setHistorySelectedDate(null);
     }, []);
 
     const closePanel = useCallback(() => {
         setPanelOpen(false);
         setSelectedEntry(null);
-        setRoster(null);
-        setAttendanceData(null);
         setHistoryPanelOpen(false);
-        setHistoryDetail(null);
+        setHistorySelectedDate(null);
     }, []);
 
     if (loading) {

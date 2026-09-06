@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import TextField from "../../../../../components/forms/TextField";
 import SelectField from "../../../../../components/forms/SelectField";
@@ -7,6 +8,7 @@ import FormActions from "../../../../../components/forms/FormActions";
 import {
     getAcademicYear,
 } from "../../academicyear/services/academicyear.services";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
 
 const EnrollmentPeriodForm = ({
     initialValues = null,
@@ -14,15 +16,17 @@ const EnrollmentPeriodForm = ({
     loading = false,
 }) => {
 
-    const [academicYears, setAcademicYears] = useState([]);
+    const [form, setForm] = useState(() => ({
 
-    const [form, setForm] = useState({
-
-        enrollmentPeriodName: "",
-        academicYear: "",
-        startDate: "",
-        endDate: "",
-    });
+        enrollmentPeriodName:
+            initialValues?.enrollmentPeriodName || "",
+        academicYear:
+            initialValues?.academicYear?._id || "",
+        startDate:
+            initialValues?.startDate?.slice(0, 10) || "",
+        endDate:
+            initialValues?.endDate?.slice(0, 10) || "",
+    }));
 
     /*
     =====================================
@@ -30,64 +34,10 @@ const EnrollmentPeriodForm = ({
     =====================================
     */
 
-    useEffect(() => {
-
-        const loadAcademicYears = async () => {
-
-            try {
-
-                const data =
-                    await getAcademicYear();
-
-                setAcademicYears(data);
-
-            }
-
-            catch (error) {
-
-                console.error(error);
-
-            }
-
-        };
-
-        loadAcademicYears();
-
-    }, []);
-
-    /*
-    =====================================
-    Populate Form
-    =====================================
-    */
-
-    useEffect(() => {
-
-        if (!initialValues) {
-
-            setForm({
-                enrollmentPeriodName: "",
-                academicYear: "",
-                startDate: "",
-                endDate: "",
-            });
-
-            return;
-
-        }
-
-        setForm({
-            enrollmentPeriodName:
-                initialValues.enrollmentPeriodName || "",
-            academicYear:
-                initialValues.academicYear?._id || "",
-            startDate:
-                initialValues.startDate?.slice(0, 10) || "",
-            endDate:
-                initialValues.endDate?.slice(0, 10) || "",
-        });
-
-    }, [initialValues]);
+    const { data: academicYears = [] } = useQuery({
+        queryKey: QUERY_KEYS.ACADEMIC_YEARS,
+        queryFn: getAcademicYear,
+    });
 
     /*
     =====================================

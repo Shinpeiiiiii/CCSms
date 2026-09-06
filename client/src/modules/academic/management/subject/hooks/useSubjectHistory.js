@@ -1,52 +1,31 @@
-import { useEffect, useState } from "react";
-
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
 import { getSubjectHistory } from "../services/subject.services";
 
 const useSubjectHistory = (subjectId, isOpen) => {
 
-    const [history, setHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
 
+    const {
+        data: history = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.SUBJECT_HISTORY(subjectId),
+        queryFn: () => getSubjectHistory(subjectId),
+        enabled: !!subjectId && !!isOpen,
+    });
 
-    const loadHistory = async () => {
-        if(!subjectId){
-            setHistory([]);
-            setLoading(false);
-            return;
-        }
-
-        try {
-
-            const data = await getSubjectHistory(subjectId);
-            setHistory(data);
-        }catch(error){
-            console.error(error)
-        }
-        finally {
-            setLoading(false);
-        }
-
-    };
-    useEffect(() => {
-
-        if (isOpen && subjectId) {
-            loadHistory();
-
-        }
-    }, [subjectId, isOpen]);
-
-    
+    const referenceHistory = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUBJECT_HISTORY(subjectId) }),
+        [queryClient, subjectId]
+    );
 
     return {
-
         history,
-
         loading,
-
-        referenceHistory: loadHistory,
-
+        referenceHistory,
     };
-
 };
 
 export default useSubjectHistory;

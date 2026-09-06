@@ -1,22 +1,27 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
 import { FormSkeleton } from '@/components/toast/Skeleton'
 
 
 import {
   Loader2, AlertCircle, Mail, Key, CheckCircle2, ArrowRight, ArrowLeft, GraduationCap, User, Phone,
-  MapPin, FileText, Clock, ArrowUpRight
+  MapPin, Clock, ArrowUpRight
 } from 'lucide-react'
 import {
   getAnnouncement, sendOtp, verifyOtp, startApplication, getPrograms, submitApplicationDetails
 } from '../services/enrollmentform'
+import { QUERY_KEYS } from '@/constants/queryKey'
 
 const EnrollmentForm = () => {
   // Stepper states: 'announcement', 'otp', 'form', 'success'
   const [step, setStep] = useState('announcement')
-  const [announcement, setAnnouncement] = useState(null)
-  const [loadingAnnouncement, setLoadingAnnouncement] = useState(true)
+
+  const { data: announcement, isLoading: loadingAnnouncement } = useQuery({
+    queryKey: QUERY_KEYS.ENROLLMENT_ANNOUNCEMENT,
+    queryFn: getAnnouncement,
+  })
 
   // API interaction states
   const [email, setEmail] = useState('')
@@ -36,7 +41,6 @@ const EnrollmentForm = () => {
 
   // Error/Success Notification
   const [error, setError] = useState('')
-  const [successMsg, setSuccessMsg] = useState('')
   const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false)
 
   // Form inputs
@@ -57,21 +61,6 @@ const EnrollmentForm = () => {
   // Timer for OTP resend
   const [countdown, setCountdown] = useState(0)
 
-  // Fetch enrollment period announcement
-  useEffect(() => {
-    const fetchAnnouncement = async () => {
-      try {
-        const data = await getAnnouncement()
-        setAnnouncement(data)
-      } catch (err) {
-        console.error('Failed to load enrollment announcement', err)
-      } finally {
-        setLoadingAnnouncement(false)
-      }
-    }
-    fetchAnnouncement()
-  }, [])
-
   // Timer countdown handler
   useEffect(() => {
     if (countdown > 0) {
@@ -87,12 +76,10 @@ const EnrollmentForm = () => {
 
     setSendingOtp(true)
     setError('')
-    setSuccessMsg('')
 
     try {
       await sendOtp(email.trim())
       setCountdown(60) // Lock resend button for 60s
-      setSuccessMsg(`A verification code has been sent to ${email}`)
       setStep('otp')
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to send verification code. Please try again.'
@@ -114,7 +101,6 @@ const EnrollmentForm = () => {
 
     setVerifyingOtp(true)
     setError('')
-    setSuccessMsg('')
 
     try {
       // Verify the code

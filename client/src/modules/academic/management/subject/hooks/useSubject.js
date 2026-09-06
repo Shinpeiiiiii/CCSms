@@ -1,40 +1,48 @@
-import { useEffect, useState } from "react";
-
-import { getSubject } from "../services/subject.services";
+import { useCallback } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
+import { getSubject, createSubject, updateSubject, deleteSubject } from "../services/subject.services";
 
 const useSubject = () => {
 
-    const [subject, setSubjects] = useState([]);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(true);
+    const {
+        data: subject = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.SUBJECTS,
+        queryFn: getSubject,
+    });
 
-    const loadSubjects = async () => {
+    const refreshSubjects = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SUBJECTS }),
+        [queryClient]
+    );
 
-        try {
-            const data = await getSubject();
-            setSubjects(data);
-        }
+    const create = useMutation({
+        mutationFn: createSubject,
+        onSuccess: refreshSubjects,
+    });
 
-        catch (error) {
-            console.error(
-                "Failed to load subjects:",
-                error
-            );
-        }
-        finally {
-            setLoading(false);
-        }
-    };
-    useEffect(() => {
-        loadSubjects();
-    }, []);
+    const update = useMutation({
+        mutationFn: ({ id, data }) => updateSubject(id, data),
+        onSuccess: refreshSubjects,
+    });
+
+    const remove = useMutation({
+        mutationFn: deleteSubject,
+        onSuccess: refreshSubjects,
+    });
 
     return {
         subject,
         loading,
-        refreshSubjects: loadSubjects,
+        refreshSubjects,
+        create,
+        update,
+        remove,
     };
 };
-
 
 export default useSubject;

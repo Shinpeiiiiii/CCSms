@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import DashboardLayout from "../../../shared/layouts/DashboardLayout";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getApplications, updateApplicationStatus } from '../services/review.service'
 import StatusBadge from '../components/StatusBadge'
 import { TableSkeleton } from '@/components/toast/Skeleton'
+import { QUERY_KEYS } from '@/constants/queryKey'
 
 
 const inputStyle = {
@@ -18,49 +20,50 @@ const handleFocus = (e) => { e.target.style.borderColor = 'rgba(99,102,241,0.6)'
 const handleBlur = (e) => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; e.target.style.boxShadow = 'none' }
 
 const EnrollmentReview = () => {
-  const [applications, setApplications] = useState([])
-  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState('pending') // 'pending', 'accepted', 'rejected', 'all'
-  const [processingId, setProcessingId] = useState(null)
   const [feedback, setFeedback] = useState({ type: '', message: '' })
 
-  const fetchApplications = async () => {
-    setLoading(true)
-    try {
-      const data = await getApplications()
-      setApplications(Array.isArray(data) ? data : [])
-    } catch (e) {
-      console.error(e)
-      showFeedback('error', 'Failed to load enrollment applications.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    fetchApplications()
-  }, [])
+  const { data: applications = [], isLoading: loading } = useQuery({
+    queryKey: QUERY_KEYS.ENROLLMENT_APPLICATIONS,
+    queryFn: getApplications,
+    select: (data) => (Array.isArray(data) ? data : []),
+  })
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }) => updateApplicationStatus(id, status),
+    onMutate: async ({ id, status }) => {
+      const dbStatus = status === 'accepted' ? 'Approved' : 'Rejected';
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.ENROLLMENT_APPLICATIONS })
+      const previous = queryClient.getQueryData(QUERY_KEYS.ENROLLMENT_APPLICATIONS)
+      queryClient.setQueryData(QUERY_KEYS.ENROLLMENT_APPLICATIONS, (old) =>
+        Array.isArray(old) ? old.map(app => app._id === id ? { ...app, status: dbStatus } : app) : old
+      )
+      return { previous }
+    },
+    onError: (err, _vars, context) => {
+      console.error(err)
+      if (context?.previous) queryClient.setQueryData(QUERY_KEYS.ENROLLMENT_APPLICATIONS, context.previous)
+      showFeedback('error', err.response?.data?.message || 'Failed to update application status.')
+    },
+    onSuccess: (_res, { status }) => {
+      showFeedback('success', `Application has been successfully ${status}.`)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ENROLLMENT_APPLICATIONS })
+    },
+  })
 
   const showFeedback = (type, message) => {
     setFeedback({ type, message })
     setTimeout(() => setFeedback({ type: '', message: '' }), 4000)
   }
 
-  const handleStatusUpdate = async (id, status) => {
-    setProcessingId(id)
-    try {
-      const dbStatus = status === 'accepted' ? 'Approved' : 'Rejected';
-      await updateApplicationStatus(id, status)
-      setApplications(prev => prev.map(app => app._id === id ? { ...app, status: dbStatus } : app))
-      showFeedback('success', `Application has been successfully ${status}.`)
-    } catch (err) {
-      console.error(err)
-      showFeedback('error', err.response?.data?.message || `Failed to update application to ${status}.`)
-    } finally {
-      setProcessingId(null)
-    }
-  }
+  const processingId = statusMutation.isPending ? statusMutation.variables?.id : null
+
+  const handleStatusUpdate = (id, status) => statusMutation.mutate({ id, status })
 
   // Filter calculations
   const filtered = applications.filter(app => {
@@ -82,13 +85,6 @@ const EnrollmentReview = () => {
   const acceptedCount = applications.filter(app => (app.status || '').toLowerCase() === 'approved' || (app.status || '').toLowerCase() === 'accepted').length
   const rejectedCount = applications.filter(app => (app.status || '').toLowerCase() === 'rejected').length
   const totalCount = applications.length
-
-  const getStatusColor = (status) => {
-    const s = (status || '').toLowerCase();
-    if (s === 'accepted' || s === 'approved') return { color: '#34D399', bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.2)' }
-    if (s === 'rejected') return { color: '#F87171', bg: 'rgba(248,113,113,0.1)', border: 'rgba(248,113,113,0.2)' }
-    return { color: '#FBBF24', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.2)' }
-  }
 
   return (
     <DashboardLayout>
@@ -211,7 +207,6 @@ const EnrollmentReview = () => {
               </thead>
               <tbody>
                 {filtered.map((app, i) => {
-                  const statusColors = getStatusColor(app.status)
                   const fullName = [app.firstName, app.middleName, app.lastName].filter(Boolean).join(' ') || 'Unnamed Applicant'
                   const dateStr = app.createdAt ? new Date(app.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
                   const programName = typeof app.program === 'object' ? app.program?.programName : (app.program || '—')

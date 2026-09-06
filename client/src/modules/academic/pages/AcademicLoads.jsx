@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Eye, Layers, RotateCcw } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { getStudents } from '@/modules/students/services/student.service';
 import {
@@ -8,53 +9,35 @@ import {
   getStudentLoad,
 } from '../services/academicLoadService';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
+import { QUERY_KEYS } from '@/constants/queryKey';
 
 const AcademicLoads = () => {
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedLoad, setSelectedLoad] = useState(null);
+  const queryClient = useQueryClient();
 
-  const loadStudents = async () => {
-    try {
-      setLoading(true);
-      const data = await getStudents();
+  const { data: students = [], isLoading: loading } = useQuery({
+    queryKey: QUERY_KEYS.STUDENTS,
+    queryFn: getStudents,
+    select: (data) => (Array.isArray(data) ? data : []).filter((s) => s.section),
+  });
 
-      // only students with assigned sections
-      setStudents(data.filter((s) => s.section));
-    } catch (error) {
-      toast.error('Failed to load students.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadStudents();
-  }, []);
-
-  const handleGenerate = async (studentId) => {
-    try {
-      await generateAcademicLoad(studentId);
-
+  const generateMutation = useMutation({
+    mutationFn: (studentId) => generateAcademicLoad(studentId),
+    onSuccess: () => {
       toast.success('Academic load generated.');
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.STUDENTS });
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Failed to generate load.'),
+  });
 
-      loadStudents();
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          'Failed to generate load.'
-      );
-    }
-  };
+  const viewMutation = useMutation({
+    mutationFn: (studentId) => getStudentLoad(studentId),
+    onSuccess: (data) => setSelectedLoad(data),
+    onError: () => toast.error('Failed to load subjects.'),
+  });
 
-  const handleViewLoad = async (studentId) => {
-    try {
-      const data = await getStudentLoad(studentId);
-      setSelectedLoad(data);
-    } catch (error) {
-      toast.error('Failed to load subjects.');
-    }
-  };
+  const handleGenerate = (studentId) => generateMutation.mutate(studentId);
+  const handleViewLoad = (studentId) => viewMutation.mutate(studentId);
 
   return (
     <DashboardLayout>

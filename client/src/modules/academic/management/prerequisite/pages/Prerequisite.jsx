@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
 import Card from "../../../../../components/cards/Cards";
@@ -23,6 +23,8 @@ import {
 } from "../services/prerequisite.services";
 import { getCurriculum } from "../../curriculum/services/curriculum.services";
 import { getCurriculumSubject } from "../../curriculumsubject/services/curriculumsubject.services";
+import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
 
 const Prerequisite = () => {
     const {
@@ -33,11 +35,8 @@ const Prerequisite = () => {
 
     const {
         subject,
-        loading: subjectLoading
     } = useSubject();
 
-    const [curriculums, setCurriculums] = useState([]);
-    const [curriculumSubjectMap, setCurriculumSubjectMap] = useState({});
     const [selectedCurriculumId, setSelectedCurriculumId] = useState("");
 
     const {
@@ -58,29 +57,29 @@ const Prerequisite = () => {
     const [activeCurriculumId, setActiveCurriculumId] = useState("");
     const [useSplitModal, setUseSplitModal] = useState(false);
 
-    useEffect(() => {
-        const loadCurriculums = async () => {
-            try {
-                const data = await getCurriculum();
-                setCurriculums(data);
-                const entries = await Promise.all(
-                    data.map(async (c) => {
-                        const curriculumSubjects = await getCurriculumSubject(c._id);
-                        const subjectData = (Array.isArray(curriculumSubjects) ? curriculumSubjects : []).map(item => ({
-                            subjectId: String(item.subject?._id || item.subject),
-                            yearLevel: item.yearLevel,
-                            semester: item.semester,
-                        }));
-                        return [c._id, subjectData];
-                    })
-                );
-                setCurriculumSubjectMap(Object.fromEntries(entries));
-            } catch (error) {
-                console.error("Failed to load curriculums for prerequisite:", error);
-            }
-        };
-        loadCurriculums();
-    }, []);
+    const { data: curriculums = [] } = useQuery({
+        queryKey: QUERY_KEYS.CURRICULUMS,
+        queryFn: getCurriculum,
+    });
+
+    const { data: curriculumSubjectMap = {} } = useQuery({
+        queryKey: QUERY_KEYS.CURRICULUM_SUBJECT_MAP,
+        queryFn: async () => {
+            const entries = await Promise.all(
+                curriculums.map(async (c) => {
+                    const curriculumSubjects = await getCurriculumSubject(c._id);
+                    const subjectData = (Array.isArray(curriculumSubjects) ? curriculumSubjects : []).map((item) => ({
+                        subjectId: String(item.subject?._id || item.subject),
+                        yearLevel: item.yearLevel,
+                        semester: item.semester,
+                    }));
+                    return [c._id, subjectData];
+                })
+            );
+            return Object.fromEntries(entries);
+        },
+        enabled: curriculums.length > 0,
+    });
 
     const groupedPrerequisites = useMemo(() => {
         const keyword = search.toLowerCase();
@@ -170,7 +169,9 @@ const Prerequisite = () => {
             } else {
                 await createPrerequisite({
                     ...formData,
-                    requiredSubject: requiredSubjects,
+                    requiredSubject: Array.isArray(formData.requiredSubject)
+                        ? formData.requiredSubject[0]
+                        : formData.requiredSubject,
                 });
             }
             if (!useSplitModal) {

@@ -4,13 +4,14 @@ import {
     useQuery,
     useQueryClient,
 } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
 
 import {
-    getDepartments,
+    getDepartment,
     createDepartment,
     updateDepartment,
     deleteDepartment,
-} from "../api/department.api";
+} from "../services/department.services";
 
 const useDepartment = () => {
 
@@ -28,8 +29,8 @@ const useDepartment = () => {
         data: departments = [],
         isLoading: loading,
     } = useQuery({
-        queryKey: ["departments"],
-        queryFn: getDepartments,
+        queryKey: QUERY_KEYS.DEPARTMENTS,
+        queryFn: getDepartment,
     });
 
     /*
@@ -62,7 +63,7 @@ const useDepartment = () => {
         mutationFn: createDepartment,
         onSuccess: () =>
             queryClient.invalidateQueries({
-                queryKey: ["departments"],
+                queryKey: QUERY_KEYS.DEPARTMENTS,
             }),
     });
 
@@ -72,7 +73,7 @@ const useDepartment = () => {
 
         onSuccess: () =>
             queryClient.invalidateQueries({
-                queryKey: ["departments"],
+                queryKey: QUERY_KEYS.DEPARTMENTS,
             }),
     });
 
@@ -81,7 +82,7 @@ const useDepartment = () => {
 
         onSuccess: () =>
             queryClient.invalidateQueries({
-                queryKey: ["departments"],
+                queryKey: QUERY_KEYS.DEPARTMENTS,
             }),
     });
 

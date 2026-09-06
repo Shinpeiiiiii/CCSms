@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { BookOpen, Users, Clock, MapPin, ArrowLeft, Save, Plus, X, Upload, ChevronDown } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import Card from '@/components/cards/Cards';
 import { getMyClasses } from '../services/teacher.service';
@@ -10,17 +11,16 @@ import {
     getClassEnrollments,
     getGradeItems,
     createGradeItem,
-    updateGradeItem,
     deleteGradeItem,
     saveScores,
     listGroups,
     createGroup,
     updateGroup,
-    deleteGroup,
     computeGrades,
     saveComputedGrades,
     importScores,
 } from '@/modules/grading/services/grading.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 
 const TERMS = [
     { key: 'prelim', label: 'Prelim' },
@@ -38,23 +38,12 @@ const formatTime = (t) => {
 };
 
 const Component = () => {
-    const [classes, setClasses] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { data: classes = [], isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.MY_CLASSES,
+        queryFn: getMyClasses,
+        select: (data) => data?.data || data || [],
+    });
     const [selectedClass, setSelectedClass] = useState(null);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await getMyClasses();
-                setClasses(res.data || []);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
 
     if (loading) {
         return (
@@ -133,67 +122,61 @@ const Component = () => {
 };
 
 const Gradebook = ({ selectedClass, onBack }) => {
-    const [enrollments, setEnrollments] = useState([]);
-    const [config, setConfig] = useState(null);
-    const [items, setItems] = useState([]);
-    const [groups, setGroups] = useState([]);
     const [activeTerm, setActiveTerm] = useState('prelim');
     const [view, setView] = useState('items');
     const [results, setResults] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
 
     const sscId = selectedClass._id;
+    const queryClient = useQueryClient();
 
-    const loadAll = useCallback(async () => {
-        setLoading(true);
-        try {
-            const [enr, cfg, itms, grps] = await Promise.all([
-                getClassEnrollments(sscId),
-                getGradingConfig(sscId),
-                getGradeItems(sscId),
-                listGroups(sscId),
-            ]);
-            setEnrollments(enr.enrollments || enr.data?.enrollments || []);
-            setConfig(cfg.data || cfg);
-            setItems(itms.data || itms);
-            setGroups(grps);
-        } catch (err) {
-            console.error(err);
-            toast.error(err.response?.data?.message || 'Failed to load gradebook.');
-        } finally {
-            setLoading(false);
-        }
-    }, [sscId]);
+    const {
+        data: enrollments = [],
+        isLoading: loadingEnrollments,
+    } = useQuery({
+        queryKey: QUERY_KEYS.CLASS_STUDENTS(sscId),
+        queryFn: () => getClassEnrollments(sscId),
+        select: (res) => res.enrollments || res.data?.enrollments || [],
+    });
 
-    useEffect(() => {
-        loadAll();
-    }, [loadAll]);
+    const { data: config, isLoading: loadingConfig } = useQuery({
+        queryKey: QUERY_KEYS.GRADE_CONFIG(sscId),
+        queryFn: () => getGradingConfig(sscId),
+        select: (res) => res.data || res,
+    });
 
-    const handleCompute = async () => {
-        setSaving(true);
-        try {
-            const res = await computeGrades(sscId);
-            setResults(res.data || res);
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to compute grades.');
-        } finally {
-            setSaving(false);
-        }
-    };
+    const { data: items = [], isLoading: loadingItems } = useQuery({
+        queryKey: QUERY_KEYS.GRADE_ITEMS(sscId),
+        queryFn: () => getGradeItems(sscId),
+        select: (res) => res.data || res,
+    });
 
-    const handleSaveGrades = async () => {
-        setSaving(true);
-        try {
-            const res = await saveComputedGrades(sscId);
+    const { data: groups = [], isLoading: loadingGroups } = useQuery({
+        queryKey: QUERY_KEYS.GRADE_GROUPS(sscId),
+        queryFn: () => listGroups(sscId),
+    });
+
+    const loading = loadingEnrollments || loadingConfig || loadingItems || loadingGroups;
+
+    const refreshItems = useCallback(() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GRADE_ITEMS(sscId) }), [queryClient, sscId]);
+    const refreshGroups = useCallback(() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GRADE_GROUPS(sscId) }), [queryClient, sscId]);
+    const refreshConfig = useCallback(() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GRADE_CONFIG(sscId) }), [queryClient, sscId]);
+
+    const computeMutation = useMutation({
+        mutationFn: () => computeGrades(sscId),
+        onError: (err) => toast.error(err.response?.data?.message || 'Failed to compute grades.'),
+        onSuccess: (res) => setResults(res.data || res),
+    });
+
+    const saveMutation = useMutation({
+        mutationFn: () => saveComputedGrades(sscId),
+        onError: (err) => toast.error(err.response?.data?.message || 'Failed to save grades.'),
+        onSuccess: (res) => {
             setResults(res.data || res);
             toast.success('Grades computed and saved.');
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to save grades.');
-        } finally {
-            setSaving(false);
-        }
-    };
+        },
+    });
+
+    const saving = computeMutation.isPending || saveMutation.isPending;
 
     const info = selectedClass;
 
@@ -220,11 +203,11 @@ const Gradebook = ({ selectedClass, onBack }) => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button onClick={handleCompute} disabled={saving} className="flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50">
+                        <button onClick={() => computeMutation.mutate()} disabled={saving} className="flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50">
                             <Save size={14} />
                             {saving ? 'Working...' : 'Preview'}
                         </button>
-                        <button onClick={handleSaveGrades} disabled={saving} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50">
+                        <button onClick={() => saveMutation.mutate()} disabled={saving} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50">
                             <Save size={14} />
                             {saving ? 'Saving...' : 'Compute & Save'}
                         </button>
@@ -248,16 +231,16 @@ const Gradebook = ({ selectedClass, onBack }) => {
                                 sscId={sscId}
                                 enrollments={enrollments}
                                 items={items}
-                                setItems={setItems}
+                                refreshItems={refreshItems}
                                 groups={groups}
-                                setGroups={setGroups}
+                                refreshGroups={refreshGroups}
                                 activeTerm={activeTerm}
                                 setActiveTerm={setActiveTerm}
                                 config={config}
                             />
                         )}
-                        {view === 'setup' && <SetupView sscId={sscId} config={config} setConfig={setConfig} />}
-                        {view === 'results' && <ResultsView results={results} enrollments={enrollments} onPreview={handleCompute} />}
+                        {view === 'setup' && <SetupView sscId={sscId} config={config} refreshConfig={refreshConfig} />}
+                        {view === 'results' && <ResultsView results={results} />}
                     </>
                 )}
             </div>
@@ -276,7 +259,7 @@ const TabBtn = ({ active, onClick, children }) => (
     </button>
 );
 
-const ItemsView = ({ sscId, enrollments, items, setItems, groups, setGroups, activeTerm, setActiveTerm, config }) => {
+const ItemsView = ({ sscId, enrollments, items, refreshItems, groups, refreshGroups, activeTerm, setActiveTerm, config }) => {
     const [showModal, setShowModal] = useState(false);
     const [showImport, setShowImport] = useState(false);
     const [expanded, setExpanded] = useState(null);
@@ -349,8 +332,8 @@ const ItemsView = ({ sscId, enrollments, items, setItems, groups, setGroups, act
                             onToggle={() => setExpanded(expanded === item._id ? null : item._id)}
                             enrollments={enrollments}
                             groups={groups}
-                            setGroups={setGroups}
-                            setItems={setItems}
+                            refreshGroups={refreshGroups}
+                            refreshItems={refreshItems}
                         />
                     ))}
                 </div>
@@ -362,8 +345,8 @@ const ItemsView = ({ sscId, enrollments, items, setItems, groups, setGroups, act
                     defaultTerm={activeTerm}
                     categories={configCategories}
                     onClose={() => setShowModal(false)}
-                    onCreated={(item) => {
-                        setItems((prev) => [...prev, item]);
+                    onCreated={() => {
+                        refreshItems();
                         setShowModal(false);
                     }}
                 />
@@ -375,14 +358,17 @@ const ItemsView = ({ sscId, enrollments, items, setItems, groups, setGroups, act
                     activeTerm={activeTerm}
                     items={items}
                     onClose={() => setShowImport(false)}
-                    onImported={() => setShowImport(false)}
+                    onImported={() => {
+                        refreshItems();
+                        setShowImport(false);
+                    }}
                 />
             )}
         </div>
     );
 };
 
-const ItemCard = ({ item, expanded, onToggle, enrollments, groups, setGroups, setItems }) => {
+const ItemCard = ({ item, expanded, onToggle, enrollments, groups, refreshGroups, refreshItems }) => {
     const [values, setValues] = useState({});
     const [saving, setSaving] = useState(false);
     const isGroup = item.isGroup;
@@ -411,7 +397,8 @@ const ItemCard = ({ item, expanded, onToggle, enrollments, groups, setGroups, se
         if (!window.confirm('Delete this item and all its scores?')) return;
         try {
             await deleteGradeItem(item._id);
-            setItems((prev) => prev.filter((i) => i._id !== item._id));
+            refreshItems();
+            refreshGroups();
             toast.success('Item deleted.');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to delete item.');
@@ -443,7 +430,7 @@ const ItemCard = ({ item, expanded, onToggle, enrollments, groups, setGroups, se
                 {expanded && (
                     <div className="mt-4 space-y-4">
                         {isGroup ? (
-                            <GroupEditor item={item} group={group} groups={groups} setGroups={setGroups} values={values} setValues={setValues} enrollments={enrollments} sscId={item.sectionSubject} />
+                            <GroupEditor item={item} group={group} refreshGroups={refreshGroups} values={values} setValues={setValues} enrollments={enrollments} sscId={item.sectionSubject} />
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
@@ -491,7 +478,7 @@ const ItemCard = ({ item, expanded, onToggle, enrollments, groups, setGroups, se
     );
 };
 
-const GroupEditor = ({ item, group, groups, setGroups, values, setValues, enrollments, sscId }) => {
+const GroupEditor = ({ item, group, refreshGroups, values, setValues, enrollments, sscId }) => {
     const [members, setMembers] = useState(group ? group.members.map((m) => String(m.student?._id || m.student)) : []);
     const [selected, setSelected] = useState('');
 
@@ -515,14 +502,14 @@ const GroupEditor = ({ item, group, groups, setGroups, values, setValues, enroll
                                 const newMembers = [...members, selected];
                                 const grp = group || { sectionSubject: sscId, name: item.title, members: [] };
                                 if (group) {
-                                    const res = await updateGroup(group._id, {
+                                    await updateGroup(group._id, {
                                         name: grp.name,
                                         members: newMembers.map((id) => ({ student: id })),
                                     });
-                                    setGroups((prev) => prev.map((g) => (g._id === res._id ? { ...g, ...res } : g)));
+                                    refreshGroups();
                                 } else {
-                                    const res = await createGroup({ sectionSubject: sscId, name: item.title, memberIds: newMembers });
-                                    setGroups((prev) => [...prev, res]);
+                                    await createGroup({ sectionSubject: sscId, name: item.title, memberIds: newMembers });
+                                    refreshGroups();
                                 }
                                 setMembers(newMembers);
                                 setSelected('');
@@ -675,7 +662,7 @@ const ItemModal = ({ sscId, defaultTerm, categories, onClose, onCreated }) => {
 const ImportModal = ({ sscId, activeTerm, items, onClose, onImported }) => {
     const [selectedItems, setSelectedItems] = useState([]);
     const [csv, setCsv] = useState('');
-    const [file, setFile] = useState(null);
+    const [, setFile] = useState(null);
     const [importing, setImporting] = useState(false);
 
     const termItems = items.filter((i) => i.term === activeTerm);
@@ -772,7 +759,7 @@ const Field = ({ label, children }) => (
     </div>
 );
 
-const SetupView = ({ sscId, config, setConfig }) => {
+const SetupView = ({ sscId, config, refreshConfig }) => {
     const [cats, setCats] = useState(
         (config?.categories || []).map((c) => ({ key: c.key, label: c.label, weight: c.weight }))
     );
@@ -789,12 +776,12 @@ const SetupView = ({ sscId, config, setConfig }) => {
         }
         setSaving(true);
         try {
-            const res = await updateGradingConfig(sscId, {
+            await updateGradingConfig(sscId, {
                 categories: cats.map((c) => ({ key: c.key, label: c.label, weight: Number(c.weight) })),
                 termWeights,
                 passingGrade: Number(passing),
             });
-            setConfig(res.data || res);
+            refreshConfig();
             toast.success('Grading setup saved.');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to save setup.');
@@ -872,7 +859,7 @@ const SetupView = ({ sscId, config, setConfig }) => {
     );
 };
 
-const ResultsView = ({ results, enrollments, onPreview }) => {
+const ResultsView = ({ results }) => {
     if (!results) {
         return (
             <Card>

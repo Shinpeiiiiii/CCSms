@@ -1,32 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { BookOpen, Search } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useQuery } from '@tanstack/react-query';
 
 import { getMySubjects } from '../services/studentSubjectService';
+import { QUERY_KEYS } from '@/constants/queryKey';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 
 const MySubjects = () => {
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
-  const loadSubjects = async () => {
-    try {
-      setLoading(true);
-      const data = await getMySubjects();
-      setSubjects(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to load subjects.');
-      setSubjects([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSubjects();
-  }, []);
+  const { data: subjects = [], isLoading: loading } = useQuery({
+    queryKey: QUERY_KEYS.STUDENT_SUBJECTS,
+    queryFn: getMySubjects,
+    select: (data) => (Array.isArray(data) ? data : []),
+  });
 
   const filteredSubjects = useMemo(() => {
     const keyword = search.toLowerCase();

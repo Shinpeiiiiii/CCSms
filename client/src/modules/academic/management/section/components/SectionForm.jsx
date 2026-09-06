@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import TextField from "../../../../../components/forms/TextField";
 import SelectField from "../../../../../components/forms/SelectField";
@@ -7,6 +8,7 @@ import FormActions from "../../../../../components/forms/FormActions";
 import { getProgram } from "../../program/services/program.services";
 import { getCurriculum } from "../../curriculum/services/curriculum.services";
 import { getAcademicYear } from "../../academicyear/services/academicyear.services";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
 
 const SectionForm = ({
 
@@ -18,132 +20,51 @@ const SectionForm = ({
 
 }) => {
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState(() => ({
 
-        sectionCode: "",
+        sectionCode:
+            initialValues?.sectionCode || "",
 
-        sectionName: "",
+        sectionName:
+            initialValues?.sectionName || "",
 
-        program: "",
+        program:
+            initialValues?.program?._id ||
+            initialValues?.program ||
+            "",
 
-        curriculum: "",
+        curriculum:
+            initialValues?.curriculum?._id ||
+            initialValues?.curriculum ||
+            "",
 
-        academicYear: "",
+        academicYear:
+            initialValues?.academicYear?._id ||
+            initialValues?.academicYear ||
+            "",
 
-        yearLevel: 1,
+        yearLevel:
+            initialValues?.yearLevel || 1,
 
-        capacity: 40,
+        capacity:
+            initialValues?.capacity || 40,
 
+    }));
+
+    const { data: programs = [] } = useQuery({
+        queryKey: QUERY_KEYS.PROGRAMS,
+        queryFn: getProgram,
     });
 
-    const [programs, setPrograms] = useState([]);
+    const { data: curriculums = [] } = useQuery({
+        queryKey: QUERY_KEYS.CURRICULUMS,
+        queryFn: getCurriculum,
+    });
 
-    const [curriculums, setCurriculums] = useState([]);
-
-    const [academicYears, setAcademicYears] = useState([]);
-
-    useEffect(() => {
-
-        loadData();
-
-    }, []);
-
-    useEffect(() => {
-
-        if (!initialValues) {
-
-            setFormData({
-
-                sectionCode: "",
-
-                sectionName: "",
-
-                program: "",
-
-                curriculum: "",
-
-                academicYear: "",
-
-                yearLevel: 1,
-
-                capacity: 40,
-
-            });
-
-            return;
-
-        }
-
-        setFormData({
-
-            sectionCode:
-                initialValues.sectionCode || "",
-
-            sectionName:
-                initialValues.sectionName || "",
-
-            program:
-                initialValues.program?._id ||
-                initialValues.program ||
-                "",
-
-            curriculum:
-                initialValues.curriculum?._id ||
-                initialValues.curriculum ||
-                "",
-
-            academicYear:
-                initialValues.academicYear?._id ||
-                initialValues.academicYear ||
-                "",
-
-            yearLevel:
-                initialValues.yearLevel || 1,
-
-            capacity:
-                initialValues.capacity || 40,
-
-        });
-
-    }, [initialValues]);
-
-    const loadData = async () => {
-
-        try {
-
-            const [
-
-                programData,
-
-                curriculumData,
-
-                academicYearData,
-
-            ] = await Promise.all([
-
-                getProgram(),
-
-                getCurriculum(),
-
-                getAcademicYear(),
-
-            ]);
-
-            setPrograms(programData);
-
-            setCurriculums(curriculumData);
-
-            setAcademicYears(academicYearData);
-
-        }
-
-        catch (error) {
-
-            console.error(error);
-
-        }
-
-    };
+    const { data: academicYears = [] } = useQuery({
+        queryKey: QUERY_KEYS.ACADEMIC_YEARS,
+        queryFn: getAcademicYear,
+    });
 
     const handleChange = (field, value) => {
 

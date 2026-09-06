@@ -1,31 +1,47 @@
-import { useEffect, useState } from "react";
-import { getAccounts } from "../services/account.services";
+import { useCallback } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../constants/queryKey";
+import { getAccounts, createAccount, updateAccount, deleteAccount } from "../services/account.services";
 
 const useAccounts = () => {
-    const [accounts, setAccounts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
 
-    const loadAccounts = async () => {
-        try {
-            const data = await getAccounts();
-            console.log('data:', data);
-            setAccounts(data);
-        } catch (error) {
-            console.error("Failed to load accounts:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const {
+        data: accounts = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.ACCOUNTS,
+        queryFn: getAccounts,
+    });
 
-    useEffect(() => {
-        loadAccounts();
-    }, []);
+    const refreshAccounts = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ACCOUNTS }),
+        [queryClient]
+    );
+
+    const create = useMutation({
+        mutationFn: createAccount,
+        onSuccess: refreshAccounts,
+    });
+
+    const update = useMutation({
+        mutationFn: ({ id, data }) => updateAccount(id, data),
+        onSuccess: refreshAccounts,
+    });
+
+    const remove = useMutation({
+        mutationFn: deleteAccount,
+        onSuccess: refreshAccounts,
+    });
 
     return {
         accounts,
         loading,
-        refreshAccounts: loadAccounts,
+        refreshAccounts,
+        create,
+        update,
+        remove,
     };
 };
 
-export default useAccounts
+export default useAccounts;

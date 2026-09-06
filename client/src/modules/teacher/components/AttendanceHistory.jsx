@@ -1,7 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { getAttendanceCalendar } from '../services/teacher.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -37,27 +39,14 @@ const AttendanceHistory = ({ sectionSubjectId, onDateSelect }) => {
     const now = new Date();
     const [year, setYear] = useState(now.getFullYear());
     const [month, setMonth] = useState(now.getMonth() + 1);
-    const [calendarData, setCalendarData] = useState([]);
-    const [calendarLoading, setCalendarLoading] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
 
-    const loadCalendar = useCallback(async () => {
-        if (!sectionSubjectId) return;
-        setCalendarLoading(true);
-        try {
-            const res = await getAttendanceCalendar(sectionSubjectId, year, month);
-            setCalendarData(res.data || []);
-        } catch {
-            setCalendarData([]);
-        } finally {
-            setCalendarLoading(false);
-        }
-    }, [sectionSubjectId, year, month]);
-
-    useEffect(() => {
-        loadCalendar();
-        setSelectedDate(null);
-    }, [loadCalendar]);
+    const { data: calendarData = [], isLoading: calendarLoading } = useQuery({
+        queryKey: QUERY_KEYS.ATTENDANCE_CALENDAR(sectionSubjectId, year, month),
+        queryFn: () => getAttendanceCalendar(sectionSubjectId, year, month),
+        enabled: !!sectionSubjectId,
+        select: (res) => res.data || [],
+    });
 
     const handleDateClick = useCallback((dateKey) => {
         setSelectedDate(dateKey);
@@ -65,11 +54,13 @@ const AttendanceHistory = ({ sectionSubjectId, onDateSelect }) => {
     }, [onDateSelect]);
 
     const prevMonth = () => {
+        setSelectedDate(null);
         if (month === 1) { setMonth(12); setYear(y => y - 1); }
         else { setMonth(m => m - 1); }
     };
 
     const nextMonth = () => {
+        setSelectedDate(null);
         if (month === 12) { setMonth(1); setYear(y => y + 1); }
         else { setMonth(m => m + 1); }
     };

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
-import { BookOpen, Users, GraduationCap, Clock, MapPin, Calendar, ArrowRight } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, Clock, MapPin, Calendar } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import useAuthStore from '@/modules/auth/state/auth-store';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import Card from '@/components/cards/Cards';
 import { getMyDashboard } from '../services/teacher.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 
 const formatTime = (t) => {
     if (!t) return '';
@@ -16,22 +17,12 @@ const formatTime = (t) => {
 
 const TeacherDashboard = () => {
     const user = useAuthStore((s) => s.user);
-    const [dashboard, setDashboard] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await getMyDashboard();
-                setDashboard(res.data);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
+    const { data: dashboard = {}, isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.MY_DASHBOARD,
+        queryFn: getMyDashboard,
+        select: (data) => data?.data || data || {},
+        refetchOnWindowFocus: true,
+    });
 
     if (loading) {
         return (

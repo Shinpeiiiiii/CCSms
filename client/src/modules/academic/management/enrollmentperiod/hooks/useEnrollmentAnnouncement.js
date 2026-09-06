@@ -1,23 +1,17 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
 import { getEnrollmentAnnouncement } from "../services/enrollmentPeriodService";
 
 const useEnrollmentAnnouncement = () => {
-    const [announcement, setAnnouncement] = useState(null);
-    const [loading, setLoading] = useState(null);
+    const {
+        data: announcement = null,
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.ENROLLMENT_ANNOUNCEMENT,
+        queryFn: getEnrollmentAnnouncement,
+    });
 
-    useEffect(() => {
-        const load = async () => {
-            try{
-                const data = await getEnrollmentAnnouncement();
-                setAnnouncement(data);
-            }finally{
-                setLoading(false);
-            }
-        };
-
-        load();
-    }, [])
-    return{announcement, loading};
+    return { announcement, loading };
 };
 
 export default useEnrollmentAnnouncement;

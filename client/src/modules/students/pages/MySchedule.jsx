@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Calendar, MapPin, User } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useQuery } from '@tanstack/react-query';
 
 import { getMySchedule } from '../services/student.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -25,23 +25,11 @@ const formatTime = (t) => {
 };
 
 const MySchedule = () => {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await getMySchedule();
-                setData(res.data || res);
-            } catch (err) {
-                console.error(err);
-                toast.error('Failed to load schedule.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
+    const { data, isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.STUDENT_SCHEDULE,
+        queryFn: getMySchedule,
+        refetchOnWindowFocus: true,
+    });
 
     const schedule = data?.schedule || [];
     const byDay = {};

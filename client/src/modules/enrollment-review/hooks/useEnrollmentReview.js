@@ -1,13 +1,18 @@
 import {
-  useEffect,
   useMemo,
   useState,
 } from "react";
 
 import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+
+import {
   getApplications,
   updateApplicationStatus,
-} from "../services/enrollmentService";
+} from "../services/review.service";
 
 import {
   getEnrollmentStats,
@@ -17,18 +22,12 @@ import {
   filterApplications,
 } from "../utils/filterApplications";
 
+import {
+  QUERY_KEYS,
+} from "@/constants/queryKey";
+
 export default function
 useEnrollmentReview() {
-
-  const [
-    applications,
-    setApplications,
-  ] = useState([]);
-
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
 
   const [
     search,
@@ -40,48 +39,67 @@ useEnrollmentReview() {
     setActiveTab,
   ] = useState("all");
 
+  const queryClient =
+    useQueryClient();
 
+  const {
+    data: applications = [],
+    isLoading: loading,
+  } = useQuery({
+    queryKey: QUERY_KEYS.ENROLLMENT_APPLICATIONS,
+    queryFn: getApplications,
+    select: (data) =>
+      Array.isArray(data) ? data : [],
+  });
 
-  useEffect(() => {
-    const fectApplications = async () =>{
-        try{
-            const data =  await getApplications();
-
-            setApplications(data);
-        }catch(error){
-            console.error(error)
-        }finally{
-            setLoading(false)
+  const statusMutation =
+    useMutation({
+      mutationFn: ({
+        id,
+        status,
+      }) => updateApplicationStatus(
+        id,
+        status
+      ),
+      onSuccess: (
+        _res,
+        {
+          id,
+          status,
         }
-    };
+      ) => {
+        queryClient.setQueryData(
+          QUERY_KEYS.ENROLLMENT_APPLICATIONS,
+          (old) =>
+            Array.isArray(old)
+              ? old.map((app) =>
+                  app._id === id
+                    ? {
+                        ...app,
+                        status,
+                      }
+                    : app
+                )
+              : old
+        );
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.ENROLLMENT_APPLICATIONS,
+        });
+      },
+      onError: (err) => {
+        console.error(err);
+      },
+    });
 
-    fectApplications();
-  }, []);
-
-  async function
+  function
   handleStatusUpdate(
     id,
     status
   ) {
-    try {
-      await updateApplicationStatus(
-        id,
-        status
-      );
-
-      setApplications((prev) =>
-        prev.map((app) =>
-          app._id === id
-            ? {
-                ...app,
-                status,
-              }
-            : app
-        )
-      );
-    } catch (err) {
-      console.error(err);
-    }
+    statusMutation.mutate({
+      id,
+      status,
+    });
   }
 
   const filtered =

@@ -1,55 +1,50 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
 import { Search, Loader2, CheckCircle2, Clock, AlertTriangle, XCircle, ArrowRight, FileText, Calendar, GraduationCap, Mail, User } from 'lucide-react'
 import NavHeader from '../components/NavHeader'
 import Footer from '../components/Footer'
 import { trackApplication } from '../../enrollmentform/services/enrollmentform'
+import { QUERY_KEYS } from '@/constants/queryKey'
 
 const TrackApplication = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const initialNumber = searchParams.get('number') || searchParams.get('app') || ''
 
   const [trackingNumber, setTrackingNumber] = useState(initialNumber)
-  const [loading, setLoading] = useState(false)
-  const [applicationData, setApplicationData] = useState(null)
-  const [errorMsg, setErrorMsg] = useState('')
-  const [searched, setSearched] = useState(false)
+  const [queryNumber, setQueryNumber] = useState(initialNumber)
+  const [searched, setSearched] = useState(!!initialNumber)
+  const [validationError, setValidationError] = useState('')
 
-  const handleSearch = async (numToSearch) => {
+  const { data: response, isPending: loading, isError, error } = useQuery({
+    queryKey: QUERY_KEYS.TRACK_APPLICATION(queryNumber),
+    queryFn: () => trackApplication(queryNumber),
+    enabled: !!queryNumber,
+    retry: false,
+  })
+
+  const applicationData = response?.success ? response.data : null
+  const errorMsg =
+    validationError ||
+    (isError
+      ? error?.response?.data?.message || 'No application found with that tracking number. Please verify and try again.'
+      : response && !response.success
+        ? response.message || 'No application found with that tracking number.'
+        : '')
+
+  const handleSearch = (numToSearch) => {
     const queryNum = (numToSearch || trackingNumber).trim()
     if (!queryNum) {
-      setErrorMsg('Please enter your application tracking number.')
+      setValidationError('Please enter your application tracking number.')
       return
     }
-
-    setLoading(true)
-    setErrorMsg('')
-    setApplicationData(null)
+    setValidationError('')
     setSearched(true)
-
+    setQueryNumber(queryNum)
     // Sync URL search params
     setSearchParams({ number: queryNum })
-
-    try {
-      const response = await trackApplication(queryNum)
-      if (response && response.success) {
-        setApplicationData(response.data)
-      } else {
-        setErrorMsg(response?.message || 'No application found with that tracking number.')
-      }
-    } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'No application found with that tracking number. Please verify and try again.')
-    } finally {
-      setLoading(false)
-    }
   }
-
-  useEffect(() => {
-    if (initialNumber) {
-      handleSearch(initialNumber)
-    }
-  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()

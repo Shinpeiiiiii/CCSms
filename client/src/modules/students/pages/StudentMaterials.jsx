@@ -1,8 +1,10 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { BookMarked, Download, ExternalLink, ArrowLeft, BookOpen } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import Card from '@/components/cards/Cards';
 import { getStudentMaterials } from '@/modules/materials/services/material.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 import {
     getFileTypeConfig,
     formatFileSize,
@@ -10,24 +12,14 @@ import {
 } from '@/modules/materials/constants/materials.config';
 
 const StudentMaterials = () => {
-    const [materials, setMaterials] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [categoryFilter, setCategoryFilter] = useState('all');
 
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await getStudentMaterials();
-                setMaterials(res.data || []);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
+    const { data: materials = [], isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.STUDENT_MATERIALS,
+        queryFn: getStudentMaterials,
+        select: (res) => (Array.isArray(res) ? res : res?.data || []),
+    });
 
     const subjectGroups = useMemo(() => {
         const groups = {};

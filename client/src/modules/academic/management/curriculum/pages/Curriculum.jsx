@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
 
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
 
@@ -34,6 +35,7 @@ import {
     importCurriculum,
     deleteCurriculumsBatch,
 } from "../services/curriculum.services";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
 
 const Curriculum = () => {
     const navigate = useNavigate();
@@ -60,10 +62,15 @@ const Curriculum = () => {
     const [isVersionOpen, setIsVersionOpen] = useState(false);
     const [isTemplateOpen, setIsTemplateOpen] = useState(false);
     const [isImportOpen, setIsImportOpen] = useState(false);
-    const [templates, setTemplates] = useState([]);
-    const [loadingTemplates, setLoadingTemplates] = useState(false);
     const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
     const [bulkDeleting, setBulkDeleting] = useState(false);
+
+    const { data: templates = [], isLoading: loadingTemplates } = useQuery({
+        queryKey: QUERY_KEYS.CURRICULUM_TEMPLATES,
+        queryFn: getTemplates,
+        enabled: isTemplateOpen,
+        select: (data) => data || [],
+    });
 
     const openHistory = (curriculum) => {
         setSelectedItem(curriculum);
@@ -235,20 +242,8 @@ const Curriculum = () => {
         }
     };
 
-    const handleOpenFromTemplate = async () => {
-        try {
-            setLoadingTemplates(true);
-            const data = await getTemplates();
-            setTemplates(data || []);
-            setIsTemplateOpen(true);
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                "Failed to load templates."
-            );
-        } finally {
-            setLoadingTemplates(false);
-        }
+    const handleOpenFromTemplate = () => {
+        setIsTemplateOpen(true);
     };
 
     const handleCreateFromTemplate = async (templateId, formData) => {

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
 import { CalendarCheck, CheckCircle, XCircle, Clock, AlertCircle, ClipboardList } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useQuery } from '@tanstack/react-query';
 
 import { getMyAttendance } from '../services/student.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 
 const statusBadge = (status) => {
@@ -17,23 +17,11 @@ const formatDate = (d) =>
     new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
 const MyAttendance = () => {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await getMyAttendance();
-                setData(res.data || res);
-            } catch (err) {
-                console.error(err);
-                toast.error('Failed to load attendance.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
+    const { data, isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.STUDENT_ATTENDANCE,
+        queryFn: getMyAttendance,
+        refetchOnWindowFocus: true,
+    });
 
     const totals = data?.totals || {};
     const subjects = data?.subjects || [];

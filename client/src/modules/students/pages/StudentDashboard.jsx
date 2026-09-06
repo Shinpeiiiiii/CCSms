@@ -1,32 +1,16 @@
-import { useEffect, useState } from 'react';
-import {
-  BookOpen,
-  GraduationCap,
-  Layers,
-  User,
-} from 'lucide-react';
+import { BookOpen, GraduationCap, Layers, User } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
-import {studentDashboard} from '../services/student.service';
+import { studentDashboard } from '../services/student.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 
 const StudentDashboard = () => {
-  const [dashboard, setDashboard] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        const data = await studentDashboard();
-        setDashboard(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDashboard();
-  }, []);
+  const { data: dashboard = {}, isLoading: loading } = useQuery({
+    queryKey: QUERY_KEYS.STUDENT_DASHBOARD,
+    queryFn: studentDashboard,
+    refetchOnWindowFocus: true,
+  });
 
   if (loading) {
     return (

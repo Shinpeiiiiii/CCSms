@@ -1,56 +1,48 @@
-import { useEffect, useState } from "react";
-
-import { getAcademicYear } from "../services/academicyear.services";
+import { useCallback } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
+import { getAcademicYear, createAcademicYear, updateAcademicYear, deleteAcademicYear } from "../services/academicyear.services";
 
 const useAcademicYear = () => {
 
-    const [academicYear, setAcademicYears] = useState([]);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(true);
+    const {
+        data: academicYear = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.ACADEMIC_YEARS,
+        queryFn: getAcademicYear,
+    });
 
-    const loadAcademicYears = async () => {
+    const refreshAcademicYears = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ACADEMIC_YEARS }),
+        [queryClient]
+    );
 
-        try {
+    const create = useMutation({
+        mutationFn: createAcademicYear,
+        onSuccess: refreshAcademicYears,
+    });
 
-            const data = await getAcademicYear();
+    const update = useMutation({
+        mutationFn: ({ id, data }) => updateAcademicYear(id, data),
+        onSuccess: refreshAcademicYears,
+    });
 
-            setAcademicYears(data);
-
-        }
-
-        catch (error) {
-
-            console.error(
-                "Failed to load academic years:",
-                error
-            );
-
-        }
-
-        finally {
-
-            setLoading(false);
-
-        }
-
-    };
-
-    useEffect(() => {
-
-        loadAcademicYears();
-
-    }, []);
+    const remove = useMutation({
+        mutationFn: deleteAcademicYear,
+        onSuccess: refreshAcademicYears,
+    });
 
     return {
-
         academicYear,
-
         loading,
-
-        refreshAcademicYears: loadAcademicYears,
-
+        refreshAcademicYears,
+        create,
+        update,
+        remove,
     };
-
 };
 
 export default useAcademicYear;

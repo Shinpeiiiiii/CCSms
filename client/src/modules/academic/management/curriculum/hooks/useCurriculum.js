@@ -1,85 +1,42 @@
-import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { getCurriculum, publishCurriculum as publishCurriculumService,
-     archiveCurriculum as archiveCurriculumService} from "../services/curriculum.services";
+import { useCallback } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
+import { getCurriculum, publishCurriculum as publishCurriculumService, archiveCurriculum as archiveCurriculumService } from "../services/curriculum.services";
 
 const useCurriculum = () => {
 
-    const [curriculum, setCurriculum] = useState([]);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(true);
+    const {
+        data: curriculum = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.CURRICULUMS,
+        queryFn: getCurriculum,
+    });
 
-    const loadCurriculums = async () => {
+    const refreshCurriculums = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CURRICULUMS }),
+        [queryClient]
+    );
 
-        try {
+    const publishCurriculum = useMutation({
+        mutationFn: publishCurriculumService,
+        onSuccess: refreshCurriculums,
+    });
 
-            const data = await getCurriculum();
-
-            setCurriculum(data);
-
-        }
-
-        catch (error) {
-
-            console.error(
-                "Failed to load curriculums:",
-                error
-            );
-
-        }
-
-        finally {
-
-            setLoading(false);
-
-        }
-
-    };
-
-    const publishCurriculum = async(id) => {
-        console.log("Attempting to publish curriculum with ID:", id);
-        try{
-            await publishCurriculumService(id);
-            toast.success("Curriculum published successfully.");
-            loadCurriculums();
-        }catch(error){
-            toast.error(error.response?.data?.message || "Failed to publish curriculum")
-        }
-    }
-    const archiveCurriculum = async(id) => {
-        try{
-            await archiveCurriculumService(id);
-            toast.success("Archive curriculum successfully.");
-            loadCurriculums();
-        }catch(error){
-            toast.error(error.response?.data?.message || "Failed to archive.")
-        }
-    }
-
-    useEffect(() => {
-
-        loadCurriculums();
-
-    }, []);
+    const archiveCurriculum = useMutation({
+        mutationFn: archiveCurriculumService,
+        onSuccess: refreshCurriculums,
+    });
 
     return {
-
         curriculum,
-
         loading,
-
-        refreshCurriculums: loadCurriculums,
-        publishCurriculum: async (id) => {
-            await publishCurriculumService(id);
-            await loadCurriculums();
-        },
-        archiveCurriculum: async (id) => {
-            await archiveCurriculumService(id);
-            await loadCurriculums();
-        },
-
+        refreshCurriculums,
+        publishCurriculum,
+        archiveCurriculum,
     };
-
 };
 
 export default useCurriculum;

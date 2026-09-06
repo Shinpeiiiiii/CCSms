@@ -1,42 +1,31 @@
-import { useEffect ,useState } from "react";
-
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
 import { getCurriculumHistory } from "../services/curriculum.services";
 
 const useCurriculumHistory = (curriculumId, isOpen) => {
-    const [history, setHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
 
-    const loadHistory = async () => {
-        if(!curriculumId){
-            setHistory([]);
-            setLoading(false);
-            return;
-        }
+    const queryClient = useQueryClient();
 
-        try{
-            const data = await getCurriculumHistory(curriculumId);
-            setHistory(data);
-        }catch(error){
-            console.error(error)
-        }finally{
-            setLoading(false)
-        }
+    const {
+        data: history = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.CURRICULUM_HISTORY(curriculumId),
+        queryFn: () => getCurriculumHistory(curriculumId),
+        enabled: !!curriculumId && !!isOpen,
+    });
+
+    const referenceHistory = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CURRICULUM_HISTORY(curriculumId) }),
+        [queryClient, curriculumId]
+    );
+
+    return {
+        history,
+        loading,
+        referenceHistory,
     };
-
-    useEffect(() => {
-        if(isOpen && curriculumId){
-            loadHistory();
-
-        }
-    }, [curriculumId, isOpen]);
-
-    return{
-        history, loading, referenceHistory: loadHistory,
-    };
-       
-
-    
 };
-
 
 export default useCurriculumHistory;

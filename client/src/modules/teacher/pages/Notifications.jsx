@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
 import { Bell, Check, CheckCheck, Trash2, Info, AlertTriangle, CheckCircle, BookOpen } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import Card from '@/components/cards/Cards';
 import { getMyNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification, getUnreadNotificationCount } from '../services/teacher.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 
 const TYPE_CONFIG = {
     info: { icon: Info, color: 'text-blue-600 bg-blue-50 border-blue-200' },
@@ -28,36 +29,48 @@ const formatRelativeTime = (dateStr) => {
 };
 
 const Notifications = () => {
-    const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [unreadCount, setUnreadCount] = useState(0);
+    const queryClient = useQueryClient();
 
-    const loadData = async () => {
-        try {
-            const [notifRes, countRes] = await Promise.all([
-                getMyNotifications(),
-                getUnreadNotificationCount(),
-            ]);
-            setNotifications(notifRes.data || []);
-            setUnreadCount(countRes.data?.count || 0);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
+    const { data: notifications = [], isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.NOTIFICATIONS,
+        queryFn: getMyNotifications,
+        select: (data) => data?.data || data || [],
+    });
+
+    const { data: unreadData = { count: 0 } } = useQuery({
+        queryKey: QUERY_KEYS.UNREAD_NOTIFICATION_COUNT,
+        queryFn: getUnreadNotificationCount,
+        refetchInterval: 30000,
+    });
+
+    const unreadCount = unreadData?.count || 0;
+
+    const invalidateAll = () => {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.NOTIFICATIONS });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.UNREAD_NOTIFICATION_COUNT });
     };
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    const markReadMutation = useMutation({
+        mutationFn: markNotificationRead,
+        onSuccess: invalidateAll,
+    });
+
+    const markAllReadMutation = useMutation({
+        mutationFn: markAllNotificationsRead,
+        onSuccess: () => {
+            invalidateAll();
+            toast.success('All notifications marked as read');
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: deleteNotification,
+        onSuccess: invalidateAll,
+    });
 
     const handleMarkRead = async (id) => {
         try {
-            await markNotificationRead(id);
-            setNotifications((prev) =>
-                prev.map((n) => (n._id === id ? { ...n, read: true } : n))
-            );
-            setUnreadCount((prev) => Math.max(0, prev - 1));
+            await markReadMutation.mutateAsync(id);
         } catch (err) {
             console.error(err);
         }
@@ -65,10 +78,7 @@ const Notifications = () => {
 
     const handleMarkAllRead = async () => {
         try {
-            await markAllNotificationsRead();
-            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-            setUnreadCount(0);
-            toast.success('All notifications marked as read');
+            await markAllReadMutation.mutateAsync();
         } catch (err) {
             console.error(err);
         }
@@ -76,10 +86,7 @@ const Notifications = () => {
 
     const handleDelete = async (id) => {
         try {
-            await deleteNotification(id);
-            const wasUnread = notifications.find((n) => n._id === id && !n.read);
-            setNotifications((prev) => prev.filter((n) => n._id !== id));
-            if (wasUnread) setUnreadCount((prev) => Math.max(0, prev - 1));
+            await deleteMutation.mutateAsync(id);
         } catch (err) {
             console.error(err);
         }

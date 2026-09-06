@@ -1,8 +1,8 @@
-﻿import { useMemo, useState, useEffect } from "react";
+﻿import { useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
 
 import DashboardLayout from "../../../../../shared/layouts/DashboardLayout";
-import Card from "../../../../../components/cards/Cards";
 import ConfirmModal from "../../../../../components/modal/ConfirmModal";
 
 import SectionSelector from "../components/SectionSelector";
@@ -20,12 +20,21 @@ import {
     deleteSectionSubject,
 } from "../services/sectionsubject.services";
 
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
+
 const SectionSubjects = () => {
 
-    const [sections, setSections] = useState([]);
-    const [teachers, setTeachers] = useState([]);
-
     const [selectedSection, setSelectedSection] = useState("");
+
+    const { data: sections = [] } = useQuery({
+        queryKey: QUERY_KEYS.SECTIONS,
+        queryFn: getSection,
+    });
+
+    const { data: teachers = [] } = useQuery({
+        queryKey: QUERY_KEYS.TEACHER_LIST,
+        queryFn: getTeachers,
+    });
 
     const {
         subjects,
@@ -42,35 +51,7 @@ const SectionSubjects = () => {
         closeDelete,
     } = useCrud();
 
-    const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
-
-    useEffect(() => {
-        loadInitialData();
-    }, []);
-
-    const loadInitialData = async () => {
-
-        try {
-
-            const [sectionsData, teachersData] = await Promise.all([
-                getSection(),
-                getTeachers(),
-            ]);
-            console.log('giatay:', teachersData);
-            setSections(sectionsData);
-            setTeachers(teachersData);
-
-        } catch (error) {
-            console.log({
-                success: false,
-                message: error.response?.data
-            });
-            toast.error(error.response?.data?.message || "Failed to load initial data.");
-
-        }
-
-    };
 
     const handleGenerate = async () => {
 
@@ -95,8 +76,6 @@ const SectionSubjects = () => {
 
         try {
 
-            setSaving(true);
-
             await updateSectionSubject(id, payload);
 
             toast.success("Updated successfully.");
@@ -106,10 +85,6 @@ const SectionSubjects = () => {
         } catch (error) {
 
             toast.error(error.response?.data?.message || "Failed to update section subject.");
-
-        } finally {
-
-            setSaving(false);
 
         }
 

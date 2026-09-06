@@ -1,8 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import useAuthStore from '../state/auth-store'
 import { Menu, Bell } from 'lucide-react'
 import { getUnreadNotificationCount } from '@/modules/teacher/services/teacher.service'
+import { QUERY_KEYS } from '@/constants/queryKey'
 
 const PAGE_TITLES = {
   '/dashboard': 'Dashboard',
@@ -18,24 +19,11 @@ const Topbar = ({ onToggleSidebar = () => {}, isMobile = false }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const user = useAuthStore((state) => state.user)
-  const logout = useAuthStore((state) => state.logout)
-  const [unreadCount, setUnreadCount] = useState(0)
-
-  useEffect(() => {
-    let active = true
-    const load = async () => {
-      try {
-        const res = await getUnreadNotificationCount()
-        if (active) setUnreadCount(res?.count ?? 0)
-      } catch {
-        /* ignore */
-      }
-    }
-    load()
-    return () => {
-      active = false
-    }
-  }, [location.pathname])
+  const { data: unreadData = { count: 0 } } = useQuery({
+    queryKey: QUERY_KEYS.UNREAD_NOTIFICATION_COUNT,
+    queryFn: getUnreadNotificationCount,
+  })
+  const unreadCount = unreadData?.count ?? 0
 
   const pageTitle = PAGE_TITLES[location.pathname] || 'Portal'
 

@@ -1,56 +1,51 @@
-import { useEffect, useState, useCallback } from "react";
-
-import { getSectionSubjects } from "../services/sectionsubject.services";
+import { useCallback } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
+import { getSectionSubjects, generateSectionSubjects, deleteSectionSubject, updateSectionSubject } from "../services/sectionsubject.services";
 
 const useSectionSubject = (sectionId) => {
 
-    const [subjects, setSubjects] = useState([]);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(true);
+    const {
+        data = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.SECTION_SUBJECTS_BY_SECTION(sectionId),
+        queryFn: () => getSectionSubjects(sectionId),
+        enabled: !!sectionId,
+    });
 
-    const loadSubjects = useCallback(async () => {
-        console.log('Triggered');
-        if (!sectionId) {
-            setSubjects([]);
-            setLoading(false);
-            return;
-        }
+    const subjects = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
 
-        try {
+    const refreshSubjects = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SECTION_SUBJECTS_BY_SECTION(sectionId) }),
+        [queryClient, sectionId]
+    );
 
-            setLoading(true);
+    const generate = useMutation({
+        mutationFn: generateSectionSubjects,
+        onSuccess: refreshSubjects,
+    });
 
-            const data = await getSectionSubjects(sectionId);
-            console.log("data:", data?.data);
-            setSubjects(Array.isArray(data) ? data : []);
+    const remove = useMutation({
+        mutationFn: deleteSectionSubject,
+        onSuccess: refreshSubjects,
+    });
 
-        } catch (error) {
-
-            console.error("Failed to load section subjects:", error);
-            setSubjects([]);
-
-        } finally {
-            setLoading(false);
-        }
-
-    }, [sectionId]);
-
-    useEffect(() => {
-
-        loadSubjects();
-
-    }, [loadSubjects]);
+    const update = useMutation({
+        mutationFn: ({ id, payload }) => updateSectionSubject(id, payload),
+        onSuccess: refreshSubjects,
+    });
 
     return {
-
         subjects,
-
         loading,
-
-        refreshSubjects: loadSubjects,
-
+        refreshSubjects,
+        generate,
+        remove,
+        update,
     };
-
 };
 
 export default useSectionSubject;

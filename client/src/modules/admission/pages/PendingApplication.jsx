@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toast } from 'react-toastify';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 
 import {
@@ -16,50 +17,79 @@ import DataTable from '@/components/table/DataTable';
 import ApplicationColumn from '../components/ApplicationColumn';
 import Card from '@/components/cards/Cards';
 import ApplicationToolbar from '../components/ApplicationToolbar';
+import { QUERY_KEYS } from '@/constants/queryKey';
 
 const PendingApplications = () => {
-  const [applications, setApplications] = useState([]);
-  const [filteredApplications, setFilteredApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState('');
   const [search, setSearch] = useState('');
   const [selectedApplication, setSelectedApplication] = useState(null);
+  const queryClient = useQueryClient();
 
-  const loadApplications = async () => {
-    try {
-      setLoading(true);
-      const data = await getPendingApplications();
-      const safeData = Array.isArray(data) ? data : [];
-      setApplications(safeData);
-      setFilteredApplications(safeData);
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to load applications.');
-      setApplications([]);
-      setFilteredApplications([]);
-    } finally {
-      setLoading(false);
-    }
+  const { data: applications = [], isLoading: loading } = useQuery({
+    queryKey: QUERY_KEYS.PENDING_APPLICATIONS,
+    queryFn: getPendingApplications,
+    select: (data) => (Array.isArray(data) ? data : []),
+  });
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PENDING_APPLICATIONS });
+
+  const approveMutation = useMutation({
+    mutationFn: (id) => approveApplication(id),
+    onMutate: (id) => setActionLoading(id),
+    onSuccess: () => {
+      toast.success('Application approved successfully.');
+      refresh();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to approve application.');
+    },
+    onSettled: () => setActionLoading(''),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, remarks }) => rejectApplication(id, remarks),
+    onMutate: ({ id }) => setActionLoading(id),
+    onSuccess: () => {
+      toast.success('Application rejected.');
+      refresh();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to reject application.');
+    },
+    onSettled: () => setActionLoading(''),
+  });
+
+  const revisionMutation = useMutation({
+    mutationFn: ({ id, remarks }) => requestRevision(id, remarks),
+    onMutate: ({ id }) => setActionLoading(id),
+    onSuccess: () => {
+      toast.success('Revision requested.');
+      refresh();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to request revision.');
+    },
+    onSettled: () => setActionLoading(''),
+  });
+
+  const handleApprove = (id) => approveMutation.mutate(id);
+
+  const handleReject = (id) => {
+    const remarks = window.prompt('Enter rejection remarks:');
+    if (!remarks) return;
+    rejectMutation.mutate({ id, remarks });
   };
 
-  useEffect(() => {
-    loadApplications();
-  }, []);
-   // Responsive state
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const handleRevision = (id) => {
+    const remarks = window.prompt('Enter revision remarks:');
+    if (!remarks) return;
+    revisionMutation.mutate({ id, remarks });
+  };
 
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
-
-  useEffect(() => {
+  const filteredApplications = useMemo(() => {
     const keyword = search.toLowerCase();
 
-    const filtered = applications.filter((app) => {
+    return applications.filter((app) => {
       const fullName =
         `${app.firstName || ''} ${app.middleName || ''} ${app.lastName || ''}`
           .toLowerCase();
@@ -70,60 +100,7 @@ const PendingApplications = () => {
         app.applicationNumber?.toLowerCase().includes(keyword)
       );
     });
-
-    setFilteredApplications(filtered);
   }, [search, applications]);
-
-  const handleApprove = async (id) => {
-    try {
-      setActionLoading(id);
-      await approveApplication(id);
-      toast.success('Application approved successfully.');
-      await loadApplications();
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || 'Failed to approve application.'
-      );
-    } finally {
-      setActionLoading('');
-    }
-  };
-
-  const handleReject = async (id) => {
-    const remarks = window.prompt('Enter rejection remarks:');
-    if (!remarks) return;
-
-    try {
-      setActionLoading(id);
-      await rejectApplication(id, remarks);
-      toast.success('Application rejected.');
-      await loadApplications();
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || 'Failed to reject application.'
-      );
-    } finally {
-      setActionLoading('');
-    }
-  };
-
-  const handleRevision = async (id) => {
-    const remarks = window.prompt('Enter revision remarks:');
-    if (!remarks) return;
-
-    try {
-      setActionLoading(id);
-      await requestRevision(id, remarks);
-      toast.success('Revision requested.');
-      await loadApplications();
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || 'Failed to request revision.'
-      );
-    } finally {
-      setActionLoading('');
-    }
-  };
 
   return (
     <DashboardLayout>

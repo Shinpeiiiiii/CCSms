@@ -1,48 +1,29 @@
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
 import { getProgram } from "../services/program.services";
 
 const useProgram = () => {
 
-    const [programs, setPrograms] = useState([]);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(true);
+    const {
+        data: programs = [],
+        isLoading: loading,
+        refetch,
+    } = useQuery({
+        queryKey: QUERY_KEYS.PROGRAMS,
+        queryFn: getProgram,
+    });
 
-    const loadPrograms = async () => {
-
-        try {
-
-            const data = await getProgram();
-
-            setPrograms(data);
-
-        } catch (error) {
-
-            console.error("Failed to load programs:", error);
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
-    };
-
-    useEffect(() => {
-
-        loadPrograms();
-
-    }, []);
+    const refreshPrograms = () =>
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PROGRAMS });
 
     return {
-
         programs,
-
         loading,
-
-        refreshPrograms: loadPrograms,
-
+        refreshPrograms,
+        refetch,
     };
-
 };
 
 export default useProgram;

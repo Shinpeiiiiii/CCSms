@@ -1,68 +1,61 @@
-import { useEffect, useState } from "react";
-
-import { getSection } from "../services/section.services";
+import { useCallback } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
+import { getSection, createSection, updateSection, openSection, closeSection, archiveSection } from "../services/section.services";
 
 const useSection = () => {
 
-    const [sections, setSections] = useState([]);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(true);
+    const {
+        data: sections = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.SECTIONS,
+        queryFn: getSection,
+        refetchOnWindowFocus: true,
+    });
 
-    const loadSections = async () => {
+    const refreshSections = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SECTIONS }),
+        [queryClient]
+    );
 
-        try {
+    const create = useMutation({
+        mutationFn: createSection,
+        onSuccess: refreshSections,
+    });
 
-            const data = await getSection();
+    const update = useMutation({
+        mutationFn: ({ id, data }) => updateSection(id, data),
+        onSuccess: refreshSections,
+    });
 
-            setSections(data);
+    const open = useMutation({
+        mutationFn: openSection,
+        onSuccess: refreshSections,
+    });
 
-        }
+    const close = useMutation({
+        mutationFn: closeSection,
+        onSuccess: refreshSections,
+    });
 
-        catch (error) {
-
-            console.error(
-                "Failed to load sections:",
-                error
-            );
-
-        }
-
-        finally {
-
-            setLoading(false);
-
-        }
-
-    };
-
-    useEffect(() => {
-
-        loadSections();
-
-        const handleFocus = () => {
-            loadSections()
-        }
-
-        window.addEventListener('focus', handleFocus)
-
-        return () => {
-
-            window.removeEventListener('focus', handleFocus)
-
-        };
-
-    }, []);
+    const archive = useMutation({
+        mutationFn: archiveSection,
+        onSuccess: refreshSections,
+    });
 
     return {
-
         sections,
-
         loading,
-
-        refreshSections: loadSections,
-
+        refreshSections,
+        create,
+        update,
+        open,
+        close,
+        archive,
     };
-
 };
 
 export default useSection;

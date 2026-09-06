@@ -1,67 +1,73 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Plus, X, Save, Star, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import Card from '@/components/cards/Cards';
 import { listSchemes, createScheme, updateScheme, deleteScheme } from '../services/grading.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 
 const DEFAULT_CATEGORY = { key: '', label: '', weight: 0 };
 
 const GradingSchemes = () => {
-    const [schemes, setSchemes] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [active, setActive] = useState(null);
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await listSchemes();
-                setSchemes(res.data || res || []);
-            } catch (err) {
-                console.error(err);
-                toast.error('Failed to load grading schemes.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
+    const { data: schemes = [], isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.GRADES_SCHEMES,
+        queryFn: listSchemes,
+        select: (res) => res.data || res || [],
+    });
 
-    const handleCreate = async () => {
-        try {
-            const res = await createScheme({
-                name: 'New Grading Scheme',
-                description: '',
-                categories: [
-                    { key: 'QUIZ', label: 'Quiz', weight: 20 },
-                    { key: 'SEATWORK', label: 'Seatwork', weight: 15 },
-                    { key: 'ACTIVITY', label: 'Activity', weight: 15 },
-                    { key: 'LAB', label: 'Lab', weight: 10 },
-                    { key: 'PROJECT', label: 'Project', weight: 20 },
-                    { key: 'EXAM', label: 'Exam', weight: 20 },
-                ],
-                termWeights: { prelim: 1 / 3, midterm: 1 / 3, finals: 1 / 3 },
-                passingGrade: 75,
-                status: 'Draft',
-            });
-            setSchemes((prev) => [res.data || res, ...prev]);
-            setActive(res.data || res);
+    const createMutation = useMutation({
+        mutationFn: () => createScheme({
+            name: 'New Grading Scheme',
+            description: '',
+            categories: [
+                { key: 'QUIZ', label: 'Quiz', weight: 20 },
+                { key: 'SEATWORK', label: 'Seatwork', weight: 15 },
+                { key: 'ACTIVITY', label: 'Activity', weight: 15 },
+                { key: 'LAB', label: 'Lab', weight: 10 },
+                { key: 'PROJECT', label: 'Project', weight: 20 },
+                { key: 'EXAM', label: 'Exam', weight: 20 },
+            ],
+            termWeights: { prelim: 1 / 3, midterm: 1 / 3, finals: 1 / 3 },
+            passingGrade: 75,
+            status: 'Draft',
+        }),
+        onSuccess: (res) => {
+            const scheme = res.data || res;
+            queryClient.setQueryData(QUERY_KEYS.GRADES_SCHEMES, (prev = []) => [scheme, ...prev]);
+            setActive(scheme);
             toast.success('Scheme created.');
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to create scheme.');
-        }
-    };
+        },
+        onError: (err) => toast.error(err.response?.data?.message || 'Failed to create scheme.'),
+    });
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this grading scheme?')) return;
-        try {
-            await deleteScheme(id);
-            setSchemes((prev) => prev.filter((s) => s._id !== id));
-            if (active?._id === id) setActive(null);
+    const deleteMutation = useMutation({
+        mutationFn: (id) => deleteScheme(id),
+        onSuccess: (_res, id) => {
+            queryClient.setQueryData(QUERY_KEYS.GRADES_SCHEMES, (prev = []) => prev.filter((s) => s._id !== id));
+            setActive((prev) => (prev?._id === id ? null : prev));
             toast.success('Scheme deleted.');
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to delete scheme.');
-        }
+        },
+        onError: (err) => toast.error(err.response?.data?.message || 'Failed to delete scheme.'),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }) => updateScheme(id, data),
+        onSuccess: (res) => {
+            const updated = res.data || res;
+            queryClient.setQueryData(QUERY_KEYS.GRADES_SCHEMES, (prev = []) => prev.map((s) => (s._id === updated._id ? updated : s)));
+            setActive(updated);
+            toast.success('Grading scheme saved.');
+        },
+        onError: (err) => toast.error(err.response?.data?.message || 'Failed to save scheme.'),
+    });
+
+    const handleDelete = (id) => {
+        if (!window.confirm('Delete this grading scheme?')) return;
+        deleteMutation.mutate(id);
     };
 
     return (
@@ -71,7 +77,7 @@ const GradingSchemes = () => {
 
                 <div className="flex items-center justify-between">
                     <h2 className="text-sm font-bold text-gray-900">Schemes</h2>
-                    <button onClick={handleCreate} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors">
+                    <button onClick={() => createMutation.mutate()} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors">
                         <Plus size={14} />
                         New Scheme
                     </button>
@@ -119,27 +125,26 @@ const GradingSchemes = () => {
                     </div>
                 )}
 
-                {active && <SchemeEditor scheme={active} onSave={(updated) => setSchemes((prev) => prev.map((s) => (s._id === updated._id ? updated : s)))} onDelete={handleDelete} />}
+                {active && <SchemeEditor scheme={active} isSaving={updateMutation.isPending} onSave={(data) => updateMutation.mutate({ id: active._id, data })} onDelete={handleDelete} />}
             </div>
         </DashboardLayout>
     );
 };
 
-const SchemeEditor = ({ scheme, onSave, onDelete }) => {
+const SchemeEditor = ({ scheme, isSaving, onSave, onDelete }) => {
     const [name, setName] = useState(scheme.name || '');
     const [status, setStatus] = useState(scheme.status || 'Draft');
     const [isDefault, setIsDefault] = useState(scheme.isDefault || false);
     const [passing, setPassing] = useState(scheme.passingGrade ?? 75);
     const [termWeights, setTermWeights] = useState(scheme.termWeights || { prelim: 1 / 3, midterm: 1 / 3, finals: 1 / 3 });
     const [cats, setCats] = useState((scheme.categories || []).map((c) => ({ key: c.key, label: c.label, weight: c.weight })));
-    const [saving, setSaving] = useState(false);
 
     const total = cats.reduce((s, c) => s + (Number(c.weight) || 0), 0);
 
     const updateCat = (idx, field, value) =>
         setCats((prev) => prev.map((c, i) => (i === idx ? { ...c, [field]: field === 'weight' ? Number(value) : value } : c)));
 
-    const handleSave = async () => {
+    const handleSave = () => {
         if (!name.trim()) {
             toast.error('Scheme name is required.');
             return;
@@ -148,24 +153,14 @@ const SchemeEditor = ({ scheme, onSave, onDelete }) => {
             toast.error(`Category weights must total 100% (currently ${total}%).`);
             return;
         }
-        setSaving(true);
-        try {
-            const res = await updateScheme(scheme._id, {
-                name,
-                status,
-                isDefault,
-                passingGrade: Number(passing),
-                termWeights,
-                categories: cats.map((c) => ({ key: c.key.toUpperCase(), label: c.label, weight: Number(c.weight) })),
-            });
-            const updated = res.data || res;
-            onSave(updated);
-            toast.success('Grading scheme saved.');
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to save scheme.');
-        } finally {
-            setSaving(false);
-        }
+        onSave({
+            name,
+            status,
+            isDefault,
+            passingGrade: Number(passing),
+            termWeights,
+            categories: cats.map((c) => ({ key: c.key.toUpperCase(), label: c.label, weight: Number(c.weight) })),
+        });
     };
 
     return (
@@ -250,9 +245,9 @@ const SchemeEditor = ({ scheme, onSave, onDelete }) => {
                 </div>
 
                 <div className="flex justify-end">
-                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50">
+                    <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50">
                         <Save size={14} />
-                        {saving ? 'Saving...' : 'Save Scheme'}
+                        {isSaving ? 'Saving...' : 'Save Scheme'}
                     </button>
                 </div>
             </div>

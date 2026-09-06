@@ -1,71 +1,67 @@
-import { useEffect, useState, useCallback } from "react";
-
-import {
-    getCurriculumSubject,
-} from "../services/curriculumsubject.services";
+import { useCallback } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../../../../constants/queryKey";
+import { getCurriculumSubject, addCurriculumSubject, updateCurriculumSubject, deleteCurriculumSubject, autoStructureCurriculum, bulkAddCurriculumSubject, renumberDisplayOrders } from "../services/curriculumsubject.services";
 
 const useCurriculumSubject = (curriculumId) => {
 
-    const [subjects, setSubjects] = useState([]);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(true);
+    const {
+        data: subjects = [],
+        isLoading: loading,
+    } = useQuery({
+        queryKey: QUERY_KEYS.CURRICULUM_SUBJECTS(curriculumId),
+        queryFn: () => getCurriculumSubject(curriculumId),
+        enabled: !!curriculumId,
+    });
 
-    const loadSubjects = useCallback(async () => {
+    const refreshSubjects = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CURRICULUM_SUBJECTS(curriculumId) }),
+        [queryClient, curriculumId]
+    );
 
-        try {
-            setLoading(true);
+    const add = useMutation({
+        mutationFn: (formData) => addCurriculumSubject(curriculumId, formData),
+        onSuccess: refreshSubjects,
+    });
 
-            const data =
-                await getCurriculumSubject(curriculumId);
+    const update = useMutation({
+        mutationFn: ({ id, data }) => updateCurriculumSubject(id, data),
+        onSuccess: refreshSubjects,
+    });
 
-            const normalized = Array.isArray(data)
-                ? data
-                : data?.curriculumSubjects || data?.subjects || [];
+    const remove = useMutation({
+        mutationFn: deleteCurriculumSubject,
+        onSuccess: refreshSubjects,
+    });
 
-            setSubjects(normalized);
+    const structure = useMutation({
+        mutationFn: (subjectGroups) => autoStructureCurriculum(curriculumId, subjectGroups),
+        onSuccess: refreshSubjects,
+    });
 
-        } catch (error) {
+    const bulkAdd = useMutation({
+        mutationFn: (payload) => bulkAddCurriculumSubject(curriculumId, payload),
+        onSuccess: refreshSubjects,
+    });
 
-            console.error(error);
-            setSubjects([]);
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
-    }, [curriculumId]);
-
-    useEffect(() => {
-
-        if (!curriculumId) return;
-
-        let isMounted = true;
-
-        const fetchSubjects = async () => {
-            await loadSubjects();
-            if (!isMounted) return;
-        };
-
-        fetchSubjects();
-
-        return () => {
-            isMounted = false;
-        };
-
-    }, [curriculumId, loadSubjects]);
+    const renumber = useMutation({
+        mutationFn: () => renumberDisplayOrders(curriculumId),
+        onSuccess: refreshSubjects,
+    });
 
     return {
-
         subjects,
-
         loading,
-
-        refreshSubjects: loadSubjects,
-
+        refreshSubjects,
+        add,
+        update,
+        remove,
+        structure,
+        bulkAdd,
+        renumber,
     };
-
 };
 
 export default useCurriculumSubject;

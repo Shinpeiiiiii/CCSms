@@ -1,16 +1,17 @@
-import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { BookMarked, Trash2, Download, ExternalLink, Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import Card from '@/components/cards/Cards';
 import { getMySchedule } from '../services/teacher.service';
 import {
     getMyMaterials,
-    getMaterialsBySubject,
     deleteMaterial,
     uploadMaterial,
     addLinkMaterial,
 } from '@/modules/materials/services/material.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 import {
     getFileTypeConfig,
     formatFileSize,
@@ -19,67 +20,66 @@ import {
 const UploadMaterialForm = lazy(() => import('../components/UploadMaterialForm'));
 
 const TeacherMaterials = () => {
-    const [materials, setMaterials] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [subjects, setSubjects] = useState([]);
+    const queryClient = useQueryClient();
     const [selectedSubject, setSelectedSubject] = useState('all');
     const [showUpload, setShowUpload] = useState(false);
 
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const [matRes, schedRes] = await Promise.all([
-                    getMyMaterials(),
-                    getMySchedule(),
-                ]);
-                setMaterials(matRes.data || []);
+    const { data: materials = [], isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.MY_MATERIALS,
+        queryFn: getMyMaterials,
+        select: (data) => data?.data || data || [],
+    });
 
-                const uniqueSubjects = {};
-                (schedRes.data || []).forEach((s) => {
-                    if (s.subject?._id) {
-                        uniqueSubjects[s.subject._id] = s.subject;
-                    }
-                });
-                setSubjects(Object.values(uniqueSubjects));
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
+    const { data: scheduleData = [] } = useQuery({
+        queryKey: QUERY_KEYS.MY_SCHEDULE,
+        queryFn: getMySchedule,
+        select: (data) => data?.data || data || [],
+    });
+
+    const subjects = useMemo(() => {
+        const uniqueSubjects = {};
+        scheduleData.forEach((s) => {
+            if (s.subject?._id) {
+                uniqueSubjects[s.subject._id] = s.subject;
             }
-        };
-        load();
-    }, []);
+        });
+        return Object.values(uniqueSubjects);
+    }, [scheduleData]);
 
     const filteredMaterials = useMemo(() => {
         if (selectedSubject === 'all') return materials;
         return materials.filter((m) => m.subject?._id === selectedSubject);
     }, [materials, selectedSubject]);
 
-    const handleUpload = async ({ type, data }) => {
-        try {
-            if (type === 'file') {
-                await uploadMaterial(data);
-            } else {
-                await addLinkMaterial(data);
-            }
+    const invalidateMaterials = () =>
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.MY_MATERIALS });
+
+    const uploadMutation = useMutation({
+        mutationFn: ({ type, data }) => (type === 'file' ? uploadMaterial(data) : addLinkMaterial(data)),
+        onSuccess: () => {
             toast.success('Material added successfully');
             setShowUpload(false);
-            const res = await getMyMaterials();
-            setMaterials(res.data || []);
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to add material');
-        }
+            invalidateMaterials();
+        },
+        onError: (err) => toast.error(err.response?.data?.message || 'Failed to add material'),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: deleteMaterial,
+        onSuccess: () => {
+            toast.success('Material deleted');
+            invalidateMaterials();
+        },
+        onError: () => toast.error('Failed to delete material'),
+    });
+
+    const handleUpload = async ({ type, data }) => {
+        await uploadMutation.mutateAsync({ type, data });
     };
 
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this material?')) return;
-        try {
-            await deleteMaterial(id);
-            setMaterials((prev) => prev.filter((m) => m._id !== id));
-            toast.success('Material deleted');
-        } catch (err) {
-            toast.error('Failed to delete material');
-        }
+        await deleteMutation.mutateAsync(id);
     };
 
     const handleDownload = (material) => {

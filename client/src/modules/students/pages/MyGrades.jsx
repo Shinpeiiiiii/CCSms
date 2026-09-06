@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
 import { GraduationCap, TrendingUp, AlertCircle } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useQuery } from '@tanstack/react-query';
 
 import { getMyGrades } from '../services/student.service';
+import { QUERY_KEYS } from '@/constants/queryKey';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 
 const gradeColor = (g) => {
@@ -18,23 +18,11 @@ const remarksBadge = (remarks) => {
 };
 
 const MyGrades = () => {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await getMyGrades();
-                setData(res.data || res);
-            } catch (err) {
-                console.error(err);
-                toast.error('Failed to load grades.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
+    const { data, isLoading: loading } = useQuery({
+        queryKey: QUERY_KEYS.STUDENT_GRADES,
+        queryFn: getMyGrades,
+        refetchOnWindowFocus: true,
+    });
 
     return (
         <DashboardLayout>
