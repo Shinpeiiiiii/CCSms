@@ -1,6 +1,11 @@
 function StatusBadge({ status }) {
     const cleanStatus = (status || "").toLowerCase();
     const styles = {
+        draft: {
+            bg: "bg-slate-500/10",
+            text: "text-slate-400",
+            border: "border-slate-500/20",
+        },
         pending: {
             bg: "bg-yellow-500/10",
             text: "text-yellow-400",

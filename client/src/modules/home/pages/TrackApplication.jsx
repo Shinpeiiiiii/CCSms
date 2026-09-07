@@ -62,6 +62,14 @@ const TrackApplication = () => {
           icon: <CheckCircle2 size={16} className="text-emerald-400" />,
           label: 'Application Approved'
         }
+      case 'Draft':
+        return {
+          bg: 'rgba(148, 163, 184, 0.1)',
+          border: '1px solid rgba(148, 163, 184, 0.25)',
+          color: '#94A3B8',
+          icon: <FileText size={16} className="text-slate-400" />,
+          label: 'Not Submitted Yet'
+        }
       case 'Needs Revision':
         return {
           bg: 'rgba(245, 158, 11, 0.1)',

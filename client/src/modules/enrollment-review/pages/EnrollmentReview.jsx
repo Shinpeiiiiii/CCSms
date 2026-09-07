@@ -65,8 +65,16 @@ const EnrollmentReview = () => {
 
   const handleStatusUpdate = (id, status) => statusMutation.mutate({ id, status })
 
+  // Applications the applicant started (via OTP) but never submitted are
+  // not part of the review queue.
+  const isUnsubmitted = (app) =>
+    (app.status || '').toLowerCase() === 'draft' ||
+    (!app.firstName && !app.lastName)
+
+  const submittedApplications = applications.filter(app => !isUnsubmitted(app))
+
   // Filter calculations
-  const filtered = applications.filter(app => {
+  const filtered = submittedApplications.filter(app => {
     const fullName = `${app.firstName || ''} ${app.middleName || ''} ${app.lastName || ''}`.toLowerCase()
     const matchesSearch = fullName.includes(search.toLowerCase()) || (app.email || '').toLowerCase().includes(search.toLowerCase())
     
@@ -81,10 +89,10 @@ const EnrollmentReview = () => {
   })
 
   // Stats summaries
-  const pendingCount = applications.filter(app => (app.status || '').toLowerCase() === 'pending').length
-  const acceptedCount = applications.filter(app => (app.status || '').toLowerCase() === 'approved' || (app.status || '').toLowerCase() === 'accepted').length
-  const rejectedCount = applications.filter(app => (app.status || '').toLowerCase() === 'rejected').length
-  const totalCount = applications.length
+  const pendingCount = submittedApplications.filter(app => (app.status || '').toLowerCase() === 'pending').length
+  const acceptedCount = submittedApplications.filter(app => (app.status || '').toLowerCase() === 'approved' || (app.status || '').toLowerCase() === 'accepted').length
+  const rejectedCount = submittedApplications.filter(app => (app.status || '').toLowerCase() === 'rejected').length
+  const totalCount = submittedApplications.length
 
   return (
     <DashboardLayout>

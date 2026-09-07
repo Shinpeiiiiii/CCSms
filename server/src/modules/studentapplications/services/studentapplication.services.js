@@ -34,7 +34,7 @@ const startApplication = async (email) => {
 
     if (existing) {
         console.log(`[startApplication] Found existing StudentApplication: id=${existing._id} number=${existing.applicationNumber} status=${existing.status} enrollmentPeriod=${existing.enrollmentPeriod}`);
-        if (existing.status !== "Pending" && existing.status !== "Needs Revision") {
+        if (!["Draft", "Pending", "Needs Revision"].includes(existing.status)) {
             throw new Error(
                 `Your application (${existing.applicationNumber}) is already ${existing.status} and can no longer be modified.`
             );
@@ -50,6 +50,7 @@ const startApplication = async (email) => {
         emailVerified: true,
         enrollmentPeriod: enrollmentPeriod._id,
         academicYear: enrollmentPeriod.academicYear._id,
+        status: "Draft",
     });
 
 };
@@ -62,7 +63,16 @@ const getPendingApplications = async () => {
 }
 
 const getApplications = async (filter = {}) => {
-    return await StudentApplication.find(filter)
+    const query = { ...filter };
+
+    if (query.status === "Pending") {
+        // The pending review queue should only contain applications the
+        // applicant actually submitted. Exclude empty drafts (existing
+        // records created before the "Draft" status existed).
+        query.firstName = { $nin: [null, ""] };
+    }
+
+    return await StudentApplication.find(query)
     .populate("program", "programName")
     .populate("academicYear", "academicYearName")
     .sort({createdAt: -1,});
@@ -86,7 +96,7 @@ const submitApplication = async (id, data) => {
         throw new Error("Application not found.");
     }
 
-    if (application.status !== "Pending" && application.status !== "Needs Revision") {
+    if (!["Draft", "Pending", "Needs Revision"].includes(application.status)) {
         const statusMessages = {
             "Under Review": "Your application is currently under review and cannot be modified.",
             "Approved": "Your application has already been approved.",
@@ -110,10 +120,9 @@ const submitApplication = async (id, data) => {
     application.program = data.program;
     application.studentType = data.studentType || "Regular";
 
-    // If it was "Needs Revision", reset status to "Pending"
-    if (application.status === "Needs Revision") {
-        application.status = "Pending";
-    }
+    // Submitting (or resubmitting after revision) moves it into the pending review queue
+    application.status = "Pending";
+    application.submittedAt = application.submittedAt || new Date();
 
     await application.save();
     return application;

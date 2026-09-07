@@ -84,13 +84,17 @@ const studentApplicationSchema = new mongoose.Schema(
     status: {
         type: String,
         enum: [
+            "Draft",
             "Pending",
             "Under Review",
             "Needs Revision",
             "Approved",
             "Rejected",
         ],
-        default: "Pending",
+        default: "Draft",
+    },
+    submittedAt: {
+        type: Date,
     },
     remarks: {
         type: String,
